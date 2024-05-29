@@ -3,7 +3,7 @@ import typing
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union, cast
 
 import pandas as pd
 import pyarrow
@@ -256,3 +256,25 @@ def _convert_arrow_to_proto(
         created_timestamps = [None] * table.num_rows
 
     return list(zip(entity_keys, features, event_timestamps, created_timestamps))
+
+
+def has_all_tags(
+    object_tags: dict[str, str], requested_tags: Optional[dict[str, str]] = None
+) -> bool:
+    if requested_tags is None:
+        return True
+    return all(object_tags.get(key, None) == val for key, val in requested_tags.items())
+
+
+def tags_str_to_dict(tags: Optional[str] = None) -> dict[str, str] | None:
+    if tags is None:
+        return None
+    tags_list = (
+        str(tags).strip().strip("()").replace('"', "").replace("'", "").split(",")
+    )
+    return {
+        key.strip(): value.strip()
+        for key, value in dict(
+            cast(tuple[str, str], tag.split(":", 1)) for tag in tags_list if ":" in tag
+        ).items()
+    }

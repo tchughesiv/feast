@@ -25,6 +25,8 @@ from tests.integration.feature_repos.universal.entities import (
     location,
 )
 
+TAGS = {"release": "production"}
+
 
 def driver_feature_view(
     data_source: DataSource,
@@ -200,6 +202,7 @@ def create_driver_hourly_stats_feature_view(source, infer_features: bool = False
         ],
         source=source,
         ttl=timedelta(hours=2),
+        tags=TAGS,
     )
     return driver_stats_feature_view
 
@@ -219,6 +222,7 @@ def create_driver_hourly_stats_batch_feature_view(
         ],
         source=source,
         ttl=timedelta(hours=2),
+        tags=TAGS,
     )
     return driver_stats_feature_view
 
@@ -236,6 +240,7 @@ def create_customer_daily_profile_feature_view(source, infer_features: bool = Fa
         ],
         source=source,
         ttl=timedelta(days=2),
+        tags=TAGS,
     )
     return customer_profile_feature_view
 
@@ -252,6 +257,7 @@ def create_global_stats_feature_view(source, infer_features: bool = False):
         ],
         source=source,
         ttl=timedelta(days=2),
+        tags=TAGS,
     )
     return global_stats_feature_view
 
