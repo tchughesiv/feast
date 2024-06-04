@@ -1,9 +1,9 @@
 FROM python:3.11
 
-RUN apt update && \
-        apt install -y \
+#RUN apt update && \
+RUN apt install -y \
         jq \
-        python3-dev \
+        python3.11-dev \
         build-essential
 
 RUN pip install pip --upgrade
