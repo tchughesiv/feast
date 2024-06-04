@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from abc import ABC, abstractmethod
-from enum import *
+import enum
 from typing import Dict, Union
 
 from feast.value_type import ValueType
@@ -56,7 +56,7 @@ class ComplexFeastType(ABC):
             return False
 
 
-class PrimitiveFeastType(Enum):
+class PrimitiveFeastType(enum.Enum):
     """
     A PrimitiveFeastType represents a primitive type in Feast.
 
