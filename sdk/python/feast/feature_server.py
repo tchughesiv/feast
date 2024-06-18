@@ -18,6 +18,8 @@ from feast import proto_json, utils
 from feast.constants import DEFAULT_FEATURE_SERVER_REGISTRY_TTL
 from feast.data_source import PushMode
 from feast.errors import PushSourceNotFoundException
+from feast.protos.feast.core.FeatureView_pb2 import FeatureView as FeatureViewProto
+from feast.protos.feast.registry import RegistryServer_pb2
 
 
 # TODO: deprecate this in favor of push features
@@ -105,6 +107,27 @@ def get_app(
             # Convert the Protobuf object to JSON and return it
             return MessageToDict(
                 response_proto, preserving_proto_field_name=True, float_precision=18
+            )
+        except Exception as e:
+            # Print the original exception on the server side
+            logger.exception(traceback.format_exc())
+            # Raise HTTPException to return the error message to the client
+            raise HTTPException(status_code=500, detail=str(e))
+
+    @app.post("/list-feature-views")
+    def list_feature_views(body=Depends(get_body)):
+        try:
+            request = RegistryServer_pb2.ListFeatureServicesRequest(**json.loads(body))
+            response = store.list_batch_feature_views(request.allow_cache, request.tags)
+
+            proto_list: list[FeatureViewProto] = {}
+            for fv in response:
+                proto_list.append(fv.to_proto)
+
+            # Convert the Protobuf object to JSON and return it
+            return MessageToDict(
+                proto_list,
+                preserving_proto_field_name=True,  # , float_precision=18
             )
         except Exception as e:
             # Print the original exception on the server side
