@@ -122,6 +122,9 @@ def get_app(
             features = store.list_batch_feature_views(
                 tags=request.tags, allow_cache=request.allow_cache
             )
+            # store.list_on_demand_feature_views(
+            #    tags=request.tags, allow_cache=request.allow_cache
+            #)
             print(features)
 
             return features
