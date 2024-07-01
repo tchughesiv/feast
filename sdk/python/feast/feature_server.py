@@ -119,12 +119,12 @@ def get_app(
             request = RegistryServer_pb2.ListFeatureViewsRequest(**json.loads(body))
             print(request.tags)
 
-            features = store.list_batch_feature_views(
+            # features = store.list_batch_feature_views(
+            #    tags=request.tags, allow_cache=request.allow_cache
+            # )
+            features = store.list_on_demand_feature_views(
                 tags=request.tags, allow_cache=request.allow_cache
             )
-            # store.list_on_demand_feature_views(
-            #    tags=request.tags, allow_cache=request.allow_cache
-            #)
             print(features)
 
             return features
