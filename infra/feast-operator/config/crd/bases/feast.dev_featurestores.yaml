@@ -11,6 +11,8 @@ spec:
     kind: FeatureStore
     listKind: FeatureStoreList
     plural: featurestores
+    shortNames:
+    - feast
     singular: featurestore
   scope: Namespaced
   versions:
@@ -50,6 +52,19 @@ spec:
             type: object
           status:
             description: FeatureStoreStatus defines the observed state of FeatureStore
+            properties:
+              applied:
+                description: FeatureStoreSpec defines the desired state of FeatureStore
+                properties:
+                  feastProject:
+                    description: FeastProject is the Feast project id. This can be
+                      any alphanumeric string with underscores, but it cannot start
+                      with an underscore.
+                    pattern: ^[A-Za-z0-9][A-Za-z0-9_]*$
+                    type: string
+                required:
+                - feastProject
+                type: object
             type: object
         type: object
     served: true

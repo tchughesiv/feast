@@ -20,9 +20,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // FeatureStoreSpec defines the desired state of FeatureStore
 type FeatureStoreSpec struct {
 	// +kubebuilder:validation:Pattern="^[A-Za-z0-9][A-Za-z0-9_]*$"
@@ -32,12 +29,12 @@ type FeatureStoreSpec struct {
 
 // FeatureStoreStatus defines the observed state of FeatureStore
 type FeatureStoreStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	Applied FeatureStoreSpec `json:"applied,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:resource:shortName=feast
 
 // FeatureStore is the Schema for the featurestores API
 type FeatureStore struct {
