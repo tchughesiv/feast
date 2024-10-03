@@ -63,6 +63,16 @@ var _ = Describe("FeatureStore Controller", func() {
 			err := k8sClient.Get(ctx, typeNamespacedName, resource)
 			Expect(err).NotTo(HaveOccurred())
 
+			Expect(resource.Status).NotTo(BeNil())
+			Expect(resource.Status.Applied.FeastProject).To(Equal(resource.Spec.FeastProject))
+			Expect(resource.Status.Conditions).NotTo(BeNil())
+
+			cond := resource.Status.Conditions[0]
+			Expect(cond.Status).To(Equal(metav1.ConditionTrue))
+			Expect(cond.Reason).To(Equal(feastdevv1alpha1.ReadyReason))
+			Expect(cond.Type).To(Equal(feastdevv1alpha1.ReadyType))
+			Expect(cond.Message).To(Equal(feastdevv1alpha1.ReadyMessage))
+
 			By("Cleanup the specific resource instance FeatureStore")
 			Expect(k8sClient.Delete(ctx, resource)).To(Succeed())
 		})
