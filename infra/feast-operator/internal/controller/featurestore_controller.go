@@ -18,13 +18,28 @@ package controller
 
 import (
 	"context"
+	"reflect"
+	"time"
 
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	apimeta "k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
+	"github.com/feast-dev/feast/infra/feast-operator/api/feastversion"
 	feastdevv1alpha1 "github.com/feast-dev/feast/infra/feast-operator/api/v1alpha1"
+	"github.com/feast-dev/feast/infra/feast-operator/internal/controller/services"
+)
+
+// Constants for requeue
+const (
+	RequeueDelayError = 5 * time.Second
 )
 
 // FeatureStoreReconciler reconciles a FeatureStore object
@@ -36,27 +51,93 @@ type FeatureStoreReconciler struct {
 //+kubebuilder:rbac:groups=feast.dev,resources=featurestores,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=feast.dev,resources=featurestores/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=feast.dev,resources=featurestores/finalizers,verbs=update
+//+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;create;update;watch;delete
+//+kubebuilder:rbac:groups=core,resources=services;configmaps,verbs=get;list;create;update;watch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
-// the FeatureStore object against the actual cluster state, and then
-// perform operations to make the cluster state reflect the state specified by
-// the user.
-//
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.17.3/pkg/reconcile
-func (r *FeatureStoreReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+func (r *FeatureStoreReconciler) Reconcile(ctx context.Context, req ctrl.Request) (result ctrl.Result, recErr error) {
+	logger := log.FromContext(ctx)
 
-	// TODO(user): your logic here
+	cr := &feastdevv1alpha1.FeatureStore{}
+	err := r.Get(ctx, req.NamespacedName, cr)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			// CR deleted since request queued, child objects getting GC'd, no requeue
+			logger.V(1).Info("FeatureStore CR not found, has been deleted")
+			return ctrl.Result{}, nil
+		}
+		// error fetching FeatureStore instance, requeue and try again
+		logger.Error(err, "Unable to get FeatureStore CR")
+		return ctrl.Result{}, err
+	}
 
-	return ctrl.Result{}, nil
+	currentStatus := cr.Status.DeepCopy()
+	applyDefaultsToStatus(cr)
+
+	condition := metav1.Condition{
+		Type:    feastdevv1alpha1.ReadyType,
+		Status:  metav1.ConditionTrue,
+		Reason:  feastdevv1alpha1.ReadyReason,
+		Message: feastdevv1alpha1.ReadyMessage,
+	}
+
+	// This update will make sure the status is always updated in case of any errors or successful result
+	defer func(cond metav1.Condition) {
+		if cr.DeletionTimestamp == nil {
+			apimeta.SetStatusCondition(&cr.Status.Conditions, cond)
+			if !reflect.DeepEqual(currentStatus, cr.Status) {
+				if err := r.Client.Status().Update(ctx, cr); err != nil {
+					if errors.IsConflict(err) {
+						logger.Info("FeatureStore object modified, retry syncing status")
+						// Re-queue and preserve existing recErr
+						result = ctrl.Result{Requeue: true, RequeueAfter: RequeueDelayError}
+						return
+					}
+					logger.Error(err, "Error updating the FeatureStore status")
+					if recErr == nil {
+						// There is no existing recErr. Set it to the status update error
+						recErr = err
+					}
+				}
+			}
+		}
+	}(condition)
+
+	feast := services.FeastServices{
+		Client:       r.Client,
+		Context:      ctx,
+		Scheme:       r.Scheme,
+		FeatureStore: cr,
+	}
+	recErr = feast.DeployRegistry()
+	if recErr != nil {
+		condition = metav1.Condition{
+			Status:  metav1.ConditionFalse,
+			Message: recErr.Error(),
+		}
+		logger.Error(recErr, "Error deploying the FeatureStore "+string(services.RegistryFeastType)+" server")
+	} else {
+		logger.Info(condition.Message)
+	}
+
+	return result, recErr
+}
+
+func applyDefaultsToStatus(cr *feastdevv1alpha1.FeatureStore) {
+	spec := cr.Spec
+	cr.Status.Applied.FeastProject = spec.FeastProject
+	cr.Status.FeastVersion = feastversion.FeastVersion
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *FeatureStoreReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&feastdevv1alpha1.FeatureStore{}).
+		Owns(&corev1.ConfigMap{}).
+		Owns(&appsv1.Deployment{}).
+		Owns(&corev1.Service{}).
 		Complete(r)
 }

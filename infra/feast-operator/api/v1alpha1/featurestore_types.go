@@ -20,24 +20,44 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+const (
+	// Feast condition types:
+	ReadyType string = "FeatureStoreReady"
+
+	// Feast condition reasons:
+	ReadyReason string = "Ready"
+
+	// Feast condition messages:
+	ReadyMessage string = "FeatureStore installation complete"
+
+	// entity_key_serialization_version
+	SerializationVersion = 3
+)
 
 // FeatureStoreSpec defines the desired state of FeatureStore
 type FeatureStoreSpec struct {
 	// +kubebuilder:validation:Pattern="^[A-Za-z0-9][A-Za-z0-9_]*$"
-	// FeastProject is the Feast project id. This can be any alphanumeric string with underscores, but it cannot start with an underscore.
+	// FeastProject is the Feast project id. This can be any alphanumeric string with underscores, but it cannot start with an underscore. Required.
 	FeastProject string `json:"feastProject"`
 }
 
 // FeatureStoreStatus defines the observed state of FeatureStore
 type FeatureStoreStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	Applied         FeatureStoreSpec   `json:"applied,omitempty"`
+	ClientConfigMap string             `json:"clientConfigMap,omitempty"`
+	Conditions      []metav1.Condition `json:"conditions,omitempty"`
+	FeastVersion    string             `json:"feastVersion,omitempty"`
+	ServiceUrls     ServiceUrls        `json:"serviceUrls,omitempty"`
+}
+
+// ServiceUrls
+type ServiceUrls struct {
+	Registry string `json:"registry,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:resource:shortName=feast
 
 // FeatureStore is the Schema for the featurestores API
 type FeatureStore struct {
