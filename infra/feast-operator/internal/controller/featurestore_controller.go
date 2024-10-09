@@ -71,16 +71,15 @@ func (r *FeatureStoreReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		return ctrl.Result{}, err
 	}
 
-	nextStatus := cr.Status.DeepCopy()
-	nextStatus.Applied.FeastProject = cr.Spec.FeastProject
+	currentStatus := cr.Status.DeepCopy()
+	applyDefaults(cr)
 
 	if cr.DeletionTimestamp == nil {
-		setStatusCondition(&nextStatus.Conditions, feastdevv1alpha1.ReadyType, metav1.ConditionTrue, feastdevv1alpha1.ReadyReason, feastdevv1alpha1.ReadyMessage)
+		setStatusCondition(&cr.Status.Conditions, feastdevv1alpha1.ReadyType, metav1.ConditionTrue, feastdevv1alpha1.ReadyReason, feastdevv1alpha1.ReadyMessage)
 		logger.Info(feastdevv1alpha1.ReadyMessage)
 	}
 
-	if !reflect.DeepEqual(&cr.Status, nextStatus) {
-		nextStatus.DeepCopyInto(&cr.Status)
+	if !reflect.DeepEqual(currentStatus, cr.Status) {
 		err := r.Client.Status().Update(context.Background(), cr)
 		if err != nil {
 			return ctrl.Result{
@@ -112,4 +111,9 @@ func setStatusCondition(conditions *[]metav1.Condition, conditionType string, st
 	}
 
 	apimeta.SetStatusCondition(conditions, newCondition)
+}
+
+func applyDefaults(cr *feastdevv1alpha1.FeatureStore) {
+	spec := cr.Spec
+	cr.Status.Applied.FeastProject = spec.FeastProject
 }
