@@ -36,8 +36,7 @@ import (
 
 // Constants for requeue
 const (
-	RequeueDelaySuccess = 10 * time.Second
-	RequeueDelayError   = 5 * time.Second
+	RequeueDelayError = 5 * time.Second
 )
 
 // FeatureStoreReconciler reconciles a FeatureStore object
@@ -68,43 +67,18 @@ func (r *FeatureStoreReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			return ctrl.Result{}, nil
 		}
 		// error fetching FeatureStore instance, requeue and try again
-		logger.Error(err, "Error in Get of FeatureStore CR")
+		logger.Error(err, "Unable to get FeatureStore CR")
 		return ctrl.Result{}, err
 	}
 
 	nextStatus := cr.Status.DeepCopy()
-	nextStatus.Applied = cr.Spec
+	nextStatus.Applied.FeastProject = cr.Spec.FeastProject
 
 	if cr.DeletionTimestamp == nil {
 		setStatusCondition(&nextStatus.Conditions, feastdevv1alpha1.ReadyType, metav1.ConditionTrue, feastdevv1alpha1.ReadyReason, feastdevv1alpha1.ReadyMessage)
-		logger.Info("FeatureStore installation complete")
+		logger.Info(feastdevv1alpha1.ReadyMessage)
 	}
 
-	return r.updateStatus(cr, nextStatus)
-}
-
-// SetupWithManager sets up the controller with the Manager.
-func (r *FeatureStoreReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
-		For(&feastdevv1alpha1.FeatureStore{}).
-		Owns(&appsv1.Deployment{}).
-		Owns(&corev1.Service{}).
-		Complete(r)
-}
-
-// setStatusCondition sets the given condition with the given status, reason and message on a resource.
-func setStatusCondition(Conditions *[]metav1.Condition, conditionType string, status metav1.ConditionStatus, reason, message string) {
-	newCondition := metav1.Condition{
-		Type:    conditionType,
-		Status:  status,
-		Reason:  reason,
-		Message: message,
-	}
-
-	apimeta.SetStatusCondition(Conditions, newCondition)
-}
-
-func (r *FeatureStoreReconciler) updateStatus(cr *feastdevv1alpha1.FeatureStore, nextStatus *feastdevv1alpha1.FeatureStoreStatus) (ctrl.Result, error) {
 	if !reflect.DeepEqual(&cr.Status, nextStatus) {
 		nextStatus.DeepCopyInto(&cr.Status)
 		err := r.Client.Status().Update(context.Background(), cr)
@@ -117,4 +91,25 @@ func (r *FeatureStoreReconciler) updateStatus(cr *feastdevv1alpha1.FeatureStore,
 	}
 
 	return ctrl.Result{}, nil
+}
+
+// SetupWithManager sets up the controller with the Manager.
+func (r *FeatureStoreReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	return ctrl.NewControllerManagedBy(mgr).
+		For(&feastdevv1alpha1.FeatureStore{}).
+		Owns(&appsv1.Deployment{}).
+		Owns(&corev1.Service{}).
+		Complete(r)
+}
+
+// setStatusCondition sets the given condition with the given status, reason and message on a resource.
+func setStatusCondition(conditions *[]metav1.Condition, conditionType string, status metav1.ConditionStatus, reason, message string) {
+	newCondition := metav1.Condition{
+		Type:    conditionType,
+		Status:  status,
+		Reason:  reason,
+		Message: message,
+	}
+
+	apimeta.SetStatusCondition(conditions, newCondition)
 }

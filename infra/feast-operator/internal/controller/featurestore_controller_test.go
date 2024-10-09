@@ -65,7 +65,7 @@ var _ = Describe("FeatureStore Controller", func() {
 
 			Expect(resource.Status).NotTo(BeNil())
 			Expect(resource.Status.Applied.FeastProject).To(Equal(resource.Spec.FeastProject))
-			Expect(resource.Status.Conditions).NotTo(BeNil())
+			Expect(resource.Status.Conditions).NotTo(BeEmpty())
 
 			cond := resource.Status.Conditions[0]
 			Expect(cond.Status).To(Equal(metav1.ConditionTrue))
