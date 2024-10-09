@@ -58,20 +58,9 @@ var _ = Describe("FeatureStore Controller", func() {
 		})
 
 		AfterEach(func() {
-			// TODO(user): Cleanup logic after each test, like removing the resource instance.
 			resource := &feastdevv1alpha1.FeatureStore{}
 			err := k8sClient.Get(ctx, typeNamespacedName, resource)
 			Expect(err).NotTo(HaveOccurred())
-
-			Expect(resource.Status).NotTo(BeNil())
-			Expect(resource.Status.Applied.FeastProject).To(Equal(resource.Spec.FeastProject))
-			Expect(resource.Status.Conditions).NotTo(BeEmpty())
-
-			cond := resource.Status.Conditions[0]
-			Expect(cond.Status).To(Equal(metav1.ConditionTrue))
-			Expect(cond.Reason).To(Equal(feastdevv1alpha1.ReadyReason))
-			Expect(cond.Type).To(Equal(feastdevv1alpha1.ReadyType))
-			Expect(cond.Message).To(Equal(feastdevv1alpha1.ReadyMessage))
 
 			By("Cleanup the specific resource instance FeatureStore")
 			Expect(k8sClient.Delete(ctx, resource)).To(Succeed())
@@ -87,8 +76,20 @@ var _ = Describe("FeatureStore Controller", func() {
 				NamespacedName: typeNamespacedName,
 			})
 			Expect(err).NotTo(HaveOccurred())
-			// TODO(user): Add more specific assertions depending on your controller's reconciliation logic.
-			// Example: If you expect a certain status condition after reconciliation, verify it here.
+
+			resource := &feastdevv1alpha1.FeatureStore{}
+			err = k8sClient.Get(ctx, typeNamespacedName, resource)
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(resource.Status).NotTo(BeNil())
+			Expect(resource.Status.Applied.FeastProject).To(Equal(resource.Spec.FeastProject))
+			Expect(resource.Status.Conditions).NotTo(BeEmpty())
+
+			cond := resource.Status.Conditions[0]
+			Expect(cond.Status).To(Equal(metav1.ConditionTrue))
+			Expect(cond.Reason).To(Equal(feastdevv1alpha1.ReadyReason))
+			Expect(cond.Type).To(Equal(feastdevv1alpha1.ReadyType))
+			Expect(cond.Message).To(Equal(feastdevv1alpha1.ReadyMessage))
 		})
 	})
 })
