@@ -23,15 +23,18 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	feastdevv1alpha1 "github.com/feast-dev/feast/infra/feast-operator/api/v1alpha1"
+	"github.com/feast-dev/feast/infra/feast-operator/internal/controller/services"
 )
 
 // Constants for requeue
@@ -55,7 +58,7 @@ type FeatureStoreReconciler struct {
 // move the current state of the cluster closer to the desired state.
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.17.3/pkg/reconcile
-func (r *FeatureStoreReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *FeatureStoreReconciler) Reconcile(ctx context.Context, req ctrl.Request) (result ctrl.Result, recErr error) {
 	logger := log.FromContext(ctx)
 
 	cr := &feastdevv1alpha1.FeatureStore{}
@@ -72,24 +75,49 @@ func (r *FeatureStoreReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	currentStatus := cr.Status.DeepCopy()
-	applyDefaults(cr)
+	applyDefaultsToStatus(cr)
 
-	if cr.DeletionTimestamp == nil {
-		setStatusCondition(&cr.Status.Conditions, feastdevv1alpha1.ReadyType, metav1.ConditionTrue, feastdevv1alpha1.ReadyReason, feastdevv1alpha1.ReadyMessage)
-		logger.Info(feastdevv1alpha1.ReadyMessage)
+	condition := metav1.Condition{
+		Type:    feastdevv1alpha1.ReadyType,
+		Status:  metav1.ConditionTrue,
+		Reason:  feastdevv1alpha1.ReadyReason,
+		Message: feastdevv1alpha1.ReadyMessage,
 	}
 
-	if !reflect.DeepEqual(currentStatus, cr.Status) {
-		err := r.Client.Status().Update(context.Background(), cr)
-		if err != nil {
-			return ctrl.Result{
-				Requeue:      true,
-				RequeueAfter: RequeueDelayError,
-			}, err
+	// This update will make sure the status is always updated in case of any errors or successful result
+	defer func(cond metav1.Condition) {
+		if cr.DeletionTimestamp == nil {
+			apimeta.SetStatusCondition(&cr.Status.Conditions, cond)
+			if !reflect.DeepEqual(currentStatus, cr.Status) {
+				if err := r.Client.Status().Update(ctx, cr); err != nil {
+					if errors.IsConflict(err) {
+						logger.Info("FeatureStore object modified, retry syncing status", cr.Name, cr.Namespace)
+						// Re-queue and preserve existing recErr
+						result = ctrl.Result{Requeue: true, RequeueAfter: RequeueDelayError}
+						return
+					}
+					logger.Error(err, "Error updating the FeatureStore status", cr.Name, cr.Namespace)
+					if recErr == nil {
+						// There is no existing recErr. Set it to the status update error
+						recErr = err
+					}
+				}
+			}
+		}
+	}(condition)
+
+	for _, object := range services.GetRegistryObjects(cr) {
+		if _, err := controllerutil.CreateOrUpdate(ctx, r.Client, object, setOwnerMutateFn(cr, object, r.Scheme)); err != nil {
+			condition = metav1.Condition{
+				Status:  metav1.ConditionFalse,
+				Message: err.Error(),
+			}
+			logger.Error(err, "Error creating or updating "+object.GetObjectKind().GroupVersionKind().Kind, object.GetName(), object.GetNamespace())
 		}
 	}
 
-	return ctrl.Result{}, nil
+	logger.Info(condition.Message)
+	return result, recErr
 }
 
 // SetupWithManager sets up the controller with the Manager.
@@ -101,19 +129,27 @@ func (r *FeatureStoreReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-// setStatusCondition sets the given condition with the given status, reason and message on a resource.
-func setStatusCondition(conditions *[]metav1.Condition, conditionType string, status metav1.ConditionStatus, reason, message string) {
-	newCondition := metav1.Condition{
-		Type:    conditionType,
-		Status:  status,
-		Reason:  reason,
-		Message: message,
-	}
-
-	apimeta.SetStatusCondition(conditions, newCondition)
-}
-
-func applyDefaults(cr *feastdevv1alpha1.FeatureStore) {
+func applyDefaultsToStatus(cr *feastdevv1alpha1.FeatureStore) {
 	spec := cr.Spec
 	cr.Status.Applied.FeastProject = spec.FeastProject
+
+	cr.Status.FeastVersion = feastdevv1alpha1.Version
 }
+
+func setOwnerMutateFn(cr *feastdevv1alpha1.FeatureStore, obj metav1.Object, scheme *runtime.Scheme) controllerutil.MutateFn {
+	return func() error {
+		return controllerutil.SetControllerReference(cr, obj, scheme)
+	}
+}
+
+// setStatusCondition sets the given condition with the given status, reason and message on a resource.
+//func setStatusCondition(conditions *[]metav1.Condition, conditionType string, status metav1.ConditionStatus, reason, message string) {
+//	newCondition := metav1.Condition{
+//		Type:    conditionType,
+//		Status:  status,
+//		Reason:  reason,
+//		Message: message,
+//	}
+//
+//	apimeta.SetStatusCondition(conditions, newCondition)
+//}

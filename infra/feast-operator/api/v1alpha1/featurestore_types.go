@@ -29,6 +29,8 @@ const (
 
 	// Feast condition messages:
 	ReadyMessage string = "FeatureStore installation complete"
+
+	Version = "0.40.1"
 )
 
 // FeatureStoreSpec defines the desired state of FeatureStore
@@ -40,8 +42,9 @@ type FeatureStoreSpec struct {
 
 // FeatureStoreStatus defines the observed state of FeatureStore
 type FeatureStoreStatus struct {
-	Applied    FeatureStoreSpec   `json:"applied,omitempty"`
-	Conditions []metav1.Condition `json:"conditions,omitempty"`
+	Applied      FeatureStoreSpec   `json:"applied,omitempty"`
+	Conditions   []metav1.Condition `json:"conditions,omitempty"`
+	FeastVersion string             `json:"feastVersion,omitempty"`
 }
 
 //+kubebuilder:object:root=true
