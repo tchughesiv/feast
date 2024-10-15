@@ -29,7 +29,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-const RegistryTypeSuffix = "-registry"
+const FeastPrefix = "feast-"
+const RegistryTypeSuffix FeastTypeSuffix = "-registry"
+
+type FeastTypeSuffix string
 
 type FeastServices struct {
 	client.Client
@@ -96,9 +99,9 @@ spec:
 
 func (feast *FeastServices) createRegistryDeployment() (controllerutil.OperationResult, error) {
 	// appliedSpec := feast.FeatureStore.Status.Applied
-	name := feast.FeatureStore.Name + RegistryTypeSuffix
+	name := feast.getName(RegistryTypeSuffix)
 	deploy := &appsv1.Deployment{
-		ObjectMeta: getObjectMeta(name, feast.FeatureStore.Namespace),
+		ObjectMeta: feast.getObjectMeta(),
 	}
 	deploy.SetGroupVersionKind(appsv1.SchemeGroupVersion.WithKind("Deployment"))
 	return controllerruntime.CreateOrUpdate(feast.Context, feast.Client, deploy, controllerutil.MutateFn(func() error {
@@ -126,9 +129,9 @@ func (feast *FeastServices) createRegistryDeployment() (controllerutil.Operation
 }
 
 func (feast *FeastServices) createRegistryService() (controllerutil.OperationResult, error) {
-	name := feast.FeatureStore.Name + RegistryTypeSuffix
+	name := feast.getName(RegistryTypeSuffix)
 	service := &corev1.Service{
-		ObjectMeta: getObjectMeta(name, feast.FeatureStore.Namespace),
+		ObjectMeta: feast.getObjectMeta(),
 	}
 	service.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("Service"))
 	return controllerruntime.CreateOrUpdate(feast.Context, feast.Client, service, controllerutil.MutateFn(func() error {
@@ -158,12 +161,16 @@ spec:
     app.kubernetes.io/instance: feast-registry-server
 */
 
-func getObjectMeta(name, ns string) v1.ObjectMeta {
-	return v1.ObjectMeta{Name: name, Namespace: ns}
+func (feast *FeastServices) getObjectMeta() v1.ObjectMeta {
+	return v1.ObjectMeta{Name: feast.FeatureStore.Name, Namespace: feast.FeatureStore.Namespace}
 }
 
 func getLabels(name string) map[string]string {
 	return map[string]string{
 		feastdevv1alpha1.GroupVersion.Group + "/name": name,
 	}
+}
+
+func (feast *FeastServices) getName(typeSuffix FeastTypeSuffix) string {
+	return FeastPrefix + feast.FeatureStore.Name + string(typeSuffix)
 }
