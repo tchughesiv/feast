@@ -17,19 +17,35 @@ limitations under the License.
 package services
 
 import (
+	"context"
+
 	feastdevv1alpha1 "github.com/feast-dev/feast/infra/feast-operator/api/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/runtime"
+	controllerruntime "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-func GetRegistryObjects(cr *feastdevv1alpha1.FeatureStore) (objects []client.Object) {
-	nsName := types.NamespacedName{Name: cr.Name, Namespace: cr.Namespace}
-	objects = append(objects, getRegistryDeployment(nsName, cr.Status))
-	objects = append(objects, getRegistryService(nsName, cr.Status))
-	return objects
+const RegistryTypeSuffix = "-registry"
+
+type FeastServices struct {
+	client.Client
+	Context      context.Context
+	Scheme       *runtime.Scheme
+	FeatureStore *feastdevv1alpha1.FeatureStore
+}
+
+func (feast *FeastServices) DeployRegistry() error {
+	if _, err := feast.createRegistryDeployment(); err != nil {
+		return err
+	}
+	if _, err := feast.createRegistryService(); err != nil {
+		return err
+	}
+	return nil
 }
 
 /*
@@ -78,20 +94,48 @@ spec:
             periodSeconds: 10
 */
 
-func getRegistryDeployment(nsName types.NamespacedName, status feastdevv1alpha1.FeatureStoreStatus) *appsv1.Deployment {
+func (feast *FeastServices) createRegistryDeployment() (controllerutil.OperationResult, error) {
+	// appliedSpec := feast.FeatureStore.Status.Applied
+	name := feast.FeatureStore.Name + RegistryTypeSuffix
 	deploy := &appsv1.Deployment{
-		ObjectMeta: v1.ObjectMeta{Name: nsName.Name, Namespace: nsName.Namespace},
+		ObjectMeta: getObjectMeta(name, feast.FeatureStore.Namespace),
 	}
 	deploy.SetGroupVersionKind(appsv1.SchemeGroupVersion.WithKind("Deployment"))
-	return deploy
+	return controllerruntime.CreateOrUpdate(feast.Context, feast.Client, deploy, controllerutil.MutateFn(func() error {
+		replicas := int32(1)
+		deploy.Labels = getLabels(name)
+		deploy.Spec = appsv1.DeploymentSpec{
+			Replicas: &replicas,
+			Selector: v1.SetAsLabelSelector(getLabels(name)),
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: v1.ObjectMeta{
+					Labels: getLabels(name),
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name:  name,
+							Image: "feastdev/feature-server:" + feastdevv1alpha1.Version,
+						},
+					},
+				},
+			},
+		}
+		return nil
+	}))
 }
 
-func getRegistryService(nsName types.NamespacedName, status feastdevv1alpha1.FeatureStoreStatus) *corev1.Service {
+func (feast *FeastServices) createRegistryService() (controllerutil.OperationResult, error) {
+	name := feast.FeatureStore.Name + RegistryTypeSuffix
 	service := &corev1.Service{
-		ObjectMeta: v1.ObjectMeta{Name: nsName.Name, Namespace: nsName.Namespace},
+		ObjectMeta: getObjectMeta(name, feast.FeatureStore.Namespace),
 	}
 	service.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("Service"))
-	return service
+	return controllerruntime.CreateOrUpdate(feast.Context, feast.Client, service, controllerutil.MutateFn(func() error {
+		service.Labels = getLabels(name)
+		service.Spec = corev1.ServiceSpec{}
+		return nil
+	}))
 }
 
 /*
@@ -113,3 +157,13 @@ spec:
     app.kubernetes.io/name: feast-feature-server
     app.kubernetes.io/instance: feast-registry-server
 */
+
+func getObjectMeta(name, ns string) v1.ObjectMeta {
+	return v1.ObjectMeta{Name: name, Namespace: ns}
+}
+
+func getLabels(name string) map[string]string {
+	return map[string]string{
+		feastdevv1alpha1.GroupVersion.Group + "/name": name,
+	}
+}

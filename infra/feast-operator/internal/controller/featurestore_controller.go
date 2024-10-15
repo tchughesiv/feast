@@ -30,7 +30,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	feastdevv1alpha1 "github.com/feast-dev/feast/infra/feast-operator/api/v1alpha1"
@@ -106,16 +105,18 @@ func (r *FeatureStoreReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		}
 	}(condition)
 
-	for _, object := range services.GetRegistryObjects(cr) {
-		if _, err := controllerutil.CreateOrUpdate(ctx, r.Client, object, setOwnerMutateFn(cr, object, r.Scheme)); err != nil {
-			condition = metav1.Condition{
-				Status:  metav1.ConditionFalse,
-				Message: err.Error(),
-			}
-			logger.Error(err, "Error creating or updating "+object.GetObjectKind().GroupVersionKind().Kind, object.GetName(), object.GetNamespace())
+	feast := services.FeastServices{
+		Client:       r.Client,
+		Context:      ctx,
+		Scheme:       r.Scheme,
+		FeatureStore: cr,
+	}
+	if err = feast.DeployRegistry(); err != nil {
+		condition = metav1.Condition{
+			Status:  metav1.ConditionFalse,
+			Message: err.Error(),
 		}
 	}
-
 	logger.Info(condition.Message)
 	return result, recErr
 }
@@ -134,12 +135,6 @@ func applyDefaultsToStatus(cr *feastdevv1alpha1.FeatureStore) {
 	cr.Status.Applied.FeastProject = spec.FeastProject
 
 	cr.Status.FeastVersion = feastdevv1alpha1.Version
-}
-
-func setOwnerMutateFn(cr *feastdevv1alpha1.FeatureStore, obj metav1.Object, scheme *runtime.Scheme) controllerutil.MutateFn {
-	return func() error {
-		return controllerutil.SetControllerReference(cr, obj, scheme)
-	}
 }
 
 // setStatusCondition sets the given condition with the given status, reason and message on a resource.
