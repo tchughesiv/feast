@@ -57,6 +57,9 @@ func (feast *FeastServices) createRegistryDeployment() (controllerutil.Operation
 		ObjectMeta: feast.getObjectMeta(RegistryType),
 	}
 	deploy.SetGroupVersionKind(appsv1.SchemeGroupVersion.WithKind("Deployment"))
+	if err := controllerruntime.SetControllerReference(feast.FeatureStore, deploy, feast.Scheme); err != nil {
+		return "", err
+	}
 
 	return controllerruntime.CreateOrUpdate(feast.Context, feast.Client, deploy, controllerutil.MutateFn(func() error {
 		return feast.setDeployment(deploy, RegistryType)
@@ -68,6 +71,9 @@ func (feast *FeastServices) createRegistryService() (controllerutil.OperationRes
 		ObjectMeta: feast.getObjectMeta(RegistryType),
 	}
 	svc.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("Service"))
+	if err := controllerruntime.SetControllerReference(feast.FeatureStore, svc, feast.Scheme); err != nil {
+		return "", err
+	}
 
 	return controllerruntime.CreateOrUpdate(feast.Context, feast.Client, svc, controllerutil.MutateFn(func() error {
 		feast.setService(svc, RegistryType)
@@ -163,7 +169,7 @@ func (feast *FeastServices) getLabels(feastType FeastServiceType) map[string]str
 }
 
 func (feast *FeastServices) getName(feastType FeastServiceType) string {
-	return FeastPrefix + feast.FeatureStore.Name + string(feastType)
+	return FeastPrefix + feast.FeatureStore.Name + "-" + string(feastType)
 }
 
 func (feast *FeastServices) getFeatureStoreYamlBase64() (string, error) {
@@ -171,7 +177,7 @@ func (feast *FeastServices) getFeatureStoreYamlBase64() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return base64.StdEncoding.EncodeToString(fsYaml), nil
+	return base64.RawStdEncoding.EncodeToString(fsYaml), nil
 }
 
 func (feast *FeastServices) getFeatureStoreYaml() ([]byte, error) {
