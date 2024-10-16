@@ -17,7 +17,6 @@ limitations under the License.
 package services
 
 import (
-	"context"
 	"encoding/base64"
 
 	feastdevv1alpha1 "github.com/feast-dev/feast/infra/feast-operator/api/v1alpha1"
@@ -25,39 +24,11 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	controllerruntime "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
-
-const (
-	FeastPrefix                   = "feast-"
-	RegistryPort                  = int32(6570)
-	RegistryType FeastServiceType = "registry"
-)
-
-// FeastServiceType
-type FeastServiceType string
-
-// FeastServices
-type FeastServices struct {
-	client.Client
-	Context      context.Context
-	Scheme       *runtime.Scheme
-	FeatureStore *feastdevv1alpha1.FeatureStore
-}
-
-// RepoConfig
-// https://rtd.feast.dev/en/stable/#feast.repo_config.RepoConfig
-type RepoConfig struct {
-	Project                       string `yaml:"project,omitempty"`
-	Provider                      string `yaml:"provider,omitempty"`
-	Registry                      string `yaml:"registry,omitempty"`
-	EntityKeySerializationVersion int    `yaml:"entity_key_serialization_version,omitempty"`
-}
 
 // DeployRegistry
 func (feast *FeastServices) DeployRegistry() error {
