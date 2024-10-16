@@ -111,13 +111,17 @@ func (r *FeatureStoreReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		Scheme:       r.Scheme,
 		FeatureStore: cr,
 	}
-	if err = feast.DeployRegistry(); err != nil {
+	recErr = feast.DeployRegistry()
+	if recErr != nil {
 		condition = metav1.Condition{
 			Status:  metav1.ConditionFalse,
-			Message: err.Error(),
+			Message: recErr.Error(),
 		}
+		logger.Error(err, "Error deploying the FeatureStore "+string(services.RegistryType)+" server", cr.Name, cr.Namespace)
+	} else {
+		logger.Info(condition.Message)
 	}
-	logger.Info(condition.Message)
+
 	return result, recErr
 }
 
@@ -133,8 +137,7 @@ func (r *FeatureStoreReconciler) SetupWithManager(mgr ctrl.Manager) error {
 func applyDefaultsToStatus(cr *feastdevv1alpha1.FeatureStore) {
 	spec := cr.Spec
 	cr.Status.Applied.FeastProject = spec.FeastProject
-
-	cr.Status.FeastVersion = feastdevv1alpha1.Version
+	cr.Status.FeastVersion = feastdevv1alpha1.FeastVersion
 }
 
 // setStatusCondition sets the given condition with the given status, reason and message on a resource.

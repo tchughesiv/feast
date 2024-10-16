@@ -30,7 +30,11 @@ const (
 	// Feast condition messages:
 	ReadyMessage string = "FeatureStore installation complete"
 
-	Version = "0.40.1"
+	// Feast release version
+	FeastVersion = "0.40.0"
+
+	// entity_key_serialization_version
+	SerializationVersion = 3
 )
 
 // FeatureStoreSpec defines the desired state of FeatureStore

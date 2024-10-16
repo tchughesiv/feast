@@ -18,22 +18,31 @@ package services
 
 import (
 	"context"
+	"encoding/base64"
 
 	feastdevv1alpha1 "github.com/feast-dev/feast/infra/feast-operator/api/v1alpha1"
+	"gopkg.in/yaml.v2"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-const FeastPrefix = "feast-"
-const RegistryTypeSuffix FeastTypeSuffix = "-registry"
+const (
+	FeastPrefix                   = "feast-"
+	RegistryPort                  = int32(6570)
+	RegistryType FeastServiceType = "registry"
+)
 
-type FeastTypeSuffix string
+// FeastServiceType
+type FeastServiceType string
 
+// FeastServices
 type FeastServices struct {
 	client.Client
 	Context      context.Context
@@ -41,136 +50,169 @@ type FeastServices struct {
 	FeatureStore *feastdevv1alpha1.FeatureStore
 }
 
+// RepoConfig
+// https://rtd.feast.dev/en/stable/#feast.repo_config.RepoConfig
+type RepoConfig struct {
+	Project                       string `yaml:"project,omitempty"`
+	Provider                      string `yaml:"provider,omitempty"`
+	Registry                      string `yaml:"registry,omitempty"`
+	EntityKeySerializationVersion int    `yaml:"entity_key_serialization_version,omitempty"`
+}
+
+// DeployRegistry
 func (feast *FeastServices) DeployRegistry() error {
-	if _, err := feast.createRegistryDeployment(); err != nil {
+	logger := log.FromContext(feast.Context)
+	name := feast.getName(RegistryType)
+
+	op, err := feast.createRegistryDeployment()
+	if err != nil {
 		return err
+	} else if op == controllerutil.OperationResultCreated || op == controllerutil.OperationResultUpdated {
+		logger.Info("Successfully reconciled", "Deployment", name, "operation", op, "FeatureStore", feast.FeatureStore.Name)
 	}
-	if _, err := feast.createRegistryService(); err != nil {
+
+	op, err = feast.createRegistryService()
+	if err != nil {
 		return err
+	} else if op == controllerutil.OperationResultCreated || op == controllerutil.OperationResultUpdated {
+		logger.Info("Successfully reconciled", "Service", name, "operation", op, "FeatureStore", feast.FeatureStore.Name)
 	}
+
 	return nil
 }
 
-/*
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: feast-registry-server-feast-feature-server
-  labels:
-    app.kubernetes.io/name: feast-feature-server
-    app.kubernetes.io/instance: feast-registry-server
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: feast-feature-server
-      app.kubernetes.io/instance: feast-registry-server
-  template:
-    metadata:
-      labels:
-        app.kubernetes.io/name: feast-feature-server
-        app.kubernetes.io/instance: feast-registry-server
-    spec:
-      containers:
-        - name: feast-feature-server
-          image: "feastdev/feature-server:0.40.1"
-          imagePullPolicy: IfNotPresent
-          env:
-            - name: FEATURE_STORE_YAML_BASE64
-              value: "??"
-          command:
-            - "feast"
-            - "serve_registry"
-          ports:
-            - name: registry
-              containerPort: 6570
-              protocol: TCP
-          livenessProbe:
-            tcpSocket:
-              port: registry
-            initialDelaySeconds: 30
-            periodSeconds: 30
-          readinessProbe:
-            tcpSocket:
-              port: registry
-            initialDelaySeconds: 20
-            periodSeconds: 10
-*/
-
 func (feast *FeastServices) createRegistryDeployment() (controllerutil.OperationResult, error) {
-	// appliedSpec := feast.FeatureStore.Status.Applied
-	name := feast.getName(RegistryTypeSuffix)
 	deploy := &appsv1.Deployment{
-		ObjectMeta: feast.getObjectMeta(),
+		ObjectMeta: feast.getObjectMeta(RegistryType),
 	}
 	deploy.SetGroupVersionKind(appsv1.SchemeGroupVersion.WithKind("Deployment"))
+
 	return controllerruntime.CreateOrUpdate(feast.Context, feast.Client, deploy, controllerutil.MutateFn(func() error {
-		replicas := int32(1)
-		deploy.Labels = getLabels(name)
-		deploy.Spec = appsv1.DeploymentSpec{
-			Replicas: &replicas,
-			Selector: v1.SetAsLabelSelector(getLabels(name)),
-			Template: corev1.PodTemplateSpec{
-				ObjectMeta: v1.ObjectMeta{
-					Labels: getLabels(name),
-				},
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name:  name,
-							Image: "feastdev/feature-server:" + feastdevv1alpha1.Version,
-						},
-					},
-				},
-			},
-		}
-		return nil
+		return feast.setDeployment(deploy, RegistryType)
 	}))
 }
 
 func (feast *FeastServices) createRegistryService() (controllerutil.OperationResult, error) {
-	name := feast.getName(RegistryTypeSuffix)
-	service := &corev1.Service{
-		ObjectMeta: feast.getObjectMeta(),
+	svc := &corev1.Service{
+		ObjectMeta: feast.getObjectMeta(RegistryType),
 	}
-	service.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("Service"))
-	return controllerruntime.CreateOrUpdate(feast.Context, feast.Client, service, controllerutil.MutateFn(func() error {
-		service.Labels = getLabels(name)
-		service.Spec = corev1.ServiceSpec{}
+	svc.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("Service"))
+
+	return controllerruntime.CreateOrUpdate(feast.Context, feast.Client, svc, controllerutil.MutateFn(func() error {
+		feast.setService(svc, RegistryType)
 		return nil
 	}))
 }
 
-/*
-apiVersion: v1
-kind: Service
-metadata:
-  name: feast-registry-server-feast-feature-server
-  labels:
-    app.kubernetes.io/name: feast-feature-server
-    app.kubernetes.io/instance: feast-registry-server
-spec:
-  type: ClusterIP
-  ports:
-    - port: 80
-      targetPort: registry
-      protocol: TCP
-      name: http
-  selector:
-    app.kubernetes.io/name: feast-feature-server
-    app.kubernetes.io/instance: feast-registry-server
-*/
-
-func (feast *FeastServices) getObjectMeta() v1.ObjectMeta {
-	return v1.ObjectMeta{Name: feast.FeatureStore.Name, Namespace: feast.FeatureStore.Namespace}
+func (feast *FeastServices) setDeployment(deploy *appsv1.Deployment, feastType FeastServiceType) error {
+	fsYamlB64, err := feast.getFeatureStoreYamlBase64()
+	if err != nil {
+		return err
+	}
+	replicas := int32(1)
+	deploy.Labels = feast.getLabels(feastType)
+	deploy.Spec = appsv1.DeploymentSpec{
+		Replicas: &replicas,
+		Selector: v1.SetAsLabelSelector(deploy.GetLabels()),
+		Template: corev1.PodTemplateSpec{
+			ObjectMeta: v1.ObjectMeta{
+				Labels: deploy.GetLabels(),
+			},
+			Spec: corev1.PodSpec{
+				Containers: []corev1.Container{
+					{
+						Name:            feast.getName(feastType),
+						Image:           "feastdev/feature-server:" + feast.FeatureStore.Status.FeastVersion,
+						ImagePullPolicy: corev1.PullIfNotPresent,
+						Env: []corev1.EnvVar{
+							{
+								Name:  "FEATURE_STORE_YAML_BASE64",
+								Value: fsYamlB64,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	if feastType == RegistryType {
+		deploy.Spec.Template.Spec.Containers[0].Command = []string{"feast", "serve_registry"}
+		deploy.Spec.Template.Spec.Containers[0].Ports = []corev1.ContainerPort{
+			{
+				Name:          string(feastType),
+				ContainerPort: RegistryPort,
+				Protocol:      corev1.ProtocolTCP,
+			},
+		}
+		probeHandler := corev1.ProbeHandler{
+			TCPSocket: &corev1.TCPSocketAction{
+				Port: intstr.FromInt(int(RegistryPort)),
+			},
+		}
+		deploy.Spec.Template.Spec.Containers[0].LivenessProbe = &corev1.Probe{
+			ProbeHandler:        probeHandler,
+			InitialDelaySeconds: 30,
+			PeriodSeconds:       30,
+		}
+		deploy.Spec.Template.Spec.Containers[0].ReadinessProbe = &corev1.Probe{
+			ProbeHandler:        probeHandler,
+			InitialDelaySeconds: 20,
+			PeriodSeconds:       10,
+		}
+	}
+	return nil
 }
 
-func getLabels(name string) map[string]string {
-	return map[string]string{
-		feastdevv1alpha1.GroupVersion.Group + "/name": name,
+func (feast *FeastServices) setService(svc *corev1.Service, feastType FeastServiceType) {
+	svc.Labels = feast.getLabels(feastType)
+	svc.Spec = corev1.ServiceSpec{
+		Selector: svc.GetLabels(),
+		Type:     corev1.ServiceTypeClusterIP,
+	}
+	if feastType == RegistryType {
+		svc.Spec.Ports = []corev1.ServicePort{
+			{
+				Name:       "http",
+				Port:       int32(80),
+				Protocol:   corev1.ProtocolTCP,
+				TargetPort: intstr.FromInt(int(RegistryPort)),
+			},
+		}
 	}
 }
 
-func (feast *FeastServices) getName(typeSuffix FeastTypeSuffix) string {
-	return FeastPrefix + feast.FeatureStore.Name + string(typeSuffix)
+func (feast *FeastServices) getObjectMeta(feastType FeastServiceType) v1.ObjectMeta {
+	return v1.ObjectMeta{Name: feast.getName(feastType), Namespace: feast.FeatureStore.Namespace}
+}
+
+func (feast *FeastServices) getLabels(feastType FeastServiceType) map[string]string {
+	return map[string]string{
+		feastdevv1alpha1.GroupVersion.Group + "/name": feast.getName(feastType),
+	}
+}
+
+func (feast *FeastServices) getName(feastType FeastServiceType) string {
+	return FeastPrefix + feast.FeatureStore.Name + string(feastType)
+}
+
+func (feast *FeastServices) getFeatureStoreYamlBase64() (string, error) {
+	fsYaml, err := feast.getFeatureStoreYaml()
+	if err != nil {
+		return "", err
+	}
+	return base64.StdEncoding.EncodeToString(fsYaml), nil
+}
+
+func (feast *FeastServices) getFeatureStoreYaml() ([]byte, error) {
+	return yaml.Marshal(feast.getRepoConfig())
+}
+
+func (feast *FeastServices) getRepoConfig() *RepoConfig {
+	appliedSpec := feast.FeatureStore.Status.Applied
+	return &RepoConfig{
+		Project:                       appliedSpec.FeastProject,
+		Provider:                      "local",
+		Registry:                      "data/registry.db",
+		EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
+	}
 }
