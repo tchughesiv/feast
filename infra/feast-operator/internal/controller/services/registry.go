@@ -119,7 +119,7 @@ func (feast *FeastServices) setDeployment(deploy *appsv1.Deployment, feastType F
 			Spec: corev1.PodSpec{
 				Containers: []corev1.Container{
 					{
-						Name:            string(feastType) + "-server",
+						Name:            string(feastType),
 						Image:           "feastdev/feature-server:" + feast.FeatureStore.Status.FeastVersion,
 						ImagePullPolicy: corev1.PullIfNotPresent,
 						Env: []corev1.EnvVar{
