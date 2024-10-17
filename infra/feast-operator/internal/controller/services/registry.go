@@ -39,14 +39,14 @@ func (feast *FeastServices) DeployRegistry() error {
 	if err != nil {
 		return err
 	} else if op == controllerutil.OperationResultCreated || op == controllerutil.OperationResultUpdated {
-		logger.Info("Successfully reconciled", "Deployment", name, "operation", op, "FeatureStore", feast.FeatureStore.Name)
+		logger.Info("Successfully reconciled", "Deployment", name, "operation", op)
 	}
 
 	op, err = feast.createRegistryService()
 	if err != nil {
 		return err
 	} else if op == controllerutil.OperationResultCreated || op == controllerutil.OperationResultUpdated {
-		logger.Info("Successfully reconciled", "Service", name, "operation", op, "FeatureStore", feast.FeatureStore.Name)
+		logger.Info("Successfully reconciled", "Service", name, "operation", op)
 	}
 
 	return nil

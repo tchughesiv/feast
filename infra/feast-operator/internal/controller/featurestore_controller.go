@@ -90,12 +90,12 @@ func (r *FeatureStoreReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			if !reflect.DeepEqual(currentStatus, cr.Status) {
 				if err := r.Client.Status().Update(ctx, cr); err != nil {
 					if errors.IsConflict(err) {
-						logger.Info("FeatureStore object modified, retry syncing status", cr.Name, cr.Namespace)
+						logger.Info("FeatureStore object modified, retry syncing status")
 						// Re-queue and preserve existing recErr
 						result = ctrl.Result{Requeue: true, RequeueAfter: RequeueDelayError}
 						return
 					}
-					logger.Error(err, "Error updating the FeatureStore status", cr.Name, cr.Namespace)
+					logger.Error(err, "Error updating the FeatureStore status")
 					if recErr == nil {
 						// There is no existing recErr. Set it to the status update error
 						recErr = err
@@ -117,7 +117,7 @@ func (r *FeatureStoreReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			Status:  metav1.ConditionFalse,
 			Message: recErr.Error(),
 		}
-		logger.Error(recErr, "Error deploying the FeatureStore "+string(services.RegistryType)+" server", cr.Name, cr.Namespace)
+		logger.Error(recErr, "Error deploying the FeatureStore "+string(services.RegistryType)+" server")
 	} else {
 		logger.Info(condition.Message)
 	}
