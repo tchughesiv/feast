@@ -186,8 +186,7 @@ func (feast *FeastServices) setClientConfigMap(cm *corev1.ConfigMap) error {
 	if err != nil {
 		return err
 	}
-	cm.Data = map[string]string{"string-feature_store.yaml": string(clientYaml)}
-	cm.BinaryData = map[string][]byte{"feature_store.yaml": clientYaml}
+	cm.Data = map[string]string{"feature_store.yaml": string(clientYaml)}
 	feast.FeatureStore.Status.ClientConfigMap = cm.Name
 	return nil
 }
