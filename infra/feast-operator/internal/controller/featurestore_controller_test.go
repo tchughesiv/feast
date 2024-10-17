@@ -18,21 +18,23 @@ package controller
 
 import (
 	"context"
+	"encoding/base64"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"gopkg.in/yaml.v3"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	feastdevv1alpha1 "github.com/feast-dev/feast/infra/feast-operator/api/v1alpha1"
 	"github.com/feast-dev/feast/infra/feast-operator/internal/controller/services"
 )
 
-const feastProject = "my_project"
+const feastProject = "my_project2"
 
 var _ = Describe("FeatureStore Controller", func() {
 	Context("When reconciling a resource", func() {
@@ -122,17 +124,36 @@ var _ = Describe("FeatureStore Controller", func() {
 			err = k8sClient.Get(ctx, types.NamespacedName{Name: feast.GetName(services.RegistryType), Namespace: resource.Namespace}, deploy)
 			Expect(err).NotTo(HaveOccurred())
 
-			/*
-				test := &services.RepoConfig{
-					Project:                       feastProject,
-					Provider:                      "local",
-					Registry:                      "data/registry.db",
-					EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
-				}
-			*/
-
 			Expect(deploy.Spec.Template.Spec.Containers).To(HaveLen(1))
 			Expect(deploy.Spec.Template.Spec.Containers[0].Env).To(HaveLen(1))
+			env := getEnvVar(services.FeatureStoreYamlEnvVar, deploy.Spec.Template.Spec.Containers[0].Env)
+			Expect(env).NotTo(BeNil())
+
+			fsYamlStr, err := feast.GetFeatureStoreYamlBase64()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(fsYamlStr).To(Equal(env.Value))
+
+			envByte, err := base64.StdEncoding.DecodeString(env.Value)
+			Expect(err).NotTo(HaveOccurred())
+			repoConfig := &services.RepoConfig{}
+			err = yaml.Unmarshal(envByte, repoConfig)
+			Expect(err).NotTo(HaveOccurred())
+			test := &services.RepoConfig{
+				Project:                       feastProject,
+				Provider:                      "local",
+				Registry:                      "data/registry.db",
+				EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
+			}
+			Expect(repoConfig).To(Equal(test))
 		})
 	})
 })
+
+func getEnvVar(name string, envs []corev1.EnvVar) *corev1.EnvVar {
+	for _, e := range envs {
+		if e.Name == name {
+			return &e
+		}
+	}
+	return nil
+}

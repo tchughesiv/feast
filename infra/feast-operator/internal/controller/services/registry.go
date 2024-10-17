@@ -20,7 +20,7 @@ import (
 	"encoding/base64"
 
 	feastdevv1alpha1 "github.com/feast-dev/feast/infra/feast-operator/api/v1alpha1"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -82,7 +82,7 @@ func (feast *FeastServices) createRegistryService() (controllerutil.OperationRes
 }
 
 func (feast *FeastServices) setDeployment(deploy *appsv1.Deployment, feastType FeastServiceType) error {
-	fsYamlB64, err := feast.getFeatureStoreYamlBase64()
+	fsYamlB64, err := feast.GetFeatureStoreYamlBase64()
 	if err != nil {
 		return err
 	}
@@ -103,7 +103,7 @@ func (feast *FeastServices) setDeployment(deploy *appsv1.Deployment, feastType F
 						ImagePullPolicy: corev1.PullIfNotPresent,
 						Env: []corev1.EnvVar{
 							{
-								Name:  "FEATURE_STORE_YAML_BASE64",
+								Name:  FeatureStoreYamlEnvVar,
 								Value: fsYamlB64,
 							},
 						},
@@ -172,21 +172,21 @@ func (feast *FeastServices) GetName(feastType FeastServiceType) string {
 	return FeastPrefix + feast.FeatureStore.Name + "-" + string(feastType)
 }
 
-func (feast *FeastServices) getFeatureStoreYamlBase64() (string, error) {
+func (feast *FeastServices) GetFeatureStoreYamlBase64() (string, error) {
 	fsYaml, err := feast.getFeatureStoreYaml()
 	if err != nil {
 		return "", err
 	}
-	return base64.RawStdEncoding.EncodeToString(fsYaml), nil
+	return base64.StdEncoding.EncodeToString(fsYaml), nil
 }
 
 func (feast *FeastServices) getFeatureStoreYaml() ([]byte, error) {
 	return yaml.Marshal(feast.getRepoConfig())
 }
 
-func (feast *FeastServices) getRepoConfig() *RepoConfig {
+func (feast *FeastServices) getRepoConfig() RepoConfig {
 	appliedSpec := feast.FeatureStore.Status.Applied
-	return &RepoConfig{
+	return RepoConfig{
 		Project:                       appliedSpec.FeastProject,
 		Provider:                      "local",
 		Registry:                      "data/registry.db",

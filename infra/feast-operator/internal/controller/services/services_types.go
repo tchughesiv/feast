@@ -25,9 +25,10 @@ import (
 )
 
 const (
-	FeastPrefix                   = "feast-"
-	RegistryPort                  = int32(6570)
-	RegistryType FeastServiceType = "registry"
+	FeastPrefix                             = "feast-"
+	RegistryPort                            = int32(6570)
+	RegistryType           FeastServiceType = "registry"
+	FeatureStoreYamlEnvVar                  = "FEATURE_STORE_YAML_BASE64"
 )
 
 // FeastServiceType
