@@ -32,6 +32,7 @@ const (
 	ClientFeastType        FeastServiceType = "client"
 
 	RegistryRemoteConfigType RegistryConfigType = "remote"
+	RegistryFileConfigType   RegistryConfigType = "file"
 
 	LocalProviderType FeastProviderType = "local"
 )
@@ -53,23 +54,12 @@ type FeastServices struct {
 	FeatureStore *feastdevv1alpha1.FeatureStore
 }
 
-// ServiceRepoConfig
-type ServiceRepoConfig struct {
-	RepoConfig `yaml:",inline"`
-	Registry   string `yaml:"registry,omitempty"`
-}
-
-// ClientRepoConfig
-type ClientRepoConfig struct {
-	RepoConfig `yaml:",inline"`
-	Registry   RegistryConfig `yaml:"registry,omitempty"`
-}
-
 // RepoConfig
 // https://rtd.feast.dev/en/stable/#feast.repo_config.RepoConfig
 type RepoConfig struct {
 	Project                       string            `yaml:"project,omitempty"`
 	Provider                      FeastProviderType `yaml:"provider,omitempty"`
+	Registry                      RegistryConfig    `yaml:"registry,omitempty"`
 	EntityKeySerializationVersion int               `yaml:"entity_key_serialization_version,omitempty"`
 }
 
