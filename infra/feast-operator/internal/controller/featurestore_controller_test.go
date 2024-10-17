@@ -34,7 +34,7 @@ import (
 	"github.com/feast-dev/feast/infra/feast-operator/internal/controller/services"
 )
 
-const feastProject = "my_project2"
+const feastProject = "test_project"
 
 var _ = Describe("FeatureStore Controller", func() {
 	Context("When reconciling a resource", func() {
