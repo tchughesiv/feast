@@ -51,7 +51,7 @@ type FeatureStoreReconciler struct {
 //+kubebuilder:rbac:groups=feast.dev,resources=featurestores/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=feast.dev,resources=featurestores/finalizers,verbs=update
 //+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;create;update;watch;delete
-//+kubebuilder:rbac:groups=core,resources=services,verbs=get;list;create;update;watch;delete
+//+kubebuilder:rbac:groups=core,resources=services;configmaps,verbs=get;list;create;update;watch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -117,21 +117,12 @@ func (r *FeatureStoreReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			Status:  metav1.ConditionFalse,
 			Message: recErr.Error(),
 		}
-		logger.Error(recErr, "Error deploying the FeatureStore "+string(services.RegistryType)+" server")
+		logger.Error(recErr, "Error deploying the FeatureStore "+string(services.RegistryFeastType)+" server")
 	} else {
 		logger.Info(condition.Message)
 	}
 
 	return result, recErr
-}
-
-// SetupWithManager sets up the controller with the Manager.
-func (r *FeatureStoreReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
-		For(&feastdevv1alpha1.FeatureStore{}).
-		Owns(&appsv1.Deployment{}).
-		Owns(&corev1.Service{}).
-		Complete(r)
 }
 
 func applyDefaultsToStatus(cr *feastdevv1alpha1.FeatureStore) {
@@ -140,14 +131,12 @@ func applyDefaultsToStatus(cr *feastdevv1alpha1.FeatureStore) {
 	cr.Status.FeastVersion = feastdevv1alpha1.FeastVersion
 }
 
-// setStatusCondition sets the given condition with the given status, reason and message on a resource.
-//func setStatusCondition(conditions *[]metav1.Condition, conditionType string, status metav1.ConditionStatus, reason, message string) {
-//	newCondition := metav1.Condition{
-//		Type:    conditionType,
-//		Status:  status,
-//		Reason:  reason,
-//		Message: message,
-//	}
-//
-//	apimeta.SetStatusCondition(conditions, newCondition)
-//}
+// SetupWithManager sets up the controller with the Manager.
+func (r *FeatureStoreReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	return ctrl.NewControllerManagedBy(mgr).
+		For(&feastdevv1alpha1.FeatureStore{}).
+		Owns(&corev1.ConfigMap{}).
+		Owns(&appsv1.Deployment{}).
+		Owns(&corev1.Service{}).
+		Complete(r)
+}

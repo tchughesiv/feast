@@ -46,10 +46,11 @@ type FeatureStoreSpec struct {
 
 // FeatureStoreStatus defines the observed state of FeatureStore
 type FeatureStoreStatus struct {
-	Applied      FeatureStoreSpec   `json:"applied,omitempty"`
-	Conditions   []metav1.Condition `json:"conditions,omitempty"`
-	FeastVersion string             `json:"feastVersion,omitempty"`
-	ServiceUrls  ServiceUrls        `json:"serviceUrls,omitempty"`
+	Applied         FeatureStoreSpec   `json:"applied,omitempty"`
+	ClientConfigMap string             `json:"clientConfigMap,omitempty"`
+	Conditions      []metav1.Condition `json:"conditions,omitempty"`
+	FeastVersion    string             `json:"feastVersion,omitempty"`
+	ServiceUrls     ServiceUrls        `json:"serviceUrls,omitempty"`
 }
 
 // ServiceUrls

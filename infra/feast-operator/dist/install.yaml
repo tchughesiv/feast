@@ -73,6 +73,8 @@ spec:
                 required:
                 - feastProject
                 type: object
+              clientConfigMap:
+                type: string
               conditions:
                 items:
                   description: "Condition contains details for one aspect of the current
@@ -276,6 +278,7 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - configmaps
   - services
   verbs:
   - create

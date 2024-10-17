@@ -121,7 +121,7 @@ var _ = Describe("FeatureStore Controller", func() {
 				FeatureStore: resource,
 			}
 			deploy := &appsv1.Deployment{}
-			err = k8sClient.Get(ctx, types.NamespacedName{Name: feast.GetName(services.RegistryType), Namespace: resource.Namespace}, deploy)
+			err = k8sClient.Get(ctx, types.NamespacedName{Name: feast.GetFeastServiceName(services.RegistryFeastType), Namespace: resource.Namespace}, deploy)
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(deploy.Spec.Template.Spec.Containers).To(HaveLen(1))
@@ -129,7 +129,7 @@ var _ = Describe("FeatureStore Controller", func() {
 			env := getEnvVar(services.FeatureStoreYamlEnvVar, deploy.Spec.Template.Spec.Containers[0].Env)
 			Expect(env).NotTo(BeNil())
 
-			fsYamlStr, err := feast.GetFeatureStoreYamlBase64()
+			fsYamlStr, err := feast.GetServiceFeatureStoreYamlBase64()
 			Expect(err).NotTo(HaveOccurred())
 			Expect(fsYamlStr).To(Equal(env.Value))
 
@@ -139,9 +139,11 @@ var _ = Describe("FeatureStore Controller", func() {
 			err = yaml.Unmarshal(envByte, repoConfig)
 			Expect(err).NotTo(HaveOccurred())
 			test := &services.RepoConfig{
-				Project:                       feastProject,
-				Provider:                      "local",
-				Registry:                      "data/registry.db",
+				Project:  feastProject,
+				Provider: services.LocalProviderType,
+				Registry: services.RegistryConfig{
+					Path: "tmp/registry.db",
+				},
 				EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
 			}
 			Expect(repoConfig).To(Equal(test))

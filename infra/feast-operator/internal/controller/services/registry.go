@@ -33,7 +33,7 @@ import (
 // DeployRegistry
 func (feast *FeastServices) DeployRegistry() error {
 	logger := log.FromContext(feast.Context)
-	name := feast.GetName(RegistryType)
+	name := feast.GetFeastServiceName(RegistryFeastType)
 
 	op, err := feast.createRegistryDeployment()
 	if err != nil {
@@ -49,12 +49,19 @@ func (feast *FeastServices) DeployRegistry() error {
 		logger.Info("Successfully reconciled", "Service", name, "operation", op)
 	}
 
+	op, err = feast.createClientConfigMap()
+	if err != nil {
+		return err
+	} else if op == controllerutil.OperationResultCreated || op == controllerutil.OperationResultUpdated {
+		logger.Info("Successfully reconciled", "ConfigMap", name, "operation", op)
+	}
+
 	return nil
 }
 
 func (feast *FeastServices) createRegistryDeployment() (controllerutil.OperationResult, error) {
 	deploy := &appsv1.Deployment{
-		ObjectMeta: feast.getObjectMeta(RegistryType),
+		ObjectMeta: feast.getObjectMeta(RegistryFeastType),
 	}
 	deploy.SetGroupVersionKind(appsv1.SchemeGroupVersion.WithKind("Deployment"))
 	if err := controllerruntime.SetControllerReference(feast.FeatureStore, deploy, feast.Scheme); err != nil {
@@ -62,13 +69,13 @@ func (feast *FeastServices) createRegistryDeployment() (controllerutil.Operation
 	}
 
 	return controllerruntime.CreateOrUpdate(feast.Context, feast.Client, deploy, controllerutil.MutateFn(func() error {
-		return feast.setDeployment(deploy, RegistryType)
+		return feast.setDeployment(deploy, RegistryFeastType)
 	}))
 }
 
 func (feast *FeastServices) createRegistryService() (controllerutil.OperationResult, error) {
 	svc := &corev1.Service{
-		ObjectMeta: feast.getObjectMeta(RegistryType),
+		ObjectMeta: feast.getObjectMeta(RegistryFeastType),
 	}
 	svc.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("Service"))
 	if err := controllerruntime.SetControllerReference(feast.FeatureStore, svc, feast.Scheme); err != nil {
@@ -76,13 +83,27 @@ func (feast *FeastServices) createRegistryService() (controllerutil.OperationRes
 	}
 
 	return controllerruntime.CreateOrUpdate(feast.Context, feast.Client, svc, controllerutil.MutateFn(func() error {
-		feast.setService(svc, RegistryType)
+		feast.setService(svc, RegistryFeastType)
 		return nil
 	}))
 }
 
+func (feast *FeastServices) createClientConfigMap() (controllerutil.OperationResult, error) {
+	cm := &corev1.ConfigMap{
+		ObjectMeta: feast.getObjectMeta(ClientFeastType),
+	}
+	cm.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("ConfigMap"))
+	if err := controllerruntime.SetControllerReference(feast.FeatureStore, cm, feast.Scheme); err != nil {
+		return "", err
+	}
+
+	return controllerruntime.CreateOrUpdate(feast.Context, feast.Client, cm, controllerutil.MutateFn(func() error {
+		return feast.setClientConfigMap(cm)
+	}))
+}
+
 func (feast *FeastServices) setDeployment(deploy *appsv1.Deployment, feastType FeastServiceType) error {
-	fsYamlB64, err := feast.GetFeatureStoreYamlBase64()
+	fsYamlB64, err := feast.GetServiceFeatureStoreYamlBase64()
 	if err != nil {
 		return err
 	}
@@ -112,7 +133,7 @@ func (feast *FeastServices) setDeployment(deploy *appsv1.Deployment, feastType F
 			},
 		},
 	}
-	if feastType == RegistryType {
+	if feastType == RegistryFeastType {
 		deploy.Spec.Template.Spec.Containers[0].Command = []string{"feast", "serve_registry"}
 		deploy.Spec.Template.Spec.Containers[0].Ports = []corev1.ContainerPort{
 			{
@@ -146,7 +167,7 @@ func (feast *FeastServices) setService(svc *corev1.Service, feastType FeastServi
 		Selector: svc.GetLabels(),
 		Type:     corev1.ServiceTypeClusterIP,
 	}
-	if feastType == RegistryType {
+	if feastType == RegistryFeastType {
 		svc.Spec.Ports = []corev1.ServicePort{
 			{
 				Name:       "http",
@@ -155,43 +176,80 @@ func (feast *FeastServices) setService(svc *corev1.Service, feastType FeastServi
 				TargetPort: intstr.FromInt(int(RegistryPort)),
 			},
 		}
-		// <service-name>.<namespace>.svc.cluster.local:<service-port>
 		feast.FeatureStore.Status.ServiceUrls.Registry = svc.Name + "." + svc.Namespace + ".svc.cluster.local:80"
 	}
 }
 
+func (feast *FeastServices) setClientConfigMap(cm *corev1.ConfigMap) error {
+	cm.Labels = feast.getLabels(ClientFeastType)
+	clientYaml, err := feast.getClientFeatureStoreYaml()
+	if err != nil {
+		return err
+	}
+	cm.BinaryData = map[string][]byte{"feature_store.yaml": clientYaml}
+	feast.FeatureStore.Status.ClientConfigMap = cm.Name
+	return nil
+}
+
 func (feast *FeastServices) getObjectMeta(feastType FeastServiceType) v1.ObjectMeta {
-	return v1.ObjectMeta{Name: feast.GetName(feastType), Namespace: feast.FeatureStore.Namespace}
+	return v1.ObjectMeta{Name: feast.GetFeastServiceName(feastType), Namespace: feast.FeatureStore.Namespace}
 }
 
 func (feast *FeastServices) getLabels(feastType FeastServiceType) map[string]string {
 	return map[string]string{
-		feastdevv1alpha1.GroupVersion.Group + "/name": feast.GetName(feastType),
+		feastdevv1alpha1.GroupVersion.Group + "/name": feast.getFeastName(),
+		feastdevv1alpha1.GroupVersion.Group + "/name": feast.GetFeastServiceName(feastType),
 	}
 }
 
-func (feast *FeastServices) GetName(feastType FeastServiceType) string {
-	return FeastPrefix + feast.FeatureStore.Name + "-" + string(feastType)
+func (feast *FeastServices) getFeastName() string {
+	return FeastPrefix + feast.FeatureStore.Name
 }
 
-func (feast *FeastServices) GetFeatureStoreYamlBase64() (string, error) {
-	fsYaml, err := feast.getFeatureStoreYaml()
+func (feast *FeastServices) GetFeastServiceName(feastType FeastServiceType) string {
+	return feast.getFeastName() + "-" + string(feastType)
+}
+
+func (feast *FeastServices) GetServiceFeatureStoreYamlBase64() (string, error) {
+	fsYaml, err := feast.getServiceFeatureStoreYaml()
 	if err != nil {
 		return "", err
 	}
 	return base64.StdEncoding.EncodeToString(fsYaml), nil
 }
 
-func (feast *FeastServices) getFeatureStoreYaml() ([]byte, error) {
-	return yaml.Marshal(feast.getRepoConfig())
+func (feast *FeastServices) getServiceFeatureStoreYaml() ([]byte, error) {
+	return yaml.Marshal(feast.getServiceRepoConfig())
 }
 
-func (feast *FeastServices) getRepoConfig() RepoConfig {
+func (feast *FeastServices) getServiceRepoConfig() RepoConfig {
 	appliedSpec := feast.FeatureStore.Status.Applied
 	return RepoConfig{
-		Project:                       appliedSpec.FeastProject,
-		Provider:                      "local",
-		Registry:                      "data/registry.db",
+		Project:  appliedSpec.FeastProject,
+		Provider: LocalProviderType,
+		Registry: RegistryConfig{
+			Path: "tmp/registry.db",
+		},
 		EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
 	}
+}
+
+func (feast *FeastServices) getClientFeatureStoreYaml() ([]byte, error) {
+	return yaml.Marshal(feast.getClientRepoConfig())
+}
+
+func (feast *FeastServices) getClientRepoConfig() RepoConfig {
+	status := feast.FeatureStore.Status
+	clientRepoConfig := RepoConfig{
+		Project:                       status.Applied.FeastProject,
+		Provider:                      LocalProviderType,
+		EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
+	}
+	if len(status.ServiceUrls.Registry) > 0 {
+		clientRepoConfig.Registry = RegistryConfig{
+			RegistryType: RegistryRemoteConfigType,
+			Path:         status.ServiceUrls.Registry,
+		}
+	}
+	return clientRepoConfig
 }

@@ -26,13 +26,24 @@ import (
 
 const (
 	FeastPrefix                             = "feast-"
-	RegistryPort                            = int32(6570)
-	RegistryType           FeastServiceType = "registry"
 	FeatureStoreYamlEnvVar                  = "FEATURE_STORE_YAML_BASE64"
+	RegistryPort                            = int32(6570)
+	RegistryFeastType      FeastServiceType = "registry"
+	ClientFeastType        FeastServiceType = "client"
+
+	RegistryRemoteConfigType RegistryConfigType = "remote"
+
+	LocalProviderType FeastProviderType = "local"
 )
 
 // FeastServiceType
 type FeastServiceType string
+
+// RegistryConfigType
+type RegistryConfigType string
+
+// FeastProviderType
+type FeastProviderType string
 
 // FeastServices
 type FeastServices struct {
@@ -45,8 +56,15 @@ type FeastServices struct {
 // RepoConfig
 // https://rtd.feast.dev/en/stable/#feast.repo_config.RepoConfig
 type RepoConfig struct {
-	Project                       string `yaml:"project,omitempty"`
-	Provider                      string `yaml:"provider,omitempty"`
-	Registry                      string `yaml:"registry,omitempty"`
-	EntityKeySerializationVersion int    `yaml:"entity_key_serialization_version,omitempty"`
+	Project                       string            `yaml:"project,omitempty"`
+	Provider                      FeastProviderType `yaml:"provider,omitempty"`
+	Registry                      RegistryConfig    `yaml:"registry,omitempty"`
+	EntityKeySerializationVersion int               `yaml:"entity_key_serialization_version,omitempty"`
+}
+
+// RegistryConfig
+// https://rtd.feast.dev/en/stable/#feast.repo_config.RepoConfig
+type RegistryConfig struct {
+	Path         string             `yaml:"path,omitempty"`
+	RegistryType RegistryConfigType `yaml:"registry_type,omitempty"`
 }
