@@ -32,6 +32,7 @@ const (
 	ClientFeastType        FeastServiceType = "client"
 
 	RegistryRemoteConfigType RegistryConfigType = "remote"
+	RegistryFileConfigType   RegistryConfigType = "file"
 
 	LocalProviderType FeastProviderType = "local"
 )

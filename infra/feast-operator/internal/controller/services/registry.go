@@ -32,74 +32,74 @@ import (
 
 // DeployRegistry
 func (feast *FeastServices) DeployRegistry() error {
-	logger := log.FromContext(feast.Context)
-	name := feast.GetFeastServiceName(RegistryFeastType)
-
-	op, err := feast.createRegistryDeployment()
-	if err != nil {
+	if err := feast.createRegistryDeployment(); err != nil {
 		return err
-	} else if op == controllerutil.OperationResultCreated || op == controllerutil.OperationResultUpdated {
-		logger.Info("Successfully reconciled", "Deployment", name, "operation", op)
 	}
-
-	op, err = feast.createRegistryService()
-	if err != nil {
+	if err := feast.createRegistryService(); err != nil {
 		return err
-	} else if op == controllerutil.OperationResultCreated || op == controllerutil.OperationResultUpdated {
-		logger.Info("Successfully reconciled", "Service", name, "operation", op)
 	}
-
-	op, err = feast.createClientConfigMap()
-	if err != nil {
+	if err := feast.createClientConfigMap(); err != nil {
 		return err
-	} else if op == controllerutil.OperationResultCreated || op == controllerutil.OperationResultUpdated {
-		logger.Info("Successfully reconciled", "ConfigMap", name, "operation", op)
 	}
-
 	return nil
 }
 
-func (feast *FeastServices) createRegistryDeployment() (controllerutil.OperationResult, error) {
+func (feast *FeastServices) createRegistryDeployment() error {
+	logger := log.FromContext(feast.Context)
 	deploy := &appsv1.Deployment{
 		ObjectMeta: feast.getObjectMeta(RegistryFeastType),
 	}
 	deploy.SetGroupVersionKind(appsv1.SchemeGroupVersion.WithKind("Deployment"))
 	if err := controllerruntime.SetControllerReference(feast.FeatureStore, deploy, feast.Scheme); err != nil {
-		return "", err
+		return err
 	}
-
-	return controllerruntime.CreateOrUpdate(feast.Context, feast.Client, deploy, controllerutil.MutateFn(func() error {
+	if op, err := controllerruntime.CreateOrUpdate(feast.Context, feast.Client, deploy, controllerutil.MutateFn(func() error {
 		return feast.setDeployment(deploy, RegistryFeastType)
-	}))
+	})); err != nil {
+		return err
+	} else if op == controllerutil.OperationResultCreated || op == controllerutil.OperationResultUpdated {
+		logger.Info("Successfully reconciled", "Deployment", deploy.Name, "operation", op)
+	}
+	return nil
 }
 
-func (feast *FeastServices) createRegistryService() (controllerutil.OperationResult, error) {
+func (feast *FeastServices) createRegistryService() error {
+	logger := log.FromContext(feast.Context)
 	svc := &corev1.Service{
 		ObjectMeta: feast.getObjectMeta(RegistryFeastType),
 	}
 	svc.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("Service"))
 	if err := controllerruntime.SetControllerReference(feast.FeatureStore, svc, feast.Scheme); err != nil {
-		return "", err
+		return err
 	}
-
-	return controllerruntime.CreateOrUpdate(feast.Context, feast.Client, svc, controllerutil.MutateFn(func() error {
+	if op, err := controllerruntime.CreateOrUpdate(feast.Context, feast.Client, svc, controllerutil.MutateFn(func() error {
 		feast.setService(svc, RegistryFeastType)
 		return nil
-	}))
+	})); err != nil {
+		return err
+	} else if op == controllerutil.OperationResultCreated || op == controllerutil.OperationResultUpdated {
+		logger.Info("Successfully reconciled", "Service", svc.Name, "operation", op)
+	}
+	return nil
 }
 
-func (feast *FeastServices) createClientConfigMap() (controllerutil.OperationResult, error) {
+func (feast *FeastServices) createClientConfigMap() error {
+	logger := log.FromContext(feast.Context)
 	cm := &corev1.ConfigMap{
 		ObjectMeta: feast.getObjectMeta(ClientFeastType),
 	}
 	cm.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("ConfigMap"))
 	if err := controllerruntime.SetControllerReference(feast.FeatureStore, cm, feast.Scheme); err != nil {
-		return "", err
+		return err
 	}
-
-	return controllerruntime.CreateOrUpdate(feast.Context, feast.Client, cm, controllerutil.MutateFn(func() error {
+	if op, err := controllerruntime.CreateOrUpdate(feast.Context, feast.Client, cm, controllerutil.MutateFn(func() error {
 		return feast.setClientConfigMap(cm)
-	}))
+	})); err != nil {
+		return err
+	} else if op == controllerutil.OperationResultCreated || op == controllerutil.OperationResultUpdated {
+		logger.Info("Successfully reconciled", "ConfigMap", cm.Name, "operation", op)
+	}
+	return nil
 }
 
 func (feast *FeastServices) setDeployment(deploy *appsv1.Deployment, feastType FeastServiceType) error {
@@ -228,7 +228,8 @@ func (feast *FeastServices) getServiceRepoConfig() RepoConfig {
 		Project:  appliedSpec.FeastProject,
 		Provider: LocalProviderType,
 		Registry: RegistryConfig{
-			Path: "tmp/registry.db",
+			RegistryType: RegistryFileConfigType,
+			Path:         "tmp/registry.db",
 		},
 		EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
 	}
@@ -242,7 +243,6 @@ func (feast *FeastServices) getClientRepoConfig() RepoConfig {
 	status := feast.FeatureStore.Status
 	clientRepoConfig := RepoConfig{
 		Project:                       status.Applied.FeastProject,
-		Provider:                      LocalProviderType,
 		EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
 	}
 	if len(status.ServiceUrls.Registry) > 0 {

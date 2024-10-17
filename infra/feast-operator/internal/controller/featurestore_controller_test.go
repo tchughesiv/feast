@@ -142,7 +142,8 @@ var _ = Describe("FeatureStore Controller", func() {
 				Project:  feastProject,
 				Provider: services.LocalProviderType,
 				Registry: services.RegistryConfig{
-					Path: "tmp/registry.db",
+					RegistryType: services.RegistryFileConfigType,
+					Path:         "tmp/registry.db",
 				},
 				EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
 			}
