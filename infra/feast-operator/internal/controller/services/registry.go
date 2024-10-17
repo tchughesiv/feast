@@ -197,8 +197,8 @@ func (feast *FeastServices) getObjectMeta(feastType FeastServiceType) v1.ObjectM
 
 func (feast *FeastServices) getLabels(feastType FeastServiceType) map[string]string {
 	return map[string]string{
-		feastdevv1alpha1.GroupVersion.Group + "/name":    feast.getFeastName(),
-		feastdevv1alpha1.GroupVersion.Group + "/service": feast.GetFeastServiceName(feastType),
+		feastdevv1alpha1.GroupVersion.Group + "/name":         feast.getFeastName(),
+		feastdevv1alpha1.GroupVersion.Group + "/service-type": string(feastType),
 	}
 }
 
