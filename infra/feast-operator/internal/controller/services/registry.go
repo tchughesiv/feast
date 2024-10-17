@@ -33,7 +33,7 @@ import (
 // DeployRegistry
 func (feast *FeastServices) DeployRegistry() error {
 	logger := log.FromContext(feast.Context)
-	name := feast.getName(RegistryType)
+	name := feast.GetName(RegistryType)
 
 	op, err := feast.createRegistryDeployment()
 	if err != nil {
@@ -98,7 +98,7 @@ func (feast *FeastServices) setDeployment(deploy *appsv1.Deployment, feastType F
 			Spec: corev1.PodSpec{
 				Containers: []corev1.Container{
 					{
-						Name:            feast.getName(feastType),
+						Name:            string(feastType) + "-server",
 						Image:           "feastdev/feature-server:" + feast.FeatureStore.Status.FeastVersion,
 						ImagePullPolicy: corev1.PullIfNotPresent,
 						Env: []corev1.EnvVar{
@@ -159,16 +159,16 @@ func (feast *FeastServices) setService(svc *corev1.Service, feastType FeastServi
 }
 
 func (feast *FeastServices) getObjectMeta(feastType FeastServiceType) v1.ObjectMeta {
-	return v1.ObjectMeta{Name: feast.getName(feastType), Namespace: feast.FeatureStore.Namespace}
+	return v1.ObjectMeta{Name: feast.GetName(feastType), Namespace: feast.FeatureStore.Namespace}
 }
 
 func (feast *FeastServices) getLabels(feastType FeastServiceType) map[string]string {
 	return map[string]string{
-		feastdevv1alpha1.GroupVersion.Group + "/name": feast.getName(feastType),
+		feastdevv1alpha1.GroupVersion.Group + "/name": feast.GetName(feastType),
 	}
 }
 
-func (feast *FeastServices) getName(feastType FeastServiceType) string {
+func (feast *FeastServices) GetName(feastType FeastServiceType) string {
 	return FeastPrefix + feast.FeatureStore.Name + "-" + string(feastType)
 }
 

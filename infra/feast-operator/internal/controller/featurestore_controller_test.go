@@ -21,6 +21,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -28,7 +29,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	feastdevv1alpha1 "github.com/feast-dev/feast/infra/feast-operator/api/v1alpha1"
+	"github.com/feast-dev/feast/infra/feast-operator/internal/controller/services"
 )
+
+const feastProject = "my_project"
 
 var _ = Describe("FeatureStore Controller", func() {
 	Context("When reconciling a resource", func() {
@@ -38,7 +42,7 @@ var _ = Describe("FeatureStore Controller", func() {
 
 		typeNamespacedName := types.NamespacedName{
 			Name:      resourceName,
-			Namespace: "default", // TODO(user):Modify as needed
+			Namespace: "default",
 		}
 		featurestore := &feastdevv1alpha1.FeatureStore{}
 
@@ -51,7 +55,7 @@ var _ = Describe("FeatureStore Controller", func() {
 						Name:      resourceName,
 						Namespace: "default",
 					},
-					Spec: feastdevv1alpha1.FeatureStoreSpec{FeastProject: "my_project"},
+					Spec: feastdevv1alpha1.FeatureStoreSpec{FeastProject: feastProject},
 				}
 				Expect(k8sClient.Create(ctx, resource)).To(Succeed())
 			}
@@ -90,6 +94,45 @@ var _ = Describe("FeatureStore Controller", func() {
 			Expect(cond.Reason).To(Equal(feastdevv1alpha1.ReadyReason))
 			Expect(cond.Type).To(Equal(feastdevv1alpha1.ReadyType))
 			Expect(cond.Message).To(Equal(feastdevv1alpha1.ReadyMessage))
+		})
+
+		It("should properly encode a feature_store.yaml config", func() {
+			By("Reconciling the created resource")
+			controllerReconciler := &FeatureStoreReconciler{
+				Client: k8sClient,
+				Scheme: k8sClient.Scheme(),
+			}
+
+			_, err := controllerReconciler.Reconcile(ctx, reconcile.Request{
+				NamespacedName: typeNamespacedName,
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			resource := &feastdevv1alpha1.FeatureStore{}
+			err = k8sClient.Get(ctx, typeNamespacedName, resource)
+			Expect(err).NotTo(HaveOccurred())
+
+			feast := services.FeastServices{
+				Client:       controllerReconciler.Client,
+				Context:      ctx,
+				Scheme:       controllerReconciler.Scheme,
+				FeatureStore: resource,
+			}
+			deploy := &appsv1.Deployment{}
+			err = k8sClient.Get(ctx, types.NamespacedName{Name: feast.GetName(services.RegistryType), Namespace: resource.Namespace}, deploy)
+			Expect(err).NotTo(HaveOccurred())
+
+			/*
+				test := &services.RepoConfig{
+					Project:                       feastProject,
+					Provider:                      "local",
+					Registry:                      "data/registry.db",
+					EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
+				}
+			*/
+
+			Expect(deploy.Spec.Template.Spec.Containers).To(HaveLen(1))
+			Expect(deploy.Spec.Template.Spec.Containers[0].Env).To(HaveLen(1))
 		})
 	})
 })

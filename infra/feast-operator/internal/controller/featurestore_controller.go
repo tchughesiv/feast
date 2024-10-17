@@ -117,7 +117,7 @@ func (r *FeatureStoreReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			Status:  metav1.ConditionFalse,
 			Message: recErr.Error(),
 		}
-		logger.Error(err, "Error deploying the FeatureStore "+string(services.RegistryType)+" server", cr.Name, cr.Namespace)
+		logger.Error(recErr, "Error deploying the FeatureStore "+string(services.RegistryType)+" server", cr.Name, cr.Namespace)
 	} else {
 		logger.Info(condition.Message)
 	}
