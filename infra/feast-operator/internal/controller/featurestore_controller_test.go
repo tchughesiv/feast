@@ -135,18 +135,18 @@ var _ = Describe("FeatureStore Controller", func() {
 
 			envByte, err := base64.StdEncoding.DecodeString(env.Value)
 			Expect(err).NotTo(HaveOccurred())
-			repoConfig := &services.RepoConfig{}
-			err = yaml.Unmarshal(envByte, repoConfig)
+			serviceRepoConfig := &services.ServiceRepoConfig{}
+			err = yaml.Unmarshal(envByte, serviceRepoConfig)
 			Expect(err).NotTo(HaveOccurred())
-			test := &services.RepoConfig{
-				Project:  feastProject,
-				Provider: services.LocalProviderType,
-				Registry: services.RegistryConfig{
-					Path: "tmp/registry.db",
+			testConfig := &services.ServiceRepoConfig{
+				RepoConfig: services.RepoConfig{
+					Project:                       feastProject,
+					Provider:                      services.LocalProviderType,
+					EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
 				},
-				EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
+				Registry: "tmp/registry.db",
 			}
-			Expect(repoConfig).To(Equal(test))
+			Expect(serviceRepoConfig).To(Equal(testConfig))
 		})
 	})
 })

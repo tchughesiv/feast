@@ -222,15 +222,15 @@ func (feast *FeastServices) getServiceFeatureStoreYaml() ([]byte, error) {
 	return yaml.Marshal(feast.getServiceRepoConfig())
 }
 
-func (feast *FeastServices) getServiceRepoConfig() RepoConfig {
+func (feast *FeastServices) getServiceRepoConfig() ServiceRepoConfig {
 	appliedSpec := feast.FeatureStore.Status.Applied
-	return RepoConfig{
-		Project:  appliedSpec.FeastProject,
-		Provider: LocalProviderType,
-		Registry: RegistryConfig{
-			Path: "tmp/registry.db",
+	return ServiceRepoConfig{
+		RepoConfig: RepoConfig{
+			Project:                       appliedSpec.FeastProject,
+			Provider:                      LocalProviderType,
+			EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
 		},
-		EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
+		Registry: "tmp/registry.db",
 	}
 }
 
@@ -238,11 +238,13 @@ func (feast *FeastServices) getClientFeatureStoreYaml() ([]byte, error) {
 	return yaml.Marshal(feast.getClientRepoConfig())
 }
 
-func (feast *FeastServices) getClientRepoConfig() RepoConfig {
+func (feast *FeastServices) getClientRepoConfig() ClientRepoConfig {
 	status := feast.FeatureStore.Status
-	clientRepoConfig := RepoConfig{
-		Project:                       status.Applied.FeastProject,
-		EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
+	clientRepoConfig := ClientRepoConfig{
+		RepoConfig: RepoConfig{
+			Project:                       status.Applied.FeastProject,
+			EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
+		},
 	}
 	if len(status.ServiceUrls.Registry) > 0 {
 		clientRepoConfig.Registry = RegistryConfig{
