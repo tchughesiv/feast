@@ -53,8 +53,8 @@ type FeastServices struct {
 	FeatureStore *feastdevv1alpha1.FeatureStore
 }
 
-// ServiceRepoConfig
-type ServiceRepoConfig struct {
+// LocalRepoConfig
+type LocalRepoConfig struct {
 	RepoConfig
 	Registry string `yaml:"registry,omitempty"`
 }

@@ -222,9 +222,9 @@ func (feast *FeastServices) getServiceFeatureStoreYaml() ([]byte, error) {
 	return yaml.Marshal(feast.getServiceRepoConfig())
 }
 
-func (feast *FeastServices) getServiceRepoConfig() ServiceRepoConfig {
+func (feast *FeastServices) getServiceRepoConfig() LocalRepoConfig {
 	appliedSpec := feast.FeatureStore.Status.Applied
-	return ServiceRepoConfig{
+	return LocalRepoConfig{
 		RepoConfig: RepoConfig{
 			Project:                       appliedSpec.FeastProject,
 			Provider:                      LocalProviderType,
