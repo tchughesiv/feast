@@ -225,7 +225,8 @@ func (feast *FeastServices) getServiceFeatureStoreYaml() ([]byte, error) {
 func (feast *FeastServices) getServiceRepoConfig() RepoConfig {
 	appliedSpec := feast.FeatureStore.Status.Applied
 	return RepoConfig{
-		Project: appliedSpec.FeastProject,
+		Project:  appliedSpec.FeastProject,
+		Provider: LocalProviderType,
 		Registry: RegistryConfig{
 			Path: "tmp/registry.db",
 		},

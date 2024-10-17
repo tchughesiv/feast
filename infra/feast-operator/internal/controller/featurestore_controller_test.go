@@ -139,7 +139,8 @@ var _ = Describe("FeatureStore Controller", func() {
 			err = yaml.Unmarshal(envByte, repoConfig)
 			Expect(err).NotTo(HaveOccurred())
 			test := &services.RepoConfig{
-				Project: feastProject,
+				Project:  feastProject,
+				Provider: services.LocalProviderType,
 				Registry: services.RegistryConfig{
 					Path: "tmp/registry.db",
 				},
