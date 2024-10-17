@@ -135,10 +135,10 @@ var _ = Describe("FeatureStore Controller", func() {
 
 			envByte, err := base64.StdEncoding.DecodeString(env.Value)
 			Expect(err).NotTo(HaveOccurred())
-			serviceRepoConfig := &services.LocalRepoConfig{}
+			serviceRepoConfig := &services.ServiceRepoConfig{}
 			err = yaml.Unmarshal(envByte, serviceRepoConfig)
 			Expect(err).NotTo(HaveOccurred())
-			testConfig := &services.LocalRepoConfig{
+			testConfig := &services.ServiceRepoConfig{
 				RepoConfig: services.RepoConfig{
 					Project:                       feastProject,
 					Provider:                      services.LocalProviderType,
