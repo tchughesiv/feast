@@ -155,6 +155,8 @@ func (feast *FeastServices) setService(svc *corev1.Service, feastType FeastServi
 				TargetPort: intstr.FromInt(int(RegistryPort)),
 			},
 		}
+		// <service-name>.<namespace>.svc.cluster.local:<service-port>
+		feast.FeatureStore.Status.ServiceUrls.Registry = svc.Name + "." + svc.Namespace + ".svc.cluster.local:80"
 	}
 }
 

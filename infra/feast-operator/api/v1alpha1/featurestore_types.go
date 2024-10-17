@@ -49,6 +49,12 @@ type FeatureStoreStatus struct {
 	Applied      FeatureStoreSpec   `json:"applied,omitempty"`
 	Conditions   []metav1.Condition `json:"conditions,omitempty"`
 	FeastVersion string             `json:"feastVersion,omitempty"`
+	ServiceUrls  ServiceUrls        `json:"serviceUrls,omitempty"`
+}
+
+// ServiceUrls
+type ServiceUrls struct {
+	Registry string `json:"registry,omitempty"`
 }
 
 //+kubebuilder:object:root=true
