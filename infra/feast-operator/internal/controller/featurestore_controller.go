@@ -144,6 +144,34 @@ func (r *FeatureStoreReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 func applyDefaultsToStatus(cr *feastdevv1alpha1.FeatureStore) {
-	cr.Status.Applied.FeastProject = cr.Spec.FeastProject
 	cr.Status.FeastVersion = feastversion.FeastVersion
+
+	applied := cr.Spec.DeepCopy()
+	if applied.Services == nil {
+		applied.Services = &feastdevv1alpha1.FeatureStoreServices{}
+	}
+
+	// default to registry service deployment
+	if applied.Services.Registry == nil {
+		applied.Services.Registry = &feastdevv1alpha1.RegistryService{}
+	}
+	setServiceConfigDefaults(&applied.Services.Registry.ServiceConfig)
+	if applied.Services.Offline != nil {
+		setServiceConfigDefaults(&applied.Services.Offline.ServiceConfig)
+	}
+	if applied.Services.Online != nil {
+		setServiceConfigDefaults(&applied.Services.Online.ServiceConfig)
+	}
+
+	// overwrite status.applied with every reconcile
+	applied.DeepCopyInto(&cr.Status.Applied)
+}
+
+func setServiceConfigDefaults(serviceConfig *feastdevv1alpha1.ServiceConfig) {
+	if serviceConfig == nil {
+		serviceConfig = &feastdevv1alpha1.ServiceConfig{}
+	}
+	if serviceConfig.Image == nil {
+		serviceConfig.Image = &services.DefaultImage
+	}
 }

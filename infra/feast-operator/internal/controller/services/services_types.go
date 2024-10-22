@@ -19,6 +19,7 @@ package services
 import (
 	"context"
 
+	"github.com/feast-dev/feast/infra/feast-operator/api/feastversion"
 	feastdevv1alpha1 "github.com/feast-dev/feast/infra/feast-operator/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -27,11 +28,19 @@ import (
 const (
 	FeastPrefix            = "feast-"
 	FeatureStoreYamlEnvVar = "FEATURE_STORE_YAML_BASE64"
-	RegistryPort           = int32(6570)
 	LocalRegistryPath      = "/tmp/registry.db"
+	svcDomain              = ".svc.cluster.local"
+	HttpPort               = 80
 
+	OfflineFeastType  FeastServiceType = "offline"
+	OnlineFeastType   FeastServiceType = "online"
 	RegistryFeastType FeastServiceType = "registry"
 	ClientFeastType   FeastServiceType = "client"
+
+	OfflineRemoteConfigType OfflineConfigType = "remote"
+	OfflineDaskConfigType   OfflineConfigType = "dask"
+
+	OnlineRemoteConfigType OnlineConfigType = "remote"
 
 	RegistryRemoteConfigType RegistryConfigType = "remote"
 	RegistryFileConfigType   RegistryConfigType = "file"
@@ -39,11 +48,36 @@ const (
 	LocalProviderType FeastProviderType = "local"
 )
 
+var (
+	DefaultImage          = "feastdev/feature-server:" + feastversion.FeastVersion
+	DefaultReplicas       = int32(1)
+	FeastServiceConstants = map[FeastServiceType]DeploymentSettings{
+		OfflineFeastType: {
+			Command:    []string{"feast", "serve_offline", "-h", "0.0.0.0"},
+			TargetPort: 8815,
+		},
+		OnlineFeastType: {
+			Command:    []string{"feast", "serve", "-h", "0.0.0.0"},
+			TargetPort: 6566,
+		},
+		RegistryFeastType: {
+			Command:    []string{"feast", "serve_registry"},
+			TargetPort: 6570,
+		},
+	}
+)
+
 // FeastServiceType is the type of feast service
 type FeastServiceType string
 
+// OfflineConfigType provider name or a class name that implements Offline Store
+type OfflineConfigType string
+
 // RegistryConfigType provider name or a class name that implements Registry
 type RegistryConfigType string
+
+// OnlineConfigType provider name or a class name that implements Online Store
+type OnlineConfigType string
 
 // FeastProviderType defines an implementation of a feature store object
 type FeastProviderType string
@@ -59,14 +93,34 @@ type FeastServices struct {
 // RepoConfig is the Repo config. Typically loaded from feature_store.yaml.
 // https://rtd.feast.dev/en/stable/#feast.repo_config.RepoConfig
 type RepoConfig struct {
-	Project                       string            `yaml:"project,omitempty"`
-	Provider                      FeastProviderType `yaml:"provider,omitempty"`
-	Registry                      RegistryConfig    `yaml:"registry,omitempty"`
-	EntityKeySerializationVersion int               `yaml:"entity_key_serialization_version,omitempty"`
+	Project                       string             `yaml:"project,omitempty"`
+	Provider                      FeastProviderType  `yaml:"provider,omitempty"`
+	OfflineStore                  OfflineStoreConfig `yaml:"offline_store,omitempty"`
+	OnlineStore                   OnlineStoreConfig  `yaml:"online_store,omitempty"`
+	Registry                      RegistryConfig     `yaml:"registry,omitempty"`
+	EntityKeySerializationVersion int                `yaml:"entity_key_serialization_version,omitempty"`
+}
+
+// OfflineStoreConfig is the configuration that relates to reading from and writing to the Feast offline store.
+type OfflineStoreConfig struct {
+	Host string            `yaml:"host,omitempty"`
+	Type OfflineConfigType `yaml:"type,omitempty"`
+	Port int32             `yaml:"port,omitempty"`
+}
+
+// OnlineStoreConfig is the configuration that relates to reading from and writing to the Feast online store.
+type OnlineStoreConfig struct {
+	Path string           `yaml:"path,omitempty"`
+	Type OnlineConfigType `yaml:"type,omitempty"`
 }
 
 // RegistryConfig is the configuration that relates to reading from and writing to the Feast registry.
 type RegistryConfig struct {
 	Path         string             `yaml:"path,omitempty"`
 	RegistryType RegistryConfigType `yaml:"registry_type,omitempty"`
+}
+
+type DeploymentSettings struct {
+	Command    []string
+	TargetPort int32
 }

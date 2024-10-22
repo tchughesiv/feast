@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -27,9 +28,11 @@ const (
 	FailedPhase  = "Failed"
 
 	// Feast condition types:
-	ClientReadyType   = "Client"
-	RegistryReadyType = "Registry"
-	ReadyType         = "FeatureStore"
+	ClientReadyType       = "Client"
+	OfflineStoreReadyType = "OfflineStore"
+	OnlineStoreReadyType  = "OnlineStore"
+	RegistryReadyType     = "Registry"
+	ReadyType             = "FeatureStore"
 
 	// Feast condition reasons:
 	ReadyReason          = "Ready"
@@ -50,7 +53,37 @@ const (
 type FeatureStoreSpec struct {
 	// +kubebuilder:validation:Pattern="^[A-Za-z0-9][A-Za-z0-9_]*$"
 	// FeastProject is the Feast project id. This can be any alphanumeric string with underscores, but it cannot start with an underscore. Required.
-	FeastProject string `json:"feastProject"`
+	FeastProject string                `json:"feastProject"`
+	Services     *FeatureStoreServices `json:"services,omitempty"`
+}
+
+// FeatureStoreServices
+type FeatureStoreServices struct {
+	Offline  *OfflineService  `json:"offline,omitempty"`
+	Online   *OnlineService   `json:"online,omitempty"`
+	Registry *RegistryService `json:"registry,omitempty"`
+}
+
+// OfflineService
+type OfflineService struct {
+	ServiceConfig `json:",inline"`
+}
+
+// OnlineService
+type OnlineService struct {
+	ServiceConfig `json:",inline"`
+}
+
+// RegistryService
+type RegistryService struct {
+	ServiceConfig `json:",inline"`
+}
+
+// ServiceConfig
+type ServiceConfig struct {
+	Image           *string                      `json:"image,omitempty"`
+	ImagePullPolicy *corev1.PullPolicy           `json:"imagePullPolicy,omitempty"`
+	Resources       *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // FeatureStoreStatus defines the observed state of FeatureStore
@@ -65,6 +98,8 @@ type FeatureStoreStatus struct {
 
 // ServiceUrls
 type ServiceUrls struct {
+	Offline  string `json:"offline,omitempty"`
+	Online   string `json:"online,omitempty"`
 	Registry string `json:"registry,omitempty"`
 }
 

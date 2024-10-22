@@ -18,6 +18,8 @@ package services
 
 import (
 	"encoding/base64"
+	"strconv"
+	"strings"
 
 	feastdevv1alpha1 "github.com/feast-dev/feast/infra/feast-operator/api/v1alpha1"
 	"gopkg.in/yaml.v3"
@@ -33,28 +35,39 @@ import (
 // Deploy the feast services
 func (feast *FeastServices) Deploy() error {
 	logger := log.FromContext(feast.Context)
-	cr := feast.FeatureStore
+	status := &feast.FeatureStore.Status
+	appledSpec := status.Applied
 
-	if err := feast.deployRegistry(); err != nil {
-		apimeta.SetStatusCondition(&cr.Status.Conditions, metav1.Condition{
-			Type:    feastdevv1alpha1.RegistryReadyType,
-			Status:  metav1.ConditionFalse,
-			Reason:  feastdevv1alpha1.RegistryFailedReason,
-			Message: "Error: " + err.Error(),
-		})
-		logger.Error(err, "Error deploying the FeatureStore "+string(RegistryFeastType)+" service")
-		return err
-	} else {
-		apimeta.SetStatusCondition(&cr.Status.Conditions, metav1.Condition{
-			Type:    feastdevv1alpha1.RegistryReadyType,
-			Status:  metav1.ConditionTrue,
-			Reason:  feastdevv1alpha1.ReadyReason,
-			Message: feastdevv1alpha1.RegistryReadyMessage,
-		})
+	if appledSpec.Services != nil {
+		if appledSpec.Services.Registry != nil {
+			if err := feast.deployRegistry(); err != nil {
+				apimeta.SetStatusCondition(&status.Conditions, metav1.Condition{
+					Type:    feastdevv1alpha1.RegistryReadyType,
+					Status:  metav1.ConditionFalse,
+					Reason:  feastdevv1alpha1.RegistryFailedReason,
+					Message: "Error: " + err.Error(),
+				})
+				logger.Error(err, "Error deploying the FeatureStore "+string(RegistryFeastType)+" service")
+				return err
+			} else {
+				apimeta.SetStatusCondition(&status.Conditions, metav1.Condition{
+					Type:    feastdevv1alpha1.RegistryReadyType,
+					Status:  metav1.ConditionTrue,
+					Reason:  feastdevv1alpha1.ReadyReason,
+					Message: feastdevv1alpha1.RegistryReadyMessage,
+				})
+			}
+		} // else {
+		// if apimeta.RemoveStatusCondition(&status.Conditions, feastdevv1alpha1.RegistryReadyType) {
+		// if owned service objects exist, delete them ???
+		// }
+
+		// since registry service is required, not needed for this service? but for the others def. needed
+		// }
 	}
 
 	if err := feast.deployClient(); err != nil {
-		apimeta.SetStatusCondition(&cr.Status.Conditions, metav1.Condition{
+		apimeta.SetStatusCondition(&status.Conditions, metav1.Condition{
 			Type:    feastdevv1alpha1.ClientReadyType,
 			Status:  metav1.ConditionFalse,
 			Reason:  feastdevv1alpha1.ClientFailedReason,
@@ -63,7 +76,7 @@ func (feast *FeastServices) Deploy() error {
 		logger.Error(err, "Error deploying the FeatureStore "+string(ClientFeastType)+" service")
 		return err
 	} else {
-		apimeta.SetStatusCondition(&cr.Status.Conditions, metav1.Condition{
+		apimeta.SetStatusCondition(&status.Conditions, metav1.Condition{
 			Type:    feastdevv1alpha1.ClientReadyType,
 			Status:  metav1.ConditionTrue,
 			Reason:  feastdevv1alpha1.ReadyReason,
@@ -89,6 +102,7 @@ func (feast *FeastServices) createRegistryDeployment() error {
 		ObjectMeta: feast.GetObjectMeta(RegistryFeastType),
 	}
 	deploy.SetGroupVersionKind(appsv1.SchemeGroupVersion.WithKind("Deployment"))
+
 	if op, err := controllerutil.CreateOrUpdate(feast.Context, feast.Client, deploy, controllerutil.MutateFn(func() error {
 		return feast.setDeployment(deploy, RegistryFeastType)
 	})); err != nil {
@@ -121,10 +135,18 @@ func (feast *FeastServices) setDeployment(deploy *appsv1.Deployment, feastType F
 	if err != nil {
 		return err
 	}
-	replicas := int32(1)
 	deploy.Labels = feast.getLabels(feastType)
+	deploySettings := FeastServiceConstants[feastType]
+	serviceConfig := feast.getServiceConfig(feastType)
+
+	// required configs are applied here
+	probeHandler := corev1.ProbeHandler{
+		TCPSocket: &corev1.TCPSocketAction{
+			Port: intstr.FromInt(int(deploySettings.TargetPort)),
+		},
+	}
 	deploy.Spec = appsv1.DeploymentSpec{
-		Replicas: &replicas,
+		Replicas: &DefaultReplicas,
 		Selector: metav1.SetAsLabelSelector(deploy.GetLabels()),
 		Template: corev1.PodTemplateSpec{
 			ObjectMeta: metav1.ObjectMeta{
@@ -133,68 +155,94 @@ func (feast *FeastServices) setDeployment(deploy *appsv1.Deployment, feastType F
 			Spec: corev1.PodSpec{
 				Containers: []corev1.Container{
 					{
-						Name:            string(feastType),
-						Image:           "feastdev/feature-server:" + feast.FeatureStore.Status.FeastVersion,
-						ImagePullPolicy: corev1.PullIfNotPresent,
+						Name:    string(feastType),
+						Image:   *serviceConfig.Image,
+						Command: deploySettings.Command,
+						Ports: []corev1.ContainerPort{
+							{
+								Name:          string(feastType),
+								ContainerPort: deploySettings.TargetPort,
+								Protocol:      corev1.ProtocolTCP,
+							},
+						},
 						Env: []corev1.EnvVar{
 							{
 								Name:  FeatureStoreYamlEnvVar,
 								Value: fsYamlB64,
 							},
 						},
+						LivenessProbe: &corev1.Probe{
+							ProbeHandler:        probeHandler,
+							InitialDelaySeconds: 30,
+							PeriodSeconds:       30,
+						},
+						ReadinessProbe: &corev1.Probe{
+							ProbeHandler:        probeHandler,
+							InitialDelaySeconds: 20,
+							PeriodSeconds:       10,
+						},
 					},
 				},
 			},
 		},
 	}
-	if feastType == RegistryFeastType {
-		deploy.Spec.Template.Spec.Containers[0].Command = []string{
-			"feast", "serve_registry",
-		}
-		deploy.Spec.Template.Spec.Containers[0].Ports = []corev1.ContainerPort{
-			{
-				Name:          string(feastType),
-				ContainerPort: RegistryPort,
-				Protocol:      corev1.ProtocolTCP,
-			},
-		}
-		probeHandler := corev1.ProbeHandler{
-			TCPSocket: &corev1.TCPSocketAction{
-				Port: intstr.FromInt(int(RegistryPort)),
-			},
-		}
-		deploy.Spec.Template.Spec.Containers[0].LivenessProbe = &corev1.Probe{
-			ProbeHandler:        probeHandler,
-			InitialDelaySeconds: 30,
-			PeriodSeconds:       30,
-		}
-		deploy.Spec.Template.Spec.Containers[0].ReadinessProbe = &corev1.Probe{
-			ProbeHandler:        probeHandler,
-			InitialDelaySeconds: 20,
-			PeriodSeconds:       10,
-		}
+
+	// optional configs are applied here
+	container := &deploy.Spec.Template.Spec.Containers[0]
+	if serviceConfig.ImagePullPolicy != nil {
+		container.ImagePullPolicy = *serviceConfig.ImagePullPolicy
 	}
+	if serviceConfig.Resources != nil {
+		container.Resources = *serviceConfig.Resources
+	}
+
 	return controllerutil.SetControllerReference(feast.FeatureStore, deploy, feast.Scheme)
 }
 
 func (feast *FeastServices) setService(svc *corev1.Service, feastType FeastServiceType) error {
 	svc.Labels = feast.getLabels(feastType)
+	deploySettings := FeastServiceConstants[feastType]
+
 	svc.Spec = corev1.ServiceSpec{
 		Selector: svc.GetLabels(),
 		Type:     corev1.ServiceTypeClusterIP,
+		Ports: []corev1.ServicePort{
+			{
+				Name:       strings.ToLower(string(corev1.URISchemeHTTP)),
+				Port:       HttpPort,
+				Protocol:   corev1.ProtocolTCP,
+				TargetPort: intstr.FromInt(int(deploySettings.TargetPort)),
+			},
+		},
+	}
+
+	hostname := svc.Name + "." + svc.Namespace + svcDomain
+	hostnameWithPort := hostname + ":" + strconv.Itoa(HttpPort)
+	if feastType == OfflineFeastType {
+		feast.FeatureStore.Status.ServiceUrls.Offline = hostname
+	}
+	if feastType == OnlineFeastType {
+		feast.FeatureStore.Status.ServiceUrls.Online = strings.ToLower(string(corev1.URISchemeHTTP)) + "://" + hostnameWithPort
 	}
 	if feastType == RegistryFeastType {
-		svc.Spec.Ports = []corev1.ServicePort{
-			{
-				Name:       "http",
-				Port:       int32(80),
-				Protocol:   corev1.ProtocolTCP,
-				TargetPort: intstr.FromInt(int(RegistryPort)),
-			},
-		}
-		feast.FeatureStore.Status.ServiceUrls.Registry = svc.Name + "." + svc.Namespace + ".svc.cluster.local:80"
+		feast.FeatureStore.Status.ServiceUrls.Registry = hostnameWithPort
 	}
+
 	return controllerutil.SetControllerReference(feast.FeatureStore, svc, feast.Scheme)
+}
+
+func (feast *FeastServices) getServiceConfig(feastType FeastServiceType) feastdevv1alpha1.ServiceConfig {
+	appliedSpec := feast.FeatureStore.Status.Applied
+	if feastType == OfflineFeastType && appliedSpec.Services.Offline != nil {
+		return appliedSpec.Services.Offline.ServiceConfig
+	}
+	if feastType == OnlineFeastType && appliedSpec.Services.Online != nil {
+		return appliedSpec.Services.Online.ServiceConfig
+	}
+	if feastType == RegistryFeastType && appliedSpec.Services.Registry != nil {
+		return appliedSpec.Services.Registry.ServiceConfig
+	}
+	return feastdevv1alpha1.ServiceConfig{}
 }
 
 // GetObjectMeta returns the feast k8s object metadata
@@ -233,13 +281,18 @@ func (feast *FeastServices) getServiceFeatureStoreYaml() ([]byte, error) {
 
 func (feast *FeastServices) getServiceRepoConfig() RepoConfig {
 	appliedSpec := feast.FeatureStore.Status.Applied
-	return RepoConfig{
+	repoConfig := RepoConfig{
 		Project:                       appliedSpec.FeastProject,
 		Provider:                      LocalProviderType,
 		EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
-		Registry: RegistryConfig{
-			RegistryType: RegistryFileConfigType,
-			Path:         LocalRegistryPath,
-		},
 	}
+	if appliedSpec.Services != nil {
+		if appliedSpec.Services.Registry != nil {
+			repoConfig.Registry = RegistryConfig{
+				RegistryType: RegistryFileConfigType,
+				Path:         LocalRegistryPath,
+			}
+		}
+	}
+	return repoConfig
 }

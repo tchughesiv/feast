@@ -134,6 +134,7 @@ var _ = Describe("FeatureStore Controller", func() {
 			},
 				deploy)
 			Expect(err).NotTo(HaveOccurred())
+			Expect(deploy.Spec.Replicas).To(Equal(&services.DefaultReplicas))
 			Expect(controllerutil.HasControllerReference(deploy)).To(BeTrue())
 			Expect(deploy.Spec.Template.Spec.Containers).To(HaveLen(1))
 
@@ -145,8 +146,7 @@ var _ = Describe("FeatureStore Controller", func() {
 				svc)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(controllerutil.HasControllerReference(svc)).To(BeTrue())
-			Expect(svc.Spec.Ports[0].TargetPort).To(Equal(intstr.FromInt(int(services.RegistryPort))))
-
+			Expect(svc.Spec.Ports[0].TargetPort).To(Equal(intstr.FromInt(int(services.FeastServiceConstants[services.RegistryFeastType].TargetPort))))
 		})
 
 		It("should properly encode a feature_store.yaml config", func() {

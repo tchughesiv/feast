@@ -69,6 +69,19 @@ func (feast *FeastServices) getClientRepoConfig() RepoConfig {
 		Provider:                      LocalProviderType,
 		EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
 	}
+	if len(status.ServiceUrls.Offline) > 0 {
+		clientRepoConfig.OfflineStore = OfflineStoreConfig{
+			Type: OfflineRemoteConfigType,
+			Host: status.ServiceUrls.Offline,
+			Port: HttpPort,
+		}
+	}
+	if len(status.ServiceUrls.Online) > 0 {
+		clientRepoConfig.OnlineStore = OnlineStoreConfig{
+			Type: OnlineRemoteConfigType,
+			Path: status.ServiceUrls.Online,
+		}
+	}
 	if len(status.ServiceUrls.Registry) > 0 {
 		clientRepoConfig.Registry = RegistryConfig{
 			RegistryType: RegistryRemoteConfigType,
