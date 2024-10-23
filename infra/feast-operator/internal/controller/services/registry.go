@@ -219,10 +219,10 @@ func (feast *FeastServices) setService(svc *corev1.Service, feastType FeastServi
 	hostname := svc.Name + "." + svc.Namespace + svcDomain
 	hostnameWithPort := hostname + ":" + strconv.Itoa(HttpPort)
 	if feastType == OfflineFeastType {
-		feast.FeatureStore.Status.ServiceUrls.Offline = hostname
+		feast.FeatureStore.Status.ServiceUrls.OfflineStore = hostname
 	}
 	if feastType == OnlineFeastType {
-		feast.FeatureStore.Status.ServiceUrls.Online = strings.ToLower(string(corev1.URISchemeHTTP)) + "://" + hostnameWithPort
+		feast.FeatureStore.Status.ServiceUrls.OnlineStore = strings.ToLower(string(corev1.URISchemeHTTP)) + "://" + hostnameWithPort
 	}
 	if feastType == RegistryFeastType {
 		feast.FeatureStore.Status.ServiceUrls.Registry = hostnameWithPort
@@ -233,11 +233,11 @@ func (feast *FeastServices) setService(svc *corev1.Service, feastType FeastServi
 
 func (feast *FeastServices) getServiceConfig(feastType FeastServiceType) feastdevv1alpha1.ServiceConfig {
 	appliedSpec := feast.FeatureStore.Status.Applied
-	if feastType == OfflineFeastType && appliedSpec.Services.Offline != nil {
-		return appliedSpec.Services.Offline.ServiceConfig
+	if feastType == OfflineFeastType && appliedSpec.Services.OfflineStore != nil {
+		return appliedSpec.Services.OfflineStore.ServiceConfig
 	}
-	if feastType == OnlineFeastType && appliedSpec.Services.Online != nil {
-		return appliedSpec.Services.Online.ServiceConfig
+	if feastType == OnlineFeastType && appliedSpec.Services.OnlineStore != nil {
+		return appliedSpec.Services.OnlineStore.ServiceConfig
 	}
 	if feastType == RegistryFeastType && appliedSpec.Services.Registry != nil {
 		return appliedSpec.Services.Registry.ServiceConfig

@@ -153,14 +153,14 @@ func applyDefaultsToStatus(cr *feastdevv1alpha1.FeatureStore) {
 
 	// default to registry service deployment
 	if applied.Services.Registry == nil {
-		applied.Services.Registry = &feastdevv1alpha1.RegistryService{}
+		applied.Services.Registry = &feastdevv1alpha1.Registry{}
 	}
 	setServiceConfigDefaults(&applied.Services.Registry.ServiceConfig)
-	if applied.Services.Offline != nil {
-		setServiceConfigDefaults(&applied.Services.Offline.ServiceConfig)
+	if applied.Services.OfflineStore != nil {
+		setServiceConfigDefaults(&applied.Services.OfflineStore.ServiceConfig)
 	}
-	if applied.Services.Online != nil {
-		setServiceConfigDefaults(&applied.Services.Online.ServiceConfig)
+	if applied.Services.OnlineStore != nil {
+		setServiceConfigDefaults(&applied.Services.OnlineStore.ServiceConfig)
 	}
 
 	// overwrite status.applied with every reconcile

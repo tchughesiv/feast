@@ -57,8 +57,8 @@ spec:
               services:
                 description: FeatureStoreServices
                 properties:
-                  offline:
-                    description: OfflineService
+                  offlineStore:
+                    description: OfflineStore
                     properties:
                       image:
                         type: string
@@ -123,8 +123,8 @@ spec:
                             type: object
                         type: object
                     type: object
-                  online:
-                    description: OnlineService
+                  onlineStore:
+                    description: OnlineStore
                     properties:
                       image:
                         type: string
@@ -190,7 +190,7 @@ spec:
                         type: object
                     type: object
                   registry:
-                    description: RegistryService
+                    description: Registry
                     properties:
                       image:
                         type: string
@@ -274,8 +274,8 @@ spec:
                   services:
                     description: FeatureStoreServices
                     properties:
-                      offline:
-                        description: OfflineService
+                      offlineStore:
+                        description: OfflineStore
                         properties:
                           image:
                             type: string
@@ -341,8 +341,8 @@ spec:
                                 type: object
                             type: object
                         type: object
-                      online:
-                        description: OnlineService
+                      onlineStore:
+                        description: OnlineStore
                         properties:
                           image:
                             type: string
@@ -409,7 +409,7 @@ spec:
                             type: object
                         type: object
                       registry:
-                        description: RegistryService
+                        description: Registry
                         properties:
                           image:
                             type: string
@@ -557,9 +557,9 @@ spec:
               serviceUrls:
                 description: ServiceUrls
                 properties:
-                  offline:
+                  offlineStore:
                     type: string
-                  online:
+                  onlineStore:
                     type: string
                   registry:
                     type: string

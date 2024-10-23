@@ -59,23 +59,23 @@ type FeatureStoreSpec struct {
 
 // FeatureStoreServices
 type FeatureStoreServices struct {
-	Offline  *OfflineService  `json:"offline,omitempty"`
-	Online   *OnlineService   `json:"online,omitempty"`
-	Registry *RegistryService `json:"registry,omitempty"`
+	*OfflineStore `json:"offlineStore,omitempty"`
+	*OnlineStore  `json:"onlineStore,omitempty"`
+	*Registry     `json:"registry,omitempty"`
 }
 
-// OfflineService
-type OfflineService struct {
+// OfflineStore
+type OfflineStore struct {
 	ServiceConfig `json:",inline"`
 }
 
-// OnlineService
-type OnlineService struct {
+// OnlineStore
+type OnlineStore struct {
 	ServiceConfig `json:",inline"`
 }
 
-// RegistryService
-type RegistryService struct {
+// Registry
+type Registry struct {
 	ServiceConfig `json:",inline"`
 }
 
@@ -98,9 +98,9 @@ type FeatureStoreStatus struct {
 
 // ServiceUrls
 type ServiceUrls struct {
-	Offline  string `json:"offline,omitempty"`
-	Online   string `json:"online,omitempty"`
-	Registry string `json:"registry,omitempty"`
+	OfflineStore string `json:"offlineStore,omitempty"`
+	OnlineStore  string `json:"onlineStore,omitempty"`
+	Registry     string `json:"registry,omitempty"`
 }
 
 //+kubebuilder:object:root=true
