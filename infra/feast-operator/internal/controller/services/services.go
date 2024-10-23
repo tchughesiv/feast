@@ -237,6 +237,7 @@ func (feast *FeastServices) getServiceFeatureStoreYaml(feastType FeastServiceTyp
 
 func (feast *FeastServices) getServiceRepoConfig(feastType FeastServiceType) RepoConfig {
 	appliedSpec := feast.FeatureStore.Status.Applied
+
 	repoConfig := feast.getClientRepoConfig()
 	if appliedSpec.Services != nil {
 		if appliedSpec.Services.OfflineStore != nil && feastType == OfflineFeastType {
