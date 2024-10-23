@@ -240,19 +240,22 @@ func (feast *FeastServices) getServiceRepoConfig(feastType FeastServiceType) Rep
 	repoConfig := feast.getClientRepoConfig()
 	if appliedSpec.Services != nil {
 		if appliedSpec.Services.OfflineStore != nil && feastType == OfflineFeastType {
+			// Offline store has a `remote` registry and the `offline_store` section.
 			repoConfig.OnlineStore = OnlineStoreConfig{}
 			repoConfig.OfflineStore = OfflineStoreConfig{
-				Type: OfflineDaskConfigType,
 				// ?? Path: LocalRegistryPath,
+				Type: OfflineDaskConfigType,
 			}
 		}
 		if appliedSpec.Services.OnlineStore != nil && feastType == OnlineFeastType {
+			// Online store has a `remote` registry, a remote `offline_store` and the `online_store` section.
 			repoConfig.OnlineStore = OnlineStoreConfig{
 				Type: OnlineSqliteConfigType,
 				Path: LocalOnlinePath,
 			}
 		}
 		if appliedSpec.Services.Registry != nil && feastType == RegistryFeastType {
+			// Registry service has the `registry` section.
 			repoConfig.OfflineStore = OfflineStoreConfig{}
 			repoConfig.OnlineStore = OnlineStoreConfig{}
 			repoConfig.Registry = RegistryConfig{
