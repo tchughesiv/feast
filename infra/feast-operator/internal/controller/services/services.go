@@ -241,12 +241,10 @@ func (feast *FeastServices) getServiceRepoConfig(feastType FeastServiceType) Rep
 	if appliedSpec.Services != nil {
 		if appliedSpec.Services.OfflineStore != nil && feastType == OfflineFeastType {
 			repoConfig.OnlineStore = OnlineStoreConfig{}
-			repoConfig = RepoConfig{
-				Registry: repoConfig.Registry,
-				OfflineStore: OfflineStoreConfig{
-					Type: OfflineDaskConfigType,
-					// ?? Path: LocalRegistryPath,
-				},
+			repoConfig.OfflineStore = OfflineStoreConfig{
+				Type: OfflineDaskConfigType,
+				// ?? Path: LocalRegistryPath,
+			}
 		}
 		if appliedSpec.Services.OnlineStore != nil && feastType == OnlineFeastType {
 			repoConfig.OnlineStore = OnlineStoreConfig{
@@ -255,11 +253,11 @@ func (feast *FeastServices) getServiceRepoConfig(feastType FeastServiceType) Rep
 			}
 		}
 		if appliedSpec.Services.Registry != nil && feastType == RegistryFeastType {
-			repoConfig = RepoConfig{
-				Registry: RegistryConfig{
-					RegistryType: RegistryFileConfigType,
-					Path:         LocalRegistryPath,
-				},
+			repoConfig.OfflineStore = OfflineStoreConfig{}
+			repoConfig.OnlineStore = OnlineStoreConfig{}
+			repoConfig.Registry = RegistryConfig{
+				RegistryType: RegistryFileConfigType,
+				Path:         LocalRegistryPath,
 			}
 		}
 	}
