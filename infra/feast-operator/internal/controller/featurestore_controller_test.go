@@ -184,7 +184,7 @@ var _ = Describe("FeatureStore Controller", func() {
 			env := getEnvVar(services.FeatureStoreYamlEnvVar, deploy.Spec.Template.Spec.Containers[0].Env)
 			Expect(env).NotTo(BeNil())
 
-			fsYamlStr, err := feast.GetServiceFeatureStoreYamlBase64()
+			fsYamlStr, err := feast.GetServiceFeatureStoreYamlBase64(services.RegistryFeastType)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(fsYamlStr).To(Equal(env.Value))
 
@@ -229,7 +229,7 @@ var _ = Describe("FeatureStore Controller", func() {
 			env = getEnvVar(services.FeatureStoreYamlEnvVar, deploy.Spec.Template.Spec.Containers[0].Env)
 			Expect(env).NotTo(BeNil())
 
-			fsYamlStr, err = feast.GetServiceFeatureStoreYamlBase64()
+			fsYamlStr, err = feast.GetServiceFeatureStoreYamlBase64(services.RegistryFeastType)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(fsYamlStr).To(Equal(env.Value))
 

@@ -29,6 +29,7 @@ const (
 	FeastPrefix            = "feast-"
 	FeatureStoreYamlEnvVar = "FEATURE_STORE_YAML_BASE64"
 	LocalRegistryPath      = "/tmp/registry.db"
+	LocalOnlinePath        = "/tmp/online_store.db"
 	svcDomain              = ".svc.cluster.local"
 	HttpPort               = 80
 
@@ -41,6 +42,7 @@ const (
 	OfflineDaskConfigType   OfflineConfigType = "dask"
 
 	OnlineRemoteConfigType OnlineConfigType = "remote"
+	OnlineSqliteConfigType OnlineConfigType = "sqlite"
 
 	RegistryRemoteConfigType RegistryConfigType = "remote"
 	RegistryFileConfigType   RegistryConfigType = "file"
