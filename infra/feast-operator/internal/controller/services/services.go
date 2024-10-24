@@ -200,13 +200,13 @@ func (feast *FeastServices) setService(svc *corev1.Service, feastType FeastServi
 	hostname := svc.Name + "." + svc.Namespace + svcDomain
 	hostnameWithPort := hostname + ":" + strconv.Itoa(HttpPort)
 	if feastType == OfflineFeastType {
-		feast.FeatureStore.Status.ServiceUrls.OfflineStore = hostname
+		feast.FeatureStore.Status.ServiceHostnames.OfflineStore = hostname
 	}
 	if feastType == OnlineFeastType {
-		feast.FeatureStore.Status.ServiceUrls.OnlineStore = strings.ToLower(string(corev1.URISchemeHTTP)) + "://" + hostnameWithPort
+		feast.FeatureStore.Status.ServiceHostnames.OnlineStore = strings.ToLower(string(corev1.URISchemeHTTP)) + "://" + hostnameWithPort
 	}
 	if feastType == RegistryFeastType {
-		feast.FeatureStore.Status.ServiceUrls.Registry = hostnameWithPort
+		feast.FeatureStore.Status.ServiceHostnames.Registry = hostnameWithPort
 	}
 
 	return controllerutil.SetControllerReference(feast.FeatureStore, svc, feast.Scheme)

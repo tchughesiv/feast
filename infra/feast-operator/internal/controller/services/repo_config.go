@@ -19,6 +19,7 @@ package services
 import (
 	"encoding/base64"
 
+	feastdevv1alpha1 "github.com/feast-dev/feast/infra/feast-operator/api/v1alpha1"
 	"gopkg.in/yaml.v3"
 )
 
@@ -67,4 +68,37 @@ func (feast *FeastServices) getServiceRepoConfig(feastType FeastServiceType) Rep
 	}
 
 	return repoConfig
+}
+
+func (feast *FeastServices) getClientFeatureStoreYaml() ([]byte, error) {
+	return yaml.Marshal(feast.getClientRepoConfig())
+}
+
+func (feast *FeastServices) getClientRepoConfig() RepoConfig {
+	status := feast.FeatureStore.Status
+	clientRepoConfig := RepoConfig{
+		Project:                       status.Applied.FeastProject,
+		Provider:                      LocalProviderType,
+		EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
+	}
+	if len(status.ServiceHostnames.OfflineStore) > 0 {
+		clientRepoConfig.OfflineStore = OfflineStoreConfig{
+			Type: OfflineRemoteConfigType,
+			Host: status.ServiceHostnames.OfflineStore,
+			Port: HttpPort,
+		}
+	}
+	if len(status.ServiceHostnames.OnlineStore) > 0 {
+		clientRepoConfig.OnlineStore = OnlineStoreConfig{
+			Type: OnlineRemoteConfigType,
+			Path: status.ServiceHostnames.OnlineStore,
+		}
+	}
+	if len(status.ServiceHostnames.Registry) > 0 {
+		clientRepoConfig.Registry = RegistryConfig{
+			RegistryType: RegistryRemoteConfigType,
+			Path:         status.ServiceHostnames.Registry,
+		}
+	}
+	return clientRepoConfig
 }

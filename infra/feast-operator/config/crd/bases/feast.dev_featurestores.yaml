@@ -556,8 +556,8 @@ spec:
                 type: string
               phase:
                 type: string
-              serviceUrls:
-                description: ServiceUrls
+              serviceHostnames:
+                description: ServiceHostnames
                 properties:
                   offlineStore:
                     type: string

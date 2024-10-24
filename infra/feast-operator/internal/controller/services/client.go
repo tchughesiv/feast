@@ -17,8 +17,6 @@ limitations under the License.
 package services
 
 import (
-	feastdevv1alpha1 "github.com/feast-dev/feast/infra/feast-operator/api/v1alpha1"
-	"gopkg.in/yaml.v3"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -56,37 +54,4 @@ func (feast *FeastServices) setClientConfigMap(cm *corev1.ConfigMap) error {
 	cm.Data = map[string]string{"feature_store.yaml": string(clientYaml)}
 	feast.FeatureStore.Status.ClientConfigMap = cm.Name
 	return controllerutil.SetControllerReference(feast.FeatureStore, cm, feast.Scheme)
-}
-
-func (feast *FeastServices) getClientFeatureStoreYaml() ([]byte, error) {
-	return yaml.Marshal(feast.getClientRepoConfig())
-}
-
-func (feast *FeastServices) getClientRepoConfig() RepoConfig {
-	status := feast.FeatureStore.Status
-	clientRepoConfig := RepoConfig{
-		Project:                       status.Applied.FeastProject,
-		Provider:                      LocalProviderType,
-		EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
-	}
-	if len(status.ServiceUrls.OfflineStore) > 0 {
-		clientRepoConfig.OfflineStore = OfflineStoreConfig{
-			Type: OfflineRemoteConfigType,
-			Host: status.ServiceUrls.OfflineStore,
-			Port: HttpPort,
-		}
-	}
-	if len(status.ServiceUrls.OnlineStore) > 0 {
-		clientRepoConfig.OnlineStore = OnlineStoreConfig{
-			Type: OnlineRemoteConfigType,
-			Path: status.ServiceUrls.OnlineStore,
-		}
-	}
-	if len(status.ServiceUrls.Registry) > 0 {
-		clientRepoConfig.Registry = RegistryConfig{
-			RegistryType: RegistryRemoteConfigType,
-			Path:         status.ServiceUrls.Registry,
-		}
-	}
-	return clientRepoConfig
 }
