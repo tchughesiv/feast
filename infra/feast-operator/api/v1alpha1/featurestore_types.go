@@ -57,11 +57,11 @@ type FeatureStoreSpec struct {
 	Services     *FeatureStoreServices `json:"services,omitempty"`
 }
 
-// FeatureStoreServices
+// FeatureStoreServices defines the desired feast services. ephemeral registry is deployed by default.
 type FeatureStoreServices struct {
-	*OfflineStore `json:"offlineStore,omitempty"`
-	*OnlineStore  `json:"onlineStore,omitempty"`
-	*Registry     `json:"registry,omitempty"`
+	OfflineStore *OfflineStore `json:"offlineStore,omitempty"`
+	OnlineStore  *OnlineStore  `json:"onlineStore,omitempty"`
+	Registry     *Registry     `json:"registry,omitempty"`
 }
 
 // OfflineStore

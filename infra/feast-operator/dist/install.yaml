@@ -63,7 +63,8 @@ spec:
                 pattern: ^[A-Za-z0-9][A-Za-z0-9_]*$
                 type: string
               services:
-                description: FeatureStoreServices
+                description: FeatureStoreServices defines the desired feast services.
+                  ephemeral registry is deployed by default.
                 properties:
                   offlineStore:
                     description: OfflineStore
@@ -280,7 +281,8 @@ spec:
                     pattern: ^[A-Za-z0-9][A-Za-z0-9_]*$
                     type: string
                   services:
-                    description: FeatureStoreServices
+                    description: FeatureStoreServices defines the desired feast services.
+                      ephemeral registry is deployed by default.
                     properties:
                       offlineStore:
                         description: OfflineStore
