@@ -85,7 +85,12 @@ type Registry struct {
 
 // ServiceConfig
 type ServiceConfig struct {
-	Image           *string                      `json:"image,omitempty"`
+	Image            *string `json:"image,omitempty"`
+	OptServiceConfig `json:",inline"`
+}
+
+// OptServiceConfig
+type OptServiceConfig struct {
 	ImagePullPolicy *corev1.PullPolicy           `json:"imagePullPolicy,omitempty"`
 	Resources       *corev1.ResourceRequirements `json:"resources,omitempty"`
 }

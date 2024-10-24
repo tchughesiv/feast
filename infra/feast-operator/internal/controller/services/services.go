@@ -120,7 +120,7 @@ func (feast *FeastServices) setDeployment(deploy *appsv1.Deployment, feastType F
 	deploySettings := FeastServiceConstants[feastType]
 	serviceConfig := feast.getServiceConfig(feastType)
 
-	// required configs are applied here
+	// standard configs are applied here
 	probeHandler := corev1.ProbeHandler{
 		TCPSocket: &corev1.TCPSocketAction{
 			Port: intstr.FromInt(int(deploySettings.TargetPort)),
