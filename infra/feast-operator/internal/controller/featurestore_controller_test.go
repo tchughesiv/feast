@@ -117,12 +117,14 @@ var _ = Describe("FeatureStore Controller", func() {
 			Expect(cond.Reason).To(Equal(feastdevv1alpha1.ReadyReason))
 			Expect(cond.Type).To(Equal(feastdevv1alpha1.ReadyType))
 			Expect(cond.Message).To(Equal(feastdevv1alpha1.ReadyMessage))
+
 			cond = apimeta.FindStatusCondition(resource.Status.Conditions, feastdevv1alpha1.RegistryReadyType)
 			Expect(cond).ToNot(BeNil())
 			Expect(cond.Status).To(Equal(metav1.ConditionTrue))
 			Expect(cond.Reason).To(Equal(feastdevv1alpha1.ReadyReason))
 			Expect(cond.Type).To(Equal(feastdevv1alpha1.RegistryReadyType))
 			Expect(cond.Message).To(Equal(feastdevv1alpha1.RegistryReadyMessage))
+
 			cond = apimeta.FindStatusCondition(resource.Status.Conditions, feastdevv1alpha1.ClientReadyType)
 			Expect(cond).ToNot(BeNil())
 			Expect(cond.Status).To(Equal(metav1.ConditionTrue))
@@ -417,18 +419,34 @@ var _ = Describe("FeatureStore Controller", func() {
 			Expect(cond.Reason).To(Equal(feastdevv1alpha1.ReadyReason))
 			Expect(cond.Type).To(Equal(feastdevv1alpha1.ReadyType))
 			Expect(cond.Message).To(Equal(feastdevv1alpha1.ReadyMessage))
+
 			cond = apimeta.FindStatusCondition(resource.Status.Conditions, feastdevv1alpha1.RegistryReadyType)
 			Expect(cond).ToNot(BeNil())
 			Expect(cond.Status).To(Equal(metav1.ConditionTrue))
 			Expect(cond.Reason).To(Equal(feastdevv1alpha1.ReadyReason))
 			Expect(cond.Type).To(Equal(feastdevv1alpha1.RegistryReadyType))
 			Expect(cond.Message).To(Equal(feastdevv1alpha1.RegistryReadyMessage))
+
 			cond = apimeta.FindStatusCondition(resource.Status.Conditions, feastdevv1alpha1.ClientReadyType)
 			Expect(cond).ToNot(BeNil())
 			Expect(cond.Status).To(Equal(metav1.ConditionTrue))
 			Expect(cond.Reason).To(Equal(feastdevv1alpha1.ReadyReason))
 			Expect(cond.Type).To(Equal(feastdevv1alpha1.ClientReadyType))
 			Expect(cond.Message).To(Equal(feastdevv1alpha1.ClientReadyMessage))
+
+			cond = apimeta.FindStatusCondition(resource.Status.Conditions, feastdevv1alpha1.OfflineStoreReadyType)
+			Expect(cond).ToNot(BeNil())
+			Expect(cond.Status).To(Equal(metav1.ConditionTrue))
+			Expect(cond.Reason).To(Equal(feastdevv1alpha1.ReadyReason))
+			Expect(cond.Type).To(Equal(feastdevv1alpha1.OfflineStoreReadyType))
+			Expect(cond.Message).To(Equal(feastdevv1alpha1.OfflineStoreReadyMessage))
+
+			cond = apimeta.FindStatusCondition(resource.Status.Conditions, feastdevv1alpha1.OnlineStoreReadyType)
+			Expect(cond).ToNot(BeNil())
+			Expect(cond.Status).To(Equal(metav1.ConditionTrue))
+			Expect(cond.Reason).To(Equal(feastdevv1alpha1.ReadyReason))
+			Expect(cond.Type).To(Equal(feastdevv1alpha1.OnlineStoreReadyType))
+			Expect(cond.Message).To(Equal(feastdevv1alpha1.OnlineStoreReadyMessage))
 
 			Expect(resource.Status.Phase).To(Equal(feastdevv1alpha1.ReadyPhase))
 
@@ -570,7 +588,7 @@ var _ = Describe("FeatureStore Controller", func() {
 
 			deploy := &appsv1.Deployment{}
 			err = k8sClient.Get(ctx, types.NamespacedName{
-				Name:      feast.GetFeastServiceName(services.RegistryFeastType),
+				Name:      feast.GetFeastServiceName(services.OfflineFeastType),
 				Namespace: resource.Namespace,
 			},
 				deploy)
@@ -581,7 +599,7 @@ var _ = Describe("FeatureStore Controller", func() {
 			Expect(controllerutil.HasControllerReference(deploy)).To(BeFalse())
 
 			svc := &corev1.Service{}
-			name := feast.GetFeastServiceName(services.RegistryFeastType)
+			name := feast.GetFeastServiceName(services.OfflineFeastType)
 			err = k8sClient.Get(ctx, types.NamespacedName{
 				Name:      name,
 				Namespace: resource.Namespace,
@@ -612,10 +630,10 @@ var _ = Describe("FeatureStore Controller", func() {
 
 			cond = apimeta.FindStatusCondition(resource.Status.Conditions, feastdevv1alpha1.RegistryReadyType)
 			Expect(cond).ToNot(BeNil())
-			Expect(cond.Status).To(Equal(metav1.ConditionFalse))
-			Expect(cond.Reason).To(Equal(feastdevv1alpha1.RegistryFailedReason))
+			Expect(cond.Status).To(Equal(metav1.ConditionTrue))
+			Expect(cond.Reason).To(Equal(feastdevv1alpha1.ReadyReason))
 			Expect(cond.Type).To(Equal(feastdevv1alpha1.RegistryReadyType))
-			Expect(cond.Message).To(Equal("Error: Object " + resource.Namespace + "/" + name + " is already owned by another Service controller " + name))
+			Expect(cond.Message).To(Equal(feastdevv1alpha1.RegistryReadyMessage))
 
 			cond = apimeta.FindStatusCondition(resource.Status.Conditions, feastdevv1alpha1.ClientReadyType)
 			Expect(cond).ToNot(BeNil())
@@ -623,6 +641,20 @@ var _ = Describe("FeatureStore Controller", func() {
 			Expect(cond.Reason).To(Equal(feastdevv1alpha1.ReadyReason))
 			Expect(cond.Type).To(Equal(feastdevv1alpha1.ClientReadyType))
 			Expect(cond.Message).To(Equal(feastdevv1alpha1.ClientReadyMessage))
+
+			cond = apimeta.FindStatusCondition(resource.Status.Conditions, feastdevv1alpha1.OfflineStoreReadyType)
+			Expect(cond).ToNot(BeNil())
+			Expect(cond.Status).To(Equal(metav1.ConditionFalse))
+			Expect(cond.Reason).To(Equal(feastdevv1alpha1.OfflineStoreFailedReason))
+			Expect(cond.Type).To(Equal(feastdevv1alpha1.OfflineStoreReadyType))
+			Expect(cond.Message).To(Equal("Error: Object " + resource.Namespace + "/" + name + " is already owned by another Service controller " + name))
+
+			cond = apimeta.FindStatusCondition(resource.Status.Conditions, feastdevv1alpha1.OnlineStoreReadyType)
+			Expect(cond).ToNot(BeNil())
+			Expect(cond.Status).To(Equal(metav1.ConditionTrue))
+			Expect(cond.Reason).To(Equal(feastdevv1alpha1.ReadyReason))
+			Expect(cond.Type).To(Equal(feastdevv1alpha1.OnlineStoreReadyType))
+			Expect(cond.Message).To(Equal(feastdevv1alpha1.OnlineStoreReadyMessage))
 
 			Expect(resource.Status.Phase).To(Equal(feastdevv1alpha1.FailedPhase))
 		})
