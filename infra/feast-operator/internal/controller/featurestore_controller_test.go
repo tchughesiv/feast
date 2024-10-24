@@ -495,6 +495,7 @@ var _ = Describe("FeatureStore Controller", func() {
 				FeatureStore: resource,
 			}
 
+			// check registry config
 			deploy := &appsv1.Deployment{}
 			err = k8sClient.Get(ctx, types.NamespacedName{
 				Name:      feast.GetFeastServiceName(services.RegistryFeastType),
@@ -526,6 +527,43 @@ var _ = Describe("FeatureStore Controller", func() {
 				},
 			}
 			Expect(repoConfig).To(Equal(testConfig))
+
+			// check offline config
+			deploy = &appsv1.Deployment{}
+			err = k8sClient.Get(ctx, types.NamespacedName{
+				Name:      feast.GetFeastServiceName(services.OfflineFeastType),
+				Namespace: resource.Namespace,
+			},
+				deploy)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(deploy.Spec.Template.Spec.Containers).To(HaveLen(1))
+			Expect(deploy.Spec.Template.Spec.Containers[0].Env).To(HaveLen(1))
+			env = getFeatureStoreYamlEnvVar(deploy.Spec.Template.Spec.Containers[0].Env)
+			Expect(env).NotTo(BeNil())
+
+			fsYamlStr, err = feast.GetServiceFeatureStoreYamlBase64(services.OfflineFeastType)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(fsYamlStr).To(Equal(env.Value))
+
+			envByte, err = base64.StdEncoding.DecodeString(env.Value)
+			Expect(err).NotTo(HaveOccurred())
+			repoConfigOffline := &services.RepoConfig{}
+			err = yaml.Unmarshal(envByte, repoConfigOffline)
+			Expect(err).NotTo(HaveOccurred())
+			rConfig := services.RegistryConfig{
+				RegistryType: services.RegistryRemoteConfigType,
+				Path:         "feast-services-registry.default.svc.cluster.local:80",
+			}
+			offlineConfig := &services.RepoConfig{
+				Project:                       feastProject,
+				Provider:                      services.LocalProviderType,
+				EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
+				OfflineStore: services.OfflineStoreConfig{
+					Type: services.OfflineDaskConfigType,
+				},
+				Registry: rConfig,
+			}
+			Expect(repoConfigOffline).To(Equal(offlineConfig))
 
 			// change feast project and reconcile
 			resourceNew := resource.DeepCopy()

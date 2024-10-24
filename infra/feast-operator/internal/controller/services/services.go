@@ -35,6 +35,7 @@ func (feast *FeastServices) Deploy() error {
 	status := &feast.FeatureStore.Status
 	appledSpec := status.Applied
 
+	feast.setServiceHostnames(appledSpec.Services)
 	if appledSpec.Services != nil {
 		if appledSpec.Services.OfflineStore != nil {
 			if err := feast.deployFeastServiceType(OfflineFeastType); err != nil {
@@ -67,15 +68,49 @@ func (feast *FeastServices) Deploy() error {
 	return nil
 }
 
+func (feast *FeastServices) setServiceHostnames(services *feastdevv1alpha1.FeatureStoreServices) {
+	if services != nil {
+		if services.OfflineStore != nil {
+			svc := feast.GetObjectMeta(OfflineFeastType)
+			feast.FeatureStore.Status.ServiceHostnames.OfflineStore = svc.Name + "." + svc.Namespace + svcDomain
+		}
+		if services.OnlineStore != nil {
+			svc := feast.GetObjectMeta(OnlineFeastType)
+			feast.FeatureStore.Status.ServiceHostnames.OnlineStore = strings.ToLower(string(corev1.URISchemeHTTP)) + "://" + svc.Name + "." + svc.Namespace + svcDomain + ":" + strconv.Itoa(HttpPort)
+		}
+		if services.Registry != nil {
+			svc := feast.GetObjectMeta(RegistryFeastType)
+			feast.FeatureStore.Status.ServiceHostnames.Registry = svc.Name + "." + svc.Namespace + svcDomain + ":" + strconv.Itoa(HttpPort)
+		}
+	}
+}
+
 func (feast *FeastServices) deployFeastServiceType(feastType FeastServiceType) error {
-	if err := feast.createDeployment(feastType); err != nil {
+	// ?? maybe split out services and deploy those first ???
+	if err := feast.createService(feastType); err != nil {
 		return feast.setFeastServiceCondition(err, feastType)
 	}
-	if err := feast.createService(feastType); err != nil {
+	if err := feast.createDeployment(feastType); err != nil {
 		return feast.setFeastServiceCondition(err, feastType)
 	}
 
 	return feast.setFeastServiceCondition(nil, feastType)
+}
+
+func (feast *FeastServices) createService(feastType FeastServiceType) error {
+	logger := log.FromContext(feast.Context)
+	svc := &corev1.Service{
+		ObjectMeta: feast.GetObjectMeta(feastType),
+	}
+	svc.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("Service"))
+	if op, err := controllerutil.CreateOrUpdate(feast.Context, feast.Client, svc, controllerutil.MutateFn(func() error {
+		return feast.setService(svc, feastType)
+	})); err != nil {
+		return err
+	} else if op == controllerutil.OperationResultCreated || op == controllerutil.OperationResultUpdated {
+		logger.Info("Successfully reconciled", "Service", svc.Name, "operation", op)
+	}
+	return nil
 }
 
 func (feast *FeastServices) createDeployment(feastType FeastServiceType) error {
@@ -92,22 +127,6 @@ func (feast *FeastServices) createDeployment(feastType FeastServiceType) error {
 		logger.Info("Successfully reconciled", "Deployment", deploy.Name, "operation", op)
 	}
 
-	return nil
-}
-
-func (feast *FeastServices) createService(feastType FeastServiceType) error {
-	logger := log.FromContext(feast.Context)
-	svc := &corev1.Service{
-		ObjectMeta: feast.GetObjectMeta(feastType),
-	}
-	svc.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("Service"))
-	if op, err := controllerutil.CreateOrUpdate(feast.Context, feast.Client, svc, controllerutil.MutateFn(func() error {
-		return feast.setService(svc, feastType)
-	})); err != nil {
-		return err
-	} else if op == controllerutil.OperationResultCreated || op == controllerutil.OperationResultUpdated {
-		logger.Info("Successfully reconciled", "Service", svc.Name, "operation", op)
-	}
 	return nil
 }
 
@@ -195,18 +214,6 @@ func (feast *FeastServices) setService(svc *corev1.Service, feastType FeastServi
 				TargetPort: intstr.FromInt(int(deploySettings.TargetPort)),
 			},
 		},
-	}
-
-	hostname := svc.Name + "." + svc.Namespace + svcDomain
-	hostnameWithPort := hostname + ":" + strconv.Itoa(HttpPort)
-	if feastType == OfflineFeastType {
-		feast.FeatureStore.Status.ServiceHostnames.OfflineStore = hostname
-	}
-	if feastType == OnlineFeastType {
-		feast.FeatureStore.Status.ServiceHostnames.OnlineStore = strings.ToLower(string(corev1.URISchemeHTTP)) + "://" + hostnameWithPort
-	}
-	if feastType == RegistryFeastType {
-		feast.FeatureStore.Status.ServiceHostnames.Registry = hostnameWithPort
 	}
 
 	return controllerutil.SetControllerReference(feast.FeatureStore, svc, feast.Scheme)
