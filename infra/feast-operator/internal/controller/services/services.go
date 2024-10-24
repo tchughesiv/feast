@@ -248,9 +248,9 @@ func (feast *FeastServices) getLabels(feastType FeastServiceType) map[string]str
 }
 
 func (feast *FeastServices) setFeastServiceCondition(err error, feastType FeastServiceType) error {
-	logger := log.FromContext(feast.Context)
 	conditionMap := FeastServiceConditions[feastType]
 	if err != nil {
+		logger := log.FromContext(feast.Context)
 		cond := conditionMap[metav1.ConditionFalse]
 		cond.Message = "Error: " + err.Error()
 		apimeta.SetStatusCondition(&feast.FeatureStore.Status.Conditions, cond)

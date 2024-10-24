@@ -103,14 +103,14 @@ func (r *FeatureStoreReconciler) deployFeast(ctx context.Context, cr *feastdevv1
 		Reason:  feastdevv1alpha1.ReadyReason,
 		Message: feastdevv1alpha1.ReadyMessage,
 	}
+
 	feast := services.FeastServices{
 		Client:       r.Client,
 		Context:      ctx,
 		FeatureStore: cr,
 		Scheme:       r.Scheme,
 	}
-	err = feast.Deploy()
-	if err != nil {
+	if err = feast.Deploy(); err != nil {
 		condition = metav1.Condition{
 			Type:    feastdevv1alpha1.ReadyType,
 			Status:  metav1.ConditionFalse,
@@ -119,9 +119,9 @@ func (r *FeatureStoreReconciler) deployFeast(ctx context.Context, cr *feastdevv1
 		}
 		result = ctrl.Result{Requeue: true}
 	}
+
 	logger.Info(condition.Message)
 	apimeta.SetStatusCondition(&cr.Status.Conditions, condition)
-
 	if apimeta.IsStatusConditionTrue(cr.Status.Conditions, feastdevv1alpha1.ReadyType) {
 		cr.Status.Phase = feastdevv1alpha1.ReadyPhase
 	} else if apimeta.IsStatusConditionFalse(cr.Status.Conditions, feastdevv1alpha1.ReadyType) {
