@@ -17,12 +17,10 @@ limitations under the License.
 package services
 
 import (
-	"encoding/base64"
 	"strconv"
 	"strings"
 
 	feastdevv1alpha1 "github.com/feast-dev/feast/infra/feast-operator/api/v1alpha1"
-	"gopkg.in/yaml.v3"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
@@ -220,51 +218,4 @@ func (feast *FeastServices) getFeastName() string {
 // GetFeastServiceName returns the feast service object name based on service type
 func (feast *FeastServices) GetFeastServiceName(feastType FeastServiceType) string {
 	return feast.getFeastName() + "-" + string(feastType)
-}
-
-// GetServiceFeatureStoreYamlBase64 returns a base64 encoded feature_store.yaml config for the feast service
-func (feast *FeastServices) GetServiceFeatureStoreYamlBase64(feastType FeastServiceType) (string, error) {
-	fsYaml, err := feast.getServiceFeatureStoreYaml(feastType)
-	if err != nil {
-		return "", err
-	}
-	return base64.StdEncoding.EncodeToString(fsYaml), nil
-}
-
-func (feast *FeastServices) getServiceFeatureStoreYaml(feastType FeastServiceType) ([]byte, error) {
-	return yaml.Marshal(feast.getServiceRepoConfig(feastType))
-}
-
-func (feast *FeastServices) getServiceRepoConfig(feastType FeastServiceType) RepoConfig {
-	appliedSpec := feast.FeatureStore.Status.Applied
-
-	repoConfig := feast.getClientRepoConfig()
-	if appliedSpec.Services != nil {
-		if appliedSpec.Services.OfflineStore != nil && feastType == OfflineFeastType {
-			// Offline server has `offline_store` section and a remote `registry`
-			repoConfig.OfflineStore = OfflineStoreConfig{
-				// ?? Path: LocalRegistryPath,
-				Type: OfflineDaskConfigType,
-			}
-			repoConfig.OnlineStore = OnlineStoreConfig{}
-		}
-		if appliedSpec.Services.OnlineStore != nil && feastType == OnlineFeastType {
-			// Online server has `online_store` section, a remote `registry` and a remote `offline_store`
-			repoConfig.OnlineStore = OnlineStoreConfig{
-				Type: OnlineSqliteConfigType,
-				Path: LocalOnlinePath,
-			}
-		}
-		if appliedSpec.Services.Registry != nil && feastType == RegistryFeastType {
-			// Registry server has only `registry` section
-			repoConfig.Registry = RegistryConfig{
-				RegistryType: RegistryFileConfigType,
-				Path:         LocalRegistryPath,
-			}
-			repoConfig.OfflineStore = OfflineStoreConfig{}
-			repoConfig.OnlineStore = OnlineStoreConfig{}
-		}
-	}
-
-	return repoConfig
 }
