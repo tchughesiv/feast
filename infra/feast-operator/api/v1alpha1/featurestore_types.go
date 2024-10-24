@@ -35,15 +35,19 @@ const (
 	ReadyType             = "FeatureStore"
 
 	// Feast condition reasons:
-	ReadyReason          = "Ready"
-	FailedReason         = "FeatureStoreFailed"
-	RegistryFailedReason = "RegistryDeploymentFailed"
-	ClientFailedReason   = "ClientDeploymentFailed"
+	ReadyReason              = "Ready"
+	FailedReason             = "FeatureStoreFailed"
+	OfflineStoreFailedReason = "OfflineStoreDeploymentFailed"
+	OnlineStoreFailedReason  = "OnlineStoreDeploymentFailed"
+	RegistryFailedReason     = "RegistryDeploymentFailed"
+	ClientFailedReason       = "ClientDeploymentFailed"
 
 	// Feast condition messages:
-	ReadyMessage         = "FeatureStore installation complete"
-	RegistryReadyMessage = "Registry installation complete"
-	ClientReadyMessage   = "Client installation complete"
+	ReadyMessage             = "FeatureStore installation complete"
+	OfflineStoreReadyMessage = "Offline Store installation complete"
+	OnlineStoreReadyMessage  = "Online Store installation complete"
+	RegistryReadyMessage     = "Registry installation complete"
+	ClientReadyMessage       = "Client installation complete"
 
 	// entity_key_serialization_version
 	SerializationVersion = 3

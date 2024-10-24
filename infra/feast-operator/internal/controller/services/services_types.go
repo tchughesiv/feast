@@ -52,8 +52,9 @@ const (
 )
 
 var (
-	DefaultImage          = "feastdev/feature-server:" + feastversion.FeastVersion
-	DefaultReplicas       = int32(1)
+	DefaultImage    = "feastdev/feature-server:" + feastversion.FeastVersion
+	DefaultReplicas = int32(1)
+
 	FeastServiceConstants = map[FeastServiceType]DeploymentSettings{
 		OfflineFeastType: {
 			Command:    []string{"feast", "serve_offline", "-h", "0.0.0.0"},
@@ -68,7 +69,34 @@ var (
 			TargetPort: 6570,
 		},
 	}
+
 	FeastServiceConditions = map[FeastServiceType]map[metav1.ConditionStatus]metav1.Condition{
+		OfflineFeastType: {
+			metav1.ConditionTrue: {
+				Type:    feastdevv1alpha1.OfflineStoreReadyType,
+				Status:  metav1.ConditionTrue,
+				Reason:  feastdevv1alpha1.ReadyReason,
+				Message: feastdevv1alpha1.OfflineStoreReadyMessage,
+			},
+			metav1.ConditionFalse: {
+				Type:   feastdevv1alpha1.OfflineStoreReadyType,
+				Status: metav1.ConditionFalse,
+				Reason: feastdevv1alpha1.OfflineStoreFailedReason,
+			},
+		},
+		OnlineFeastType: {
+			metav1.ConditionTrue: {
+				Type:    feastdevv1alpha1.OnlineStoreReadyType,
+				Status:  metav1.ConditionTrue,
+				Reason:  feastdevv1alpha1.ReadyReason,
+				Message: feastdevv1alpha1.OnlineStoreReadyMessage,
+			},
+			metav1.ConditionFalse: {
+				Type:   feastdevv1alpha1.OnlineStoreReadyType,
+				Status: metav1.ConditionFalse,
+				Reason: feastdevv1alpha1.OnlineStoreFailedReason,
+			},
+		},
 		RegistryFeastType: {
 			metav1.ConditionTrue: {
 				Type:    feastdevv1alpha1.RegistryReadyType,
@@ -151,6 +179,7 @@ type RegistryConfig struct {
 	RegistryType RegistryConfigType `yaml:"registry_type,omitempty"`
 }
 
+// DeploymentSettings
 type DeploymentSettings struct {
 	Command    []string
 	TargetPort int32

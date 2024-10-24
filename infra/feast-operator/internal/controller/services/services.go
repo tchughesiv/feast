@@ -37,36 +37,20 @@ func (feast *FeastServices) Deploy() error {
 
 	if appledSpec.Services != nil {
 		if appledSpec.Services.Registry != nil {
-			if err := feast.setFeastCondition(feast.deployRegistry(), RegistryFeastType); err != nil {
+			if err := feast.setFeastServiceCondition(feast.deployRegistry(), RegistryFeastType); err != nil {
 				return err
 			}
 			// else {
 			// if apimeta.RemoveStatusCondition(&status.Conditions, feastdevv1alpha1.RegistryReadyType) {
 			// if owned service objects exist, delete them ???
 			// }
-
 			// since registry service is required, not needed for this service? but for the others def. needed
-			// }
 		}
 	}
-	if err := feast.setFeastCondition(feast.deployClient(), ClientFeastType); err != nil {
+	if err := feast.setFeastServiceCondition(feast.deployClient(), ClientFeastType); err != nil {
 		return err
 	}
 
-	return nil
-}
-func (feast *FeastServices) setFeastCondition(err error, feastType FeastServiceType) error {
-	logger := log.FromContext(feast.Context)
-	conditionMap := FeastServiceConditions[feastType]
-	if err != nil {
-		cond := conditionMap[metav1.ConditionFalse]
-		cond.Message = "Error: " + err.Error()
-		apimeta.SetStatusCondition(&feast.FeatureStore.Status.Conditions, cond)
-		logger.Error(err, "Error deploying the FeatureStore "+string(ClientFeastType)+" service")
-		return err
-	} else {
-		apimeta.SetStatusCondition(&feast.FeatureStore.Status.Conditions, conditionMap[metav1.ConditionTrue])
-	}
 	return nil
 }
 
@@ -204,4 +188,19 @@ func (feast *FeastServices) getFeastName() string {
 // GetFeastServiceName returns the feast service object name based on service type
 func (feast *FeastServices) GetFeastServiceName(feastType FeastServiceType) string {
 	return feast.getFeastName() + "-" + string(feastType)
+}
+
+func (feast *FeastServices) setFeastServiceCondition(err error, feastType FeastServiceType) error {
+	logger := log.FromContext(feast.Context)
+	conditionMap := FeastServiceConditions[feastType]
+	if err != nil {
+		cond := conditionMap[metav1.ConditionFalse]
+		cond.Message = "Error: " + err.Error()
+		apimeta.SetStatusCondition(&feast.FeatureStore.Status.Conditions, cond)
+		logger.Error(err, "Error deploying the FeatureStore "+string(ClientFeastType)+" service")
+		return err
+	} else {
+		apimeta.SetStatusCondition(&feast.FeatureStore.Status.Conditions, conditionMap[metav1.ConditionTrue])
+	}
+	return nil
 }
