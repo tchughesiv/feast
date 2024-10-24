@@ -231,20 +231,20 @@ func (feast *FeastServices) GetObjectMeta(feastType FeastServiceType) metav1.Obj
 	return metav1.ObjectMeta{Name: feast.GetFeastServiceName(feastType), Namespace: feast.FeatureStore.Namespace}
 }
 
-func (feast *FeastServices) getLabels(feastType FeastServiceType) map[string]string {
-	return map[string]string{
-		feastdevv1alpha1.GroupVersion.Group + "/name":         feast.FeatureStore.Name,
-		feastdevv1alpha1.GroupVersion.Group + "/service-type": string(feastType),
-	}
+// GetFeastServiceName returns the feast service object name based on service type
+func (feast *FeastServices) GetFeastServiceName(feastType FeastServiceType) string {
+	return feast.getFeastName() + "-" + string(feastType)
 }
 
 func (feast *FeastServices) getFeastName() string {
 	return FeastPrefix + feast.FeatureStore.Name
 }
 
-// GetFeastServiceName returns the feast service object name based on service type
-func (feast *FeastServices) GetFeastServiceName(feastType FeastServiceType) string {
-	return feast.getFeastName() + "-" + string(feastType)
+func (feast *FeastServices) getLabels(feastType FeastServiceType) map[string]string {
+	return map[string]string{
+		feastdevv1alpha1.GroupVersion.Group + "/name":         feast.FeatureStore.Name,
+		feastdevv1alpha1.GroupVersion.Group + "/service-type": string(feastType),
+	}
 }
 
 func (feast *FeastServices) setFeastServiceCondition(err error, feastType FeastServiceType) error {
