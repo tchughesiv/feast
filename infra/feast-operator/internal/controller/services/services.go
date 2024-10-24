@@ -37,37 +37,45 @@ func (feast *FeastServices) Deploy() error {
 
 	if appledSpec.Services != nil {
 		if appledSpec.Services.OfflineStore != nil {
-			if err := feast.setFeastServiceCondition(feast.deployFeastService(OfflineFeastType), OfflineFeastType); err != nil {
+			if err := feast.deployFeastServiceType(OfflineFeastType); err != nil {
 				return err
 			}
 		} else {
-			if apimeta.RemoveStatusCondition(&status.Conditions, feastdevv1alpha1.OfflineStoreReadyType) {
-				// CHANGE
-				return nil
-			}
+			apimeta.RemoveStatusCondition(&status.Conditions, feastdevv1alpha1.OfflineStoreReadyType)
 			// if owned service objects exist, delete them ???
 		}
+
+		if appledSpec.Services.OnlineStore != nil {
+			if err := feast.deployFeastServiceType(OnlineFeastType); err != nil {
+				return err
+			}
+		} else {
+			apimeta.RemoveStatusCondition(&status.Conditions, feastdevv1alpha1.OnlineStoreReadyType)
+		}
+
 		if appledSpec.Services.Registry != nil {
-			if err := feast.setFeastServiceCondition(feast.deployFeastService(RegistryFeastType), RegistryFeastType); err != nil {
+			if err := feast.deployFeastServiceType(RegistryFeastType); err != nil {
 				return err
 			}
 		}
 	}
-	if err := feast.setFeastServiceCondition(feast.deployClient(), ClientFeastType); err != nil {
+
+	if err := feast.deployClient(); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (feast *FeastServices) deployFeastService(feastType FeastServiceType) error {
+func (feast *FeastServices) deployFeastServiceType(feastType FeastServiceType) error {
 	if err := feast.createDeployment(feastType); err != nil {
-		return err
+		return feast.setFeastServiceCondition(err, feastType)
 	}
 	if err := feast.createService(feastType); err != nil {
-		return err
+		return feast.setFeastServiceCondition(err, feastType)
 	}
-	return nil
+
+	return feast.setFeastServiceCondition(nil, feastType)
 }
 
 func (feast *FeastServices) createDeployment(feastType FeastServiceType) error {

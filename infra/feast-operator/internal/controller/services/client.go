@@ -26,9 +26,9 @@ import (
 
 func (feast *FeastServices) deployClient() error {
 	if err := feast.createClientConfigMap(); err != nil {
-		return err
+		return feast.setFeastServiceCondition(err, ClientFeastType)
 	}
-	return nil
+	return feast.setFeastServiceCondition(nil, ClientFeastType)
 }
 
 func (feast *FeastServices) createClientConfigMap() error {
