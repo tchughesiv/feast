@@ -36,21 +36,70 @@ func (feast *FeastServices) Deploy() error {
 	appledSpec := status.Applied
 
 	if appledSpec.Services != nil {
-		if appledSpec.Services.Registry != nil {
-			if err := feast.setFeastServiceCondition(feast.deployRegistry(), RegistryFeastType); err != nil {
+		if appledSpec.Services.OfflineStore != nil {
+			if err := feast.setFeastServiceCondition(feast.deployFeastService(OfflineFeastType), OfflineFeastType); err != nil {
 				return err
 			}
-			// else {
-			// if apimeta.RemoveStatusCondition(&status.Conditions, feastdevv1alpha1.RegistryReadyType) {
+		} else {
+			if apimeta.RemoveStatusCondition(&status.Conditions, feastdevv1alpha1.OfflineStoreReadyType) {
+				// CHANGE
+				return nil
+			}
 			// if owned service objects exist, delete them ???
-			// }
-			// since registry service is required, not needed for this service? but for the others def. needed
+		}
+		if appledSpec.Services.Registry != nil {
+			if err := feast.setFeastServiceCondition(feast.deployFeastService(RegistryFeastType), RegistryFeastType); err != nil {
+				return err
+			}
 		}
 	}
 	if err := feast.setFeastServiceCondition(feast.deployClient(), ClientFeastType); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+func (feast *FeastServices) deployFeastService(feastType FeastServiceType) error {
+	if err := feast.createDeployment(feastType); err != nil {
+		return err
+	}
+	if err := feast.createService(feastType); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (feast *FeastServices) createDeployment(feastType FeastServiceType) error {
+	logger := log.FromContext(feast.Context)
+	deploy := &appsv1.Deployment{
+		ObjectMeta: feast.GetObjectMeta(feastType),
+	}
+	deploy.SetGroupVersionKind(appsv1.SchemeGroupVersion.WithKind("Deployment"))
+	if op, err := controllerutil.CreateOrUpdate(feast.Context, feast.Client, deploy, controllerutil.MutateFn(func() error {
+		return feast.setDeployment(deploy, feastType)
+	})); err != nil {
+		return err
+	} else if op == controllerutil.OperationResultCreated || op == controllerutil.OperationResultUpdated {
+		logger.Info("Successfully reconciled", "Deployment", deploy.Name, "operation", op)
+	}
+
+	return nil
+}
+
+func (feast *FeastServices) createService(feastType FeastServiceType) error {
+	logger := log.FromContext(feast.Context)
+	svc := &corev1.Service{
+		ObjectMeta: feast.GetObjectMeta(feastType),
+	}
+	svc.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("Service"))
+	if op, err := controllerutil.CreateOrUpdate(feast.Context, feast.Client, svc, controllerutil.MutateFn(func() error {
+		return feast.setService(svc, feastType)
+	})); err != nil {
+		return err
+	} else if op == controllerutil.OperationResultCreated || op == controllerutil.OperationResultUpdated {
+		logger.Info("Successfully reconciled", "Service", svc.Name, "operation", op)
+	}
 	return nil
 }
 
