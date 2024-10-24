@@ -107,7 +107,7 @@ type RepoConfig struct {
 type OfflineStoreConfig struct {
 	Host string            `yaml:"host,omitempty"`
 	Type OfflineConfigType `yaml:"type,omitempty"`
-	Port int32             `yaml:"port,omitempty"`
+	Port int               `yaml:"port,omitempty"`
 }
 
 // OnlineStoreConfig is the configuration that relates to reading from and writing to the Feast online store.
