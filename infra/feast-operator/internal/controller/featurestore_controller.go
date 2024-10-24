@@ -145,7 +145,6 @@ func (r *FeatureStoreReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 func applyDefaultsToStatus(cr *feastdevv1alpha1.FeatureStore) {
 	cr.Status.FeastVersion = feastversion.FeastVersion
-
 	applied := cr.Spec.DeepCopy()
 	if applied.Services == nil {
 		applied.Services = &feastdevv1alpha1.FeatureStoreServices{}

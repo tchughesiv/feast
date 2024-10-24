@@ -21,6 +21,7 @@ import (
 
 	"github.com/feast-dev/feast/infra/feast-operator/api/feastversion"
 	feastdevv1alpha1 "github.com/feast-dev/feast/infra/feast-operator/api/v1alpha1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -65,6 +66,34 @@ var (
 		RegistryFeastType: {
 			Command:    []string{"feast", "serve_registry"},
 			TargetPort: 6570,
+		},
+	}
+	FeastServiceConditions = map[FeastServiceType]map[metav1.ConditionStatus]metav1.Condition{
+		RegistryFeastType: {
+			metav1.ConditionTrue: {
+				Type:    feastdevv1alpha1.RegistryReadyType,
+				Status:  metav1.ConditionTrue,
+				Reason:  feastdevv1alpha1.ReadyReason,
+				Message: feastdevv1alpha1.RegistryReadyMessage,
+			},
+			metav1.ConditionFalse: {
+				Type:   feastdevv1alpha1.RegistryReadyType,
+				Status: metav1.ConditionFalse,
+				Reason: feastdevv1alpha1.RegistryFailedReason,
+			},
+		},
+		ClientFeastType: {
+			metav1.ConditionTrue: {
+				Type:    feastdevv1alpha1.ClientReadyType,
+				Status:  metav1.ConditionTrue,
+				Reason:  feastdevv1alpha1.ReadyReason,
+				Message: feastdevv1alpha1.ClientReadyMessage,
+			},
+			metav1.ConditionFalse: {
+				Type:   feastdevv1alpha1.ClientReadyType,
+				Status: metav1.ConditionFalse,
+				Reason: feastdevv1alpha1.ClientFailedReason,
+			},
 		},
 	}
 )

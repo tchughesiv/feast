@@ -32,54 +32,40 @@ import (
 
 // Deploy the feast services
 func (feast *FeastServices) Deploy() error {
-	logger := log.FromContext(feast.Context)
 	status := &feast.FeatureStore.Status
 	appledSpec := status.Applied
 
 	if appledSpec.Services != nil {
 		if appledSpec.Services.Registry != nil {
-			if err := feast.deployRegistry(); err != nil {
-				apimeta.SetStatusCondition(&status.Conditions, metav1.Condition{
-					Type:    feastdevv1alpha1.RegistryReadyType,
-					Status:  metav1.ConditionFalse,
-					Reason:  feastdevv1alpha1.RegistryFailedReason,
-					Message: "Error: " + err.Error(),
-				})
-				logger.Error(err, "Error deploying the FeatureStore "+string(RegistryFeastType)+" service")
+			if err := feast.setFeastCondition(feast.deployRegistry(), RegistryFeastType); err != nil {
 				return err
-			} else {
-				apimeta.SetStatusCondition(&status.Conditions, metav1.Condition{
-					Type:    feastdevv1alpha1.RegistryReadyType,
-					Status:  metav1.ConditionTrue,
-					Reason:  feastdevv1alpha1.ReadyReason,
-					Message: feastdevv1alpha1.RegistryReadyMessage,
-				})
 			}
-		} // else {
-		// if apimeta.RemoveStatusCondition(&status.Conditions, feastdevv1alpha1.RegistryReadyType) {
-		// if owned service objects exist, delete them ???
-		// }
+			// else {
+			// if apimeta.RemoveStatusCondition(&status.Conditions, feastdevv1alpha1.RegistryReadyType) {
+			// if owned service objects exist, delete them ???
+			// }
 
-		// since registry service is required, not needed for this service? but for the others def. needed
-		// }
+			// since registry service is required, not needed for this service? but for the others def. needed
+			// }
+		}
+	}
+	if err := feast.setFeastCondition(feast.deployClient(), ClientFeastType); err != nil {
+		return err
 	}
 
-	if err := feast.deployClient(); err != nil {
-		apimeta.SetStatusCondition(&status.Conditions, metav1.Condition{
-			Type:    feastdevv1alpha1.ClientReadyType,
-			Status:  metav1.ConditionFalse,
-			Reason:  feastdevv1alpha1.ClientFailedReason,
-			Message: "Error: " + err.Error(),
-		})
+	return nil
+}
+func (feast *FeastServices) setFeastCondition(err error, feastType FeastServiceType) error {
+	logger := log.FromContext(feast.Context)
+	conditionMap := FeastServiceConditions[feastType]
+	if err != nil {
+		cond := conditionMap[metav1.ConditionFalse]
+		cond.Message = "Error: " + err.Error()
+		apimeta.SetStatusCondition(&feast.FeatureStore.Status.Conditions, cond)
 		logger.Error(err, "Error deploying the FeatureStore "+string(ClientFeastType)+" service")
 		return err
 	} else {
-		apimeta.SetStatusCondition(&status.Conditions, metav1.Condition{
-			Type:    feastdevv1alpha1.ClientReadyType,
-			Status:  metav1.ConditionTrue,
-			Reason:  feastdevv1alpha1.ReadyReason,
-			Message: feastdevv1alpha1.ClientReadyMessage,
-		})
+		apimeta.SetStatusCondition(&feast.FeatureStore.Status.Conditions, conditionMap[metav1.ConditionTrue])
 	}
 	return nil
 }
