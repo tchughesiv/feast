@@ -18,9 +18,11 @@ package services
 
 import (
 	"encoding/base64"
+	"strings"
 
 	feastdevv1alpha1 "github.com/feast-dev/feast/infra/feast-operator/api/v1alpha1"
 	"gopkg.in/yaml.v3"
+	corev1 "k8s.io/api/core/v1"
 )
 
 // GetServiceFeatureStoreYamlBase64 returns a base64 encoded feature_store.yaml config for the feast service
@@ -81,16 +83,17 @@ func (feast *FeastServices) getClientRepoConfig() RepoConfig {
 		EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
 	}
 	if len(status.ServiceHostnames.OfflineStore) > 0 {
+		strArr := strings.Split(status.ServiceHostnames.OfflineStore, ":")
 		clientRepoConfig.OfflineStore = OfflineStoreConfig{
 			Type: OfflineRemoteConfigType,
-			Host: status.ServiceHostnames.OfflineStore,
+			Host: strArr[0],
 			Port: HttpPort,
 		}
 	}
 	if len(status.ServiceHostnames.OnlineStore) > 0 {
 		clientRepoConfig.OnlineStore = OnlineStoreConfig{
 			Type: OnlineRemoteConfigType,
-			Path: status.ServiceHostnames.OnlineStore,
+			Path: strings.ToLower(string(corev1.URISchemeHTTP)) + "://" + status.ServiceHostnames.OnlineStore,
 		}
 	}
 	if len(status.ServiceHostnames.Registry) > 0 {
