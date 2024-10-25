@@ -32,29 +32,28 @@ import (
 
 // Deploy the feast services
 func (feast *FeastServices) Deploy() error {
-	status := &feast.FeatureStore.Status
-	appledSpec := status.Applied
+	services := feast.FeatureStore.Status.Applied.Services
+	feast.setServiceHostnames(services)
 
-	feast.setServiceHostnames(appledSpec.Services)
-	if appledSpec.Services != nil {
-		if appledSpec.Services.OfflineStore != nil {
+	if services != nil {
+		if services.OfflineStore != nil {
 			if err := feast.deployFeastServiceType(OfflineFeastType); err != nil {
 				return err
 			}
 		} else {
-			apimeta.RemoveStatusCondition(&status.Conditions, feastdevv1alpha1.OfflineStoreReadyType)
+			apimeta.RemoveStatusCondition(&feast.FeatureStore.Status.Conditions, feastdevv1alpha1.OfflineStoreReadyType)
 			// if owned service objects exist, delete them ???
 		}
 
-		if appledSpec.Services.OnlineStore != nil {
+		if services.OnlineStore != nil {
 			if err := feast.deployFeastServiceType(OnlineFeastType); err != nil {
 				return err
 			}
 		} else {
-			apimeta.RemoveStatusCondition(&status.Conditions, feastdevv1alpha1.OnlineStoreReadyType)
+			apimeta.RemoveStatusCondition(&feast.FeatureStore.Status.Conditions, feastdevv1alpha1.OnlineStoreReadyType)
 		}
 
-		if appledSpec.Services.Registry != nil {
+		if services.Registry != nil {
 			if err := feast.deployFeastServiceType(RegistryFeastType); err != nil {
 				return err
 			}
