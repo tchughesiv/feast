@@ -28,8 +28,11 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
@@ -90,6 +93,25 @@ var _ = Describe("FeatureStore Controller", func() {
 			resource := &feastdevv1alpha1.FeatureStore{}
 			err = k8sClient.Get(ctx, typeNamespacedName, resource)
 			Expect(err).NotTo(HaveOccurred())
+
+			req, err := labels.NewRequirement(services.NameLabelKey, selection.Equals, []string{resource.Name})
+			Expect(err).NotTo(HaveOccurred())
+			labelSelector := labels.NewSelector().Add(*req)
+			listOpts := &client.ListOptions{Namespace: resource.Namespace, LabelSelector: labelSelector}
+			deployList := appsv1.DeploymentList{}
+			err = k8sClient.List(ctx, &deployList, listOpts)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(deployList.Items).To(HaveLen(1))
+
+			svcList := corev1.ServiceList{}
+			err = k8sClient.List(ctx, &svcList, listOpts)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(svcList.Items).To(HaveLen(1))
+
+			cmList := corev1.ConfigMapList{}
+			err = k8sClient.List(ctx, &cmList, listOpts)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(cmList.Items).To(HaveLen(1))
 
 			feast := services.FeastServices{
 				Client:       controllerReconciler.Client,
@@ -488,6 +510,25 @@ var _ = Describe("FeatureStore Controller", func() {
 			err = k8sClient.Get(ctx, typeNamespacedName, resource)
 			Expect(err).NotTo(HaveOccurred())
 
+			req, err := labels.NewRequirement(services.NameLabelKey, selection.Equals, []string{resource.Name})
+			Expect(err).NotTo(HaveOccurred())
+			labelSelector := labels.NewSelector().Add(*req)
+			listOpts := &client.ListOptions{Namespace: resource.Namespace, LabelSelector: labelSelector}
+			deployList := appsv1.DeploymentList{}
+			err = k8sClient.List(ctx, &deployList, listOpts)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(deployList.Items).To(HaveLen(3))
+
+			svcList := corev1.ServiceList{}
+			err = k8sClient.List(ctx, &svcList, listOpts)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(svcList.Items).To(HaveLen(3))
+
+			cmList := corev1.ConfigMapList{}
+			err = k8sClient.List(ctx, &cmList, listOpts)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(cmList.Items).To(HaveLen(1))
+
 			feast := services.FeastServices{
 				Client:       controllerReconciler.Client,
 				Context:      ctx,
@@ -564,6 +605,45 @@ var _ = Describe("FeatureStore Controller", func() {
 				Registry: rConfig,
 			}
 			Expect(repoConfigOffline).To(Equal(offlineConfig))
+
+			// check online config
+			deploy = &appsv1.Deployment{}
+			err = k8sClient.Get(ctx, types.NamespacedName{
+				Name:      feast.GetFeastServiceName(services.OnlineFeastType),
+				Namespace: resource.Namespace,
+			},
+				deploy)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(deploy.Spec.Template.Spec.Containers).To(HaveLen(1))
+			Expect(deploy.Spec.Template.Spec.Containers[0].Env).To(HaveLen(1))
+			env = getFeatureStoreYamlEnvVar(deploy.Spec.Template.Spec.Containers[0].Env)
+			Expect(env).NotTo(BeNil())
+
+			fsYamlStr, err = feast.GetServiceFeatureStoreYamlBase64(services.OnlineFeastType)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(fsYamlStr).To(Equal(env.Value))
+
+			envByte, err = base64.StdEncoding.DecodeString(env.Value)
+			Expect(err).NotTo(HaveOccurred())
+			repoConfigOnline := &services.RepoConfig{}
+			err = yaml.Unmarshal(envByte, repoConfigOnline)
+			Expect(err).NotTo(HaveOccurred())
+			onlineConfig := &services.RepoConfig{
+				Project:                       feastProject,
+				Provider:                      services.LocalProviderType,
+				EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
+				OfflineStore: services.OfflineStoreConfig{
+					Host: "feast-services-offline.default.svc.cluster.local",
+					Type: services.OfflineRemoteConfigType,
+					Port: services.HttpPort,
+				},
+				OnlineStore: services.OnlineStoreConfig{
+					Path: services.LocalOnlinePath,
+					Type: services.OnlineSqliteConfigType,
+				},
+				Registry: rConfig,
+			}
+			Expect(repoConfigOnline).To(Equal(onlineConfig))
 
 			// change feast project and reconcile
 			resourceNew := resource.DeepCopy()

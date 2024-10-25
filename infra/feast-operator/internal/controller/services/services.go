@@ -249,8 +249,8 @@ func (feast *FeastServices) getFeastName() string {
 
 func (feast *FeastServices) getLabels(feastType FeastServiceType) map[string]string {
 	return map[string]string{
-		feastdevv1alpha1.GroupVersion.Group + "/name":         feast.FeatureStore.Name,
-		feastdevv1alpha1.GroupVersion.Group + "/service-type": string(feastType),
+		NameLabelKey:        feast.FeatureStore.Name,
+		ServiceTypeLabelKey: string(feastType),
 	}
 }
 

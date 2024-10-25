@@ -52,8 +52,10 @@ const (
 )
 
 var (
-	DefaultImage    = "feastdev/feature-server:" + feastversion.FeastVersion
-	DefaultReplicas = int32(1)
+	DefaultImage        = "feastdev/feature-server:" + feastversion.FeastVersion
+	DefaultReplicas     = int32(1)
+	NameLabelKey        = feastdevv1alpha1.GroupVersion.Group + "/name"
+	ServiceTypeLabelKey = feastdevv1alpha1.GroupVersion.Group + "/service-type"
 
 	FeastServiceConstants = map[FeastServiceType]DeploymentSettings{
 		OfflineFeastType: {
