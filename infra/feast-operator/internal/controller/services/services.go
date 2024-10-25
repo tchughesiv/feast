@@ -68,24 +68,6 @@ func (feast *FeastServices) Deploy() error {
 	return nil
 }
 
-func (feast *FeastServices) setServiceHostnames(services *feastdevv1alpha1.FeatureStoreServices) {
-	if services != nil {
-		domain := svcDomain + ":" + strconv.Itoa(HttpPort)
-		if services.OfflineStore != nil {
-			objMeta := feast.GetObjectMeta(OfflineFeastType)
-			feast.FeatureStore.Status.ServiceHostnames.OfflineStore = objMeta.Name + "." + objMeta.Namespace + domain
-		}
-		if services.OnlineStore != nil {
-			objMeta := feast.GetObjectMeta(OnlineFeastType)
-			feast.FeatureStore.Status.ServiceHostnames.OnlineStore = objMeta.Name + "." + objMeta.Namespace + domain
-		}
-		if services.Registry != nil {
-			objMeta := feast.GetObjectMeta(RegistryFeastType)
-			feast.FeatureStore.Status.ServiceHostnames.Registry = objMeta.Name + "." + objMeta.Namespace + domain
-		}
-	}
-}
-
 func (feast *FeastServices) deployFeastServiceType(feastType FeastServiceType) error {
 	// ?? maybe split out services and deploy those first ???
 	if err := feast.createService(feastType); err != nil {
@@ -252,6 +234,24 @@ func (feast *FeastServices) getLabels(feastType FeastServiceType) map[string]str
 	return map[string]string{
 		NameLabelKey:        feast.FeatureStore.Name,
 		ServiceTypeLabelKey: string(feastType),
+	}
+}
+
+func (feast *FeastServices) setServiceHostnames(services *feastdevv1alpha1.FeatureStoreServices) {
+	if services != nil {
+		domain := svcDomain + ":" + strconv.Itoa(HttpPort)
+		if services.OfflineStore != nil {
+			objMeta := feast.GetObjectMeta(OfflineFeastType)
+			feast.FeatureStore.Status.ServiceHostnames.OfflineStore = objMeta.Name + "." + objMeta.Namespace + domain
+		}
+		if services.OnlineStore != nil {
+			objMeta := feast.GetObjectMeta(OnlineFeastType)
+			feast.FeatureStore.Status.ServiceHostnames.OnlineStore = objMeta.Name + "." + objMeta.Namespace + domain
+		}
+		if services.Registry != nil {
+			objMeta := feast.GetObjectMeta(RegistryFeastType)
+			feast.FeatureStore.Status.ServiceHostnames.Registry = objMeta.Name + "." + objMeta.Namespace + domain
+		}
 	}
 }
 
