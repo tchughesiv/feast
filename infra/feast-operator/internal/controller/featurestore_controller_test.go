@@ -235,6 +235,29 @@ var _ = Describe("FeatureStore Controller", func() {
 			}
 			Expect(repoConfig).To(Equal(testConfig))
 
+			// check client config
+			cm := &corev1.ConfigMap{}
+			name := feast.GetFeastServiceName(services.ClientFeastType)
+			err = k8sClient.Get(ctx, types.NamespacedName{
+				Name:      name,
+				Namespace: resource.Namespace,
+			},
+				cm)
+			Expect(err).NotTo(HaveOccurred())
+			repoConfigClient := &services.RepoConfig{}
+			err = yaml.Unmarshal([]byte(cm.Data[services.FeatureStoreYamlCmKey]), repoConfigClient)
+			Expect(err).NotTo(HaveOccurred())
+			clientConfig := &services.RepoConfig{
+				Project:                       feastProject,
+				Provider:                      services.LocalProviderType,
+				EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
+				Registry: services.RegistryConfig{
+					RegistryType: services.RegistryRemoteConfigType,
+					Path:         "feast-test-resource-registry.default.svc.cluster.local:80",
+				},
+			}
+			Expect(repoConfigClient).To(Equal(clientConfig))
+
 			// change feast project and reconcile
 			resourceNew := resource.DeepCopy()
 			resourceNew.Spec.FeastProject = "changed"
