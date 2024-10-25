@@ -42,7 +42,8 @@ func (feast *FeastServices) Deploy() error {
 			}
 		} else {
 			apimeta.RemoveStatusCondition(&feast.FeatureStore.Status.Conditions, feastdevv1alpha1.OfflineStoreReadyType)
-			// if owned service objects exist, delete them ???
+			// ?? if owned service objects exist, delete them ???
+			// ?? pull lists by labelSelector and then vet by checking ownerrefs before possible removal
 		}
 
 		if services.OnlineStore != nil {
