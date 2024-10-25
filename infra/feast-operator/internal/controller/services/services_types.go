@@ -29,6 +29,7 @@ import (
 const (
 	FeastPrefix            = "feast-"
 	FeatureStoreYamlEnvVar = "FEATURE_STORE_YAML_BASE64"
+	FeatureStoreYamlCmKey  = "feature_store.yaml"
 	LocalRegistryPath      = "/tmp/registry.db"
 	LocalOnlinePath        = "/tmp/online_store.db"
 	svcDomain              = ".svc.cluster.local"

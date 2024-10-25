@@ -83,10 +83,9 @@ func (feast *FeastServices) getClientRepoConfig() RepoConfig {
 		EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
 	}
 	if len(status.ServiceHostnames.OfflineStore) > 0 {
-		strArr := strings.Split(status.ServiceHostnames.OfflineStore, ":")
 		clientRepoConfig.OfflineStore = OfflineStoreConfig{
 			Type: OfflineRemoteConfigType,
-			Host: strArr[0],
+			Host: strings.Split(status.ServiceHostnames.OfflineStore, ":")[0],
 			Port: HttpPort,
 		}
 	}

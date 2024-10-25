@@ -122,6 +122,8 @@ var _ = Describe("FeatureStore Controller", func() {
 			Expect(resource.Status).NotTo(BeNil())
 			Expect(resource.Status.FeastVersion).To(Equal(feastversion.FeastVersion))
 			Expect(resource.Status.ClientConfigMap).To(Equal(feast.GetFeastServiceName(services.ClientFeastType)))
+			Expect(resource.Status.ServiceHostnames.OfflineStore).To(BeEmpty())
+			Expect(resource.Status.ServiceHostnames.OnlineStore).To(BeEmpty())
 			Expect(resource.Status.ServiceHostnames.Registry).To(Equal(feast.GetFeastServiceName(services.RegistryFeastType) + "." + resource.Namespace + ".svc.cluster.local:80"))
 			Expect(resource.Status.Applied.FeastProject).To(Equal(resource.Spec.FeastProject))
 			Expect(resource.Status.Applied.Services).NotTo(BeNil())
@@ -433,9 +435,10 @@ var _ = Describe("FeatureStore Controller", func() {
 			Expect(resource.Status.Applied.Services.Registry.Resources).To(BeNil())
 			Expect(resource.Status.Applied.Services.Registry.Image).To(Equal(&services.DefaultImage))
 
-			Expect(resource.Status.ServiceHostnames.OfflineStore).To(Equal(feast.GetFeastServiceName(services.OfflineFeastType) + "." + resource.Namespace + ".svc.cluster.local:80"))
-			Expect(resource.Status.ServiceHostnames.OnlineStore).To(Equal(feast.GetFeastServiceName(services.OnlineFeastType) + "." + resource.Namespace + ".svc.cluster.local:80"))
-			Expect(resource.Status.ServiceHostnames.Registry).To(Equal(feast.GetFeastServiceName(services.RegistryFeastType) + "." + resource.Namespace + ".svc.cluster.local:80"))
+			domain := ".svc.cluster.local:80"
+			Expect(resource.Status.ServiceHostnames.OfflineStore).To(Equal(feast.GetFeastServiceName(services.OfflineFeastType) + "." + resource.Namespace + domain))
+			Expect(resource.Status.ServiceHostnames.OnlineStore).To(Equal(feast.GetFeastServiceName(services.OnlineFeastType) + "." + resource.Namespace + domain))
+			Expect(resource.Status.ServiceHostnames.Registry).To(Equal(feast.GetFeastServiceName(services.RegistryFeastType) + "." + resource.Namespace + domain))
 
 			Expect(resource.Status.Conditions).NotTo(BeEmpty())
 			cond := apimeta.FindStatusCondition(resource.Status.Conditions, feastdevv1alpha1.ReadyType)
@@ -594,7 +597,7 @@ var _ = Describe("FeatureStore Controller", func() {
 			repoConfigOffline := &services.RepoConfig{}
 			err = yaml.Unmarshal(envByte, repoConfigOffline)
 			Expect(err).NotTo(HaveOccurred())
-			rConfig := services.RegistryConfig{
+			regRemote := services.RegistryConfig{
 				RegistryType: services.RegistryRemoteConfigType,
 				Path:         "feast-services-registry.default.svc.cluster.local:80",
 			}
@@ -605,7 +608,7 @@ var _ = Describe("FeatureStore Controller", func() {
 				OfflineStore: services.OfflineStoreConfig{
 					Type: services.OfflineDaskConfigType,
 				},
-				Registry: rConfig,
+				Registry: regRemote,
 			}
 			Expect(repoConfigOffline).To(Equal(offlineConfig))
 
@@ -631,22 +634,48 @@ var _ = Describe("FeatureStore Controller", func() {
 			repoConfigOnline := &services.RepoConfig{}
 			err = yaml.Unmarshal(envByte, repoConfigOnline)
 			Expect(err).NotTo(HaveOccurred())
+			offlineRemote := services.OfflineStoreConfig{
+				Host: "feast-services-offline.default.svc.cluster.local",
+				Type: services.OfflineRemoteConfigType,
+				Port: services.HttpPort,
+			}
 			onlineConfig := &services.RepoConfig{
 				Project:                       feastProject,
 				Provider:                      services.LocalProviderType,
 				EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
-				OfflineStore: services.OfflineStoreConfig{
-					Host: "feast-services-offline.default.svc.cluster.local",
-					Type: services.OfflineRemoteConfigType,
-					Port: services.HttpPort,
-				},
+				OfflineStore:                  offlineRemote,
 				OnlineStore: services.OnlineStoreConfig{
 					Path: services.LocalOnlinePath,
 					Type: services.OnlineSqliteConfigType,
 				},
-				Registry: rConfig,
+				Registry: regRemote,
 			}
 			Expect(repoConfigOnline).To(Equal(onlineConfig))
+
+			// check client config
+			cm := &corev1.ConfigMap{}
+			name := feast.GetFeastServiceName(services.ClientFeastType)
+			err = k8sClient.Get(ctx, types.NamespacedName{
+				Name:      name,
+				Namespace: resource.Namespace,
+			},
+				cm)
+			Expect(err).NotTo(HaveOccurred())
+			repoConfigClient := &services.RepoConfig{}
+			err = yaml.Unmarshal([]byte(cm.Data[services.FeatureStoreYamlCmKey]), repoConfigClient)
+			Expect(err).NotTo(HaveOccurred())
+			clientConfig := &services.RepoConfig{
+				Project:                       feastProject,
+				Provider:                      services.LocalProviderType,
+				EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
+				OfflineStore:                  offlineRemote,
+				OnlineStore: services.OnlineStoreConfig{
+					Path: "http://feast-services-online.default.svc.cluster.local:80",
+					Type: services.OnlineRemoteConfigType,
+				},
+				Registry: regRemote,
+			}
+			Expect(repoConfigClient).To(Equal(clientConfig))
 
 			// change feast project and reconcile
 			resourceNew := resource.DeepCopy()

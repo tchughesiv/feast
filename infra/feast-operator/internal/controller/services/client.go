@@ -51,7 +51,7 @@ func (feast *FeastServices) setClientConfigMap(cm *corev1.ConfigMap) error {
 	if err != nil {
 		return err
 	}
-	cm.Data = map[string]string{"feature_store.yaml": string(clientYaml)}
+	cm.Data = map[string]string{FeatureStoreYamlCmKey: string(clientYaml)}
 	feast.FeatureStore.Status.ClientConfigMap = cm.Name
 	return controllerutil.SetControllerReference(feast.FeatureStore, cm, feast.Scheme)
 }

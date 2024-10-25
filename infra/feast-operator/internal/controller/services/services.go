@@ -70,19 +70,18 @@ func (feast *FeastServices) Deploy() error {
 
 func (feast *FeastServices) setServiceHostnames(services *feastdevv1alpha1.FeatureStoreServices) {
 	if services != nil {
-		port := strconv.Itoa(HttpPort)
+		domain := svcDomain + ":" + strconv.Itoa(HttpPort)
 		if services.OfflineStore != nil {
-			svcMeta := feast.GetObjectMeta(OfflineFeastType)
-			feast.FeatureStore.Status.ServiceHostnames.OfflineStore = svcMeta.Name + "." + svcMeta.Namespace + svcDomain + ":" + port
+			objMeta := feast.GetObjectMeta(OfflineFeastType)
+			feast.FeatureStore.Status.ServiceHostnames.OfflineStore = objMeta.Name + "." + objMeta.Namespace + domain
 		}
 		if services.OnlineStore != nil {
-			svcMeta := feast.GetObjectMeta(OnlineFeastType)
-			//feast.FeatureStore.Status.ServiceHostnames.OnlineStore = strings.ToLower(string(corev1.URISchemeHTTP)) + "://" + svcMeta.Name + "." + svcMeta.Namespace + svcDomain + ":" + strconv.Itoa(HttpPort)
-			feast.FeatureStore.Status.ServiceHostnames.OnlineStore = svcMeta.Name + "." + svcMeta.Namespace + svcDomain + ":" + port
+			objMeta := feast.GetObjectMeta(OnlineFeastType)
+			feast.FeatureStore.Status.ServiceHostnames.OnlineStore = objMeta.Name + "." + objMeta.Namespace + domain
 		}
 		if services.Registry != nil {
-			svcMeta := feast.GetObjectMeta(RegistryFeastType)
-			feast.FeatureStore.Status.ServiceHostnames.Registry = svcMeta.Name + "." + svcMeta.Namespace + svcDomain + ":" + port
+			objMeta := feast.GetObjectMeta(RegistryFeastType)
+			feast.FeatureStore.Status.ServiceHostnames.Registry = objMeta.Name + "." + objMeta.Namespace + domain
 		}
 	}
 }
