@@ -212,11 +212,6 @@ type RegistryConfig struct {
 	DBParameters       map[string]interface{} `yaml:",inline,omitempty"`
 }
 
-// AuthzConfig is the RBAC authorization configuration.
-type AuthzConfig struct {
-	Type AuthzType `yaml:"type,omitempty"`
-}
-
 type deploymentSettings struct {
 	Command         []string
 	TargetHttpPort  int32

@@ -40,7 +40,6 @@ import (
 
 	"github.com/feast-dev/feast/infra/feast-operator/api/feastversion"
 	feastdevv1alpha1 "github.com/feast-dev/feast/infra/feast-operator/api/v1alpha1"
-	"github.com/feast-dev/feast/infra/feast-operator/internal/controller/handler"
 	"github.com/feast-dev/feast/infra/feast-operator/internal/controller/services"
 )
 
@@ -115,12 +114,10 @@ var _ = Describe("FeatureStore Controller - Feast service TLS", func() {
 			err = k8sClient.Get(ctx, typeNamespacedName, resource)
 			Expect(err).NotTo(HaveOccurred())
 			feast := services.FeastServices{
-				Handler: handler.FeastHandler{
-					Client:       controllerReconciler.Client,
-					Context:      ctx,
-					Scheme:       controllerReconciler.Scheme,
-					FeatureStore: resource,
-				},
+				Client:       controllerReconciler.Client,
+				Context:      ctx,
+				Scheme:       controllerReconciler.Scheme,
+				FeatureStore: resource,
 			}
 
 			Expect(resource.Status).NotTo(BeNil())
@@ -212,12 +209,10 @@ var _ = Describe("FeatureStore Controller - Feast service TLS", func() {
 			err = k8sClient.Get(ctx, typeNamespacedName, resource)
 			Expect(err).NotTo(HaveOccurred())
 			feast := services.FeastServices{
-				Handler: handler.FeastHandler{
-					Client:       controllerReconciler.Client,
-					Context:      ctx,
-					Scheme:       controllerReconciler.Scheme,
-					FeatureStore: resource,
-				},
+				Client:       controllerReconciler.Client,
+				Context:      ctx,
+				Scheme:       controllerReconciler.Scheme,
+				FeatureStore: resource,
 			}
 
 			req, err := labels.NewRequirement(services.NameLabelKey, selection.Equals, []string{resource.Name})
@@ -269,7 +264,6 @@ var _ = Describe("FeatureStore Controller - Feast service TLS", func() {
 					RegistryType: services.RegistryFileConfigType,
 					Path:         services.DefaultRegistryEphemeralPath,
 				},
-				AuthzConfig: noAuthzConfig(),
 			}
 			Expect(repoConfig).To(Equal(testConfig))
 
@@ -307,8 +301,7 @@ var _ = Describe("FeatureStore Controller - Feast service TLS", func() {
 				OfflineStore: services.OfflineStoreConfig{
 					Type: services.OfflineFilePersistenceDaskConfigType,
 				},
-				Registry:    regRemote,
-				AuthzConfig: noAuthzConfig(),
+				Registry: regRemote,
 			}
 			Expect(repoConfigOffline).To(Equal(offlineConfig))
 
@@ -350,8 +343,7 @@ var _ = Describe("FeatureStore Controller - Feast service TLS", func() {
 					Path: services.DefaultOnlineStoreEphemeralPath,
 					Type: services.OnlineSqliteConfigType,
 				},
-				Registry:    regRemote,
-				AuthzConfig: noAuthzConfig(),
+				Registry: regRemote,
 			}
 			Expect(repoConfigOnline).To(Equal(onlineConfig))
 			Expect(deploy.Spec.Template.Spec.Containers[0].Env).To(HaveLen(1))
@@ -378,8 +370,7 @@ var _ = Describe("FeatureStore Controller - Feast service TLS", func() {
 					Type: services.OnlineRemoteConfigType,
 					Cert: services.GetTlsPath(services.OnlineFeastType) + "tls.crt",
 				},
-				Registry:    regRemote,
-				AuthzConfig: noAuthzConfig(),
+				Registry: regRemote,
 			}
 			Expect(repoConfigClient).To(Equal(clientConfig))
 
@@ -421,7 +412,7 @@ var _ = Describe("FeatureStore Controller - Feast service TLS", func() {
 			resource = &feastdevv1alpha1.FeatureStore{}
 			err = k8sClient.Get(ctx, typeNamespacedName, resource)
 			Expect(err).NotTo(HaveOccurred())
-			feast.Handler.FeatureStore = resource
+			feast.FeatureStore = resource
 
 			// check registry
 			deploy = &appsv1.Deployment{}

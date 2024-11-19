@@ -21,7 +21,7 @@ import (
 
 var isOpenShift = false
 
-func IsLocalRegistry(featureStore *feastdevv1alpha1.FeatureStore) bool {
+func isLocalRegistry(featureStore *feastdevv1alpha1.FeatureStore) bool {
 	appliedServices := featureStore.Status.Applied.Services
 	return appliedServices != nil && appliedServices.Registry != nil && appliedServices.Registry.Local != nil
 }

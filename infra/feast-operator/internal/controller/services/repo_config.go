@@ -73,7 +73,7 @@ func getServiceRepoConfig(feastType FeastServiceType, featureStore *feastdevv1al
 			}
 		case RegistryFeastType:
 			// Registry server only has a `registry` section
-			if IsLocalRegistry(featureStore) {
+			if isLocalRegistry(featureStore) {
 				err := setRepoConfigRegistry(services, secretExtractionFunc, &repoConfig)
 				if err != nil {
 					return repoConfig, err
@@ -245,18 +245,6 @@ func getClientRepoConfig(featureStore *feastdevv1alpha1.FeatureStore) RepoConfig
 			clientRepoConfig.Registry.Cert = GetTlsPath(RegistryFeastType) + appliedServices.Registry.Local.TLS.SecretKeyNames.TlsCrt
 		} else if remoteRegistryTls(featureStore) {
 			clientRepoConfig.Registry.Cert = GetTlsPath(RegistryFeastType) + appliedServices.Registry.Remote.TLS.CertName
-		}
-	}
-
-	if status.Applied.AuthzConfig.KubernetesAuthz == nil {
-		clientRepoConfig.AuthzConfig = AuthzConfig{
-			Type: NoAuthAuthType,
-		}
-	} else {
-		if status.Applied.AuthzConfig.KubernetesAuthz != nil {
-			clientRepoConfig.AuthzConfig = AuthzConfig{
-				Type: KubernetesAuthType,
-			}
 		}
 	}
 	return clientRepoConfig
