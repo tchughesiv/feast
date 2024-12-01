@@ -28,6 +28,8 @@ func (authz *FeastAuthorization) Deploy() error {
 			_ = authz.Handler.DeleteOwnedFeastObj(authz.initFeastRole())
 			_ = authz.Handler.DeleteOwnedFeastObj(authz.initFeastRoleBinding())
 		}
+	} else {
+		apimeta.RemoveStatusCondition(&authz.Handler.FeatureStore.Status.Conditions, feastKubernetesAuthConditions[metav1.ConditionTrue].Type)
 	}
 	return nil
 }
