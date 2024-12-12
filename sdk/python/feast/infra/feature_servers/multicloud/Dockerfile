@@ -11,7 +11,7 @@ RUN source ~/miniconda3/bin/activate && \
     conda config --add channels conda-forge && \
     # update all packages to make sure they're from conda-forge, not defaults
     conda update --all && \
-    conda install -c conda-forge pyarrow=17 libarrow-flight && \
+    conda install -c conda-forge pyarrow=18 libarrow-flight && \
     conda clean -a
     
 RUN pip install --no-cache-dir "feast[aws,gcp,snowflake,redis,go,mysql,postgres,opentelemetry,grpcio,k8s]"==${VERSION}
