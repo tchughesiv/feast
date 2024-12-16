@@ -426,9 +426,9 @@ spec:
                             type: object
                         type: object
                       tls:
-                        description: OfflineTlsConfigs configures server TLS for the
-                          offline feast service. in an openshift cluster, this is
-                          configured by default using service serving certificates.
+                        description: TlsConfigs configures server TLS for a feast
+                          service. in an openshift cluster, this is configured by
+                          default using service serving certificates.
                         properties:
                           disable:
                             description: will disable TLS for the feast service. useful
@@ -458,9 +458,6 @@ spec:
                                 type: string
                             type: object
                             x-kubernetes-map-type: atomic
-                          verifyClient:
-                            description: verify the client TLS certificate.
-                            type: boolean
                         type: object
                         x-kubernetes-validations:
                         - message: '`secretRef` required if `disable` is false.'
@@ -1672,10 +1669,9 @@ spec:
                                 type: object
                             type: object
                           tls:
-                            description: OfflineTlsConfigs configures server TLS for
-                              the offline feast service. in an openshift cluster,
-                              this is configured by default using service serving
-                              certificates.
+                            description: TlsConfigs configures server TLS for a feast
+                              service. in an openshift cluster, this is configured
+                              by default using service serving certificates.
                             properties:
                               disable:
                                 description: will disable TLS for the feast service.
@@ -1705,9 +1701,6 @@ spec:
                                     type: string
                                 type: object
                                 x-kubernetes-map-type: atomic
-                              verifyClient:
-                                description: verify the client TLS certificate.
-                                type: boolean
                             type: object
                             x-kubernetes-validations:
                             - message: '`secretRef` required if `disable` is false.'
