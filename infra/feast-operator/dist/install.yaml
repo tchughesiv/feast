@@ -320,6 +320,8 @@ spec:
                                         type: string
                                     type: object
                                     x-kubernetes-map-type: atomic
+                                required:
+                                - mountPath
                                 type: object
                                 x-kubernetes-validations:
                                 - message: One selection is required between ref and
@@ -377,12 +379,6 @@ spec:
                         x-kubernetes-validations:
                         - message: One selection required between file or store.
                           rule: '[has(self.file), has(self.store)].exists_one(c, c)'
-                      replicas:
-                        description: |-
-                          Replicas determines the number of pods for the feast service.
-                          When Replicas > 1, persistence is recommended.
-                        format: int32
-                        type: integer
                       resources:
                         description: ResourceRequirements describes the compute resource
                           requirements.
@@ -688,6 +684,8 @@ spec:
                                         type: string
                                     type: object
                                     x-kubernetes-map-type: atomic
+                                required:
+                                - mountPath
                                 type: object
                                 x-kubernetes-validations:
                                 - message: One selection is required between ref and
@@ -756,12 +754,6 @@ spec:
                         x-kubernetes-validations:
                         - message: One selection required between file or store.
                           rule: '[has(self.file), has(self.store)].exists_one(c, c)'
-                      replicas:
-                        description: |-
-                          Replicas determines the number of pods for the feast service.
-                          When Replicas > 1, persistence is recommended.
-                        format: int32
-                        type: integer
                       resources:
                         description: ResourceRequirements describes the compute resource
                           requirements.
@@ -1072,6 +1064,8 @@ spec:
                                             type: string
                                         type: object
                                         x-kubernetes-map-type: atomic
+                                    required:
+                                    - mountPath
                                     type: object
                                     x-kubernetes-validations:
                                     - message: One selection is required between ref
@@ -1572,6 +1566,8 @@ spec:
                                             type: string
                                         type: object
                                         x-kubernetes-map-type: atomic
+                                    required:
+                                    - mountPath
                                     type: object
                                     x-kubernetes-validations:
                                     - message: One selection is required between ref
@@ -1631,12 +1627,6 @@ spec:
                             - message: One selection required between file or store.
                               rule: '[has(self.file), has(self.store)].exists_one(c,
                                 c)'
-                          replicas:
-                            description: |-
-                              Replicas determines the number of pods for the feast service.
-                              When Replicas > 1, persistence is recommended.
-                            format: int32
-                            type: integer
                           resources:
                             description: ResourceRequirements describes the compute
                               resource requirements.
@@ -1945,6 +1935,8 @@ spec:
                                             type: string
                                         type: object
                                         x-kubernetes-map-type: atomic
+                                    required:
+                                    - mountPath
                                     type: object
                                     x-kubernetes-validations:
                                     - message: One selection is required between ref
@@ -2016,12 +2008,6 @@ spec:
                             - message: One selection required between file or store.
                               rule: '[has(self.file), has(self.store)].exists_one(c,
                                 c)'
-                          replicas:
-                            description: |-
-                              Replicas determines the number of pods for the feast service.
-                              When Replicas > 1, persistence is recommended.
-                            format: int32
-                            type: integer
                           resources:
                             description: ResourceRequirements describes the compute
                               resource requirements.
@@ -2339,6 +2325,8 @@ spec:
                                                 type: string
                                             type: object
                                             x-kubernetes-map-type: atomic
+                                        required:
+                                        - mountPath
                                         type: object
                                         x-kubernetes-validations:
                                         - message: One selection is required between
