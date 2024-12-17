@@ -187,47 +187,19 @@ var _ = Describe("FeatureStore Controller-Kubernetes authorization", func() {
 
 			Expect(resource.Status.Phase).To(Equal(feastdevv1alpha1.ReadyPhase))
 
-			// check offline deployment
+			// check deployment
 			deploy := &appsv1.Deployment{}
+			objMeta := feast.GetObjectMeta()
 			err = k8sClient.Get(ctx, types.NamespacedName{
-				Name:      feast.GetFeastServiceName(services.OfflineFeastType),
-				Namespace: resource.Namespace,
-			},
-				deploy)
+				Name:      objMeta.Name,
+				Namespace: objMeta.Namespace,
+			}, deploy)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(deploy.Spec.Replicas).To(Equal(&services.DefaultReplicas))
 			Expect(controllerutil.HasControllerReference(deploy)).To(BeTrue())
-			Expect(deploy.Spec.Template.Spec.Containers).To(HaveLen(1))
-			Expect(deploy.Spec.Template.Spec.Volumes).To(HaveLen(0))
-			Expect(deploy.Spec.Template.Spec.Containers[0].VolumeMounts).To(HaveLen(0))
-
-			// check online deployment
-			deploy = &appsv1.Deployment{}
-			err = k8sClient.Get(ctx, types.NamespacedName{
-				Name:      feast.GetFeastServiceName(services.OnlineFeastType),
-				Namespace: resource.Namespace,
-			},
-				deploy)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(deploy.Spec.Replicas).To(Equal(&services.DefaultReplicas))
-			Expect(controllerutil.HasControllerReference(deploy)).To(BeTrue())
-			Expect(deploy.Spec.Template.Spec.Containers).To(HaveLen(1))
-			Expect(deploy.Spec.Template.Spec.Volumes).To(HaveLen(0))
-			Expect(deploy.Spec.Template.Spec.Containers[0].VolumeMounts).To(HaveLen(0))
-
-			// check registry deployment
-			deploy = &appsv1.Deployment{}
-			err = k8sClient.Get(ctx, types.NamespacedName{
-				Name:      feast.GetFeastServiceName(services.RegistryFeastType),
-				Namespace: resource.Namespace,
-			},
-				deploy)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(deploy.Spec.Replicas).To(Equal(&services.DefaultReplicas))
-			Expect(controllerutil.HasControllerReference(deploy)).To(BeTrue())
-			Expect(deploy.Spec.Template.Spec.Containers).To(HaveLen(1))
-			Expect(deploy.Spec.Template.Spec.Volumes).To(HaveLen(0))
-			Expect(deploy.Spec.Template.Spec.Containers[0].VolumeMounts).To(HaveLen(0))
+			Expect(deploy.Spec.Template.Spec.Containers).To(HaveLen(3))
+			Expect(deploy.Spec.Template.Spec.Volumes).To(HaveLen(1))
+			Expect(deploy.Spec.Template.Spec.Containers[0].VolumeMounts).To(HaveLen(1))
 
 			// check configured Roles
 			for _, roleName := range roles {
@@ -276,23 +248,21 @@ var _ = Describe("FeatureStore Controller-Kubernetes authorization", func() {
 				Kind:     "Role",
 				Name:     feastRole.Name,
 			}
-			for _, serviceType := range []services.FeastServiceType{services.RegistryFeastType, services.OnlineFeastType, services.OfflineFeastType} {
-				sa := &corev1.ServiceAccount{}
-				err = k8sClient.Get(ctx, types.NamespacedName{
-					Name:      feast.GetFeastServiceName(serviceType),
-					Namespace: resource.Namespace,
-				},
-					sa)
-				Expect(err).NotTo(HaveOccurred())
+			sa := &corev1.ServiceAccount{}
+			err = k8sClient.Get(ctx, types.NamespacedName{
+				Name:      services.GetFeastName(feast.Handler.FeatureStore),
+				Namespace: resource.Namespace,
+			},
+				sa)
+			Expect(err).NotTo(HaveOccurred())
 
-				expectedSubject := rbacv1.Subject{
-					Kind:      rbacv1.ServiceAccountKind,
-					Name:      sa.Name,
-					Namespace: sa.Namespace,
-				}
-				Expect(roleBinding.Subjects).To(ContainElement(expectedSubject))
-				Expect(roleBinding.RoleRef).To(Equal(expectedRoleRef))
+			expectedSubject := rbacv1.Subject{
+				Kind:      rbacv1.ServiceAccountKind,
+				Name:      sa.Name,
+				Namespace: sa.Namespace,
 			}
+			Expect(roleBinding.Subjects).To(ContainElement(expectedSubject))
+			Expect(roleBinding.RoleRef).To(Equal(expectedRoleRef))
 
 			By("Updating the user roled and reconciling")
 			resourceNew := resource.DeepCopy()
@@ -393,7 +363,7 @@ var _ = Describe("FeatureStore Controller-Kubernetes authorization", func() {
 			deployList := appsv1.DeploymentList{}
 			err = k8sClient.List(ctx, &deployList, listOpts)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(deployList.Items).To(HaveLen(3))
+			Expect(deployList.Items).To(HaveLen(1))
 
 			svcList := corev1.ServiceList{}
 			err = k8sClient.List(ctx, &svcList, listOpts)
@@ -414,19 +384,19 @@ var _ = Describe("FeatureStore Controller-Kubernetes authorization", func() {
 				},
 			}
 
-			// check registry deployment
+			// check registry
 			deploy := &appsv1.Deployment{}
+			objMeta := feast.GetObjectMeta()
 			err = k8sClient.Get(ctx, types.NamespacedName{
-				Name:      feast.GetFeastServiceName(services.RegistryFeastType),
-				Namespace: resource.Namespace,
-			},
-				deploy)
+				Name:      objMeta.Name,
+				Namespace: objMeta.Namespace,
+			}, deploy)
 			Expect(err).NotTo(HaveOccurred())
-			env := getFeatureStoreYamlEnvVar(deploy.Spec.Template.Spec.Containers[0].Env)
+			env := getFeatureStoreYamlEnvVar(services.GetRegistryContainer(deploy.Spec.Template.Spec.Containers).Env)
 			Expect(env).NotTo(BeNil())
 
 			// check registry config
-			fsYamlStr, err := feast.GetServiceFeatureStoreYamlBase64(services.RegistryFeastType)
+			fsYamlStr, err := feast.GetServiceFeatureStoreYamlBase64()
 			Expect(err).NotTo(HaveOccurred())
 			Expect(fsYamlStr).To(Equal(env.Value))
 
@@ -435,34 +405,22 @@ var _ = Describe("FeatureStore Controller-Kubernetes authorization", func() {
 			repoConfig := &services.RepoConfig{}
 			err = yaml.Unmarshal(envByte, repoConfig)
 			Expect(err).NotTo(HaveOccurred())
-			testConfig := &services.RepoConfig{
-				Project:                       feastProject,
-				Provider:                      services.LocalProviderType,
-				EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
-				Registry: services.RegistryConfig{
-					RegistryType:       services.RegistryFileConfigType,
-					Path:               services.DefaultRegistryEphemeralPath,
-					S3AdditionalKwargs: nil,
-				},
-				AuthzConfig: services.AuthzConfig{
-					Type: services.KubernetesAuthType,
-				},
+			testConfig := feast.GetDefaultRepoConfig()
+			testConfig.OfflineStore = services.OfflineStoreConfig{
+				Type: services.OfflineFilePersistenceDaskConfigType,
 			}
-			Expect(repoConfig).To(Equal(testConfig))
+			testConfig.Registry.RegistryType = services.RegistryFileConfigType
+			testConfig.AuthzConfig = services.AuthzConfig{
+				Type: services.KubernetesAuthType,
+			}
+			Expect(repoConfig).To(Equal(&testConfig))
 
-			// check offline deployment
-			deploy = &appsv1.Deployment{}
-			err = k8sClient.Get(ctx, types.NamespacedName{
-				Name:      feast.GetFeastServiceName(services.OfflineFeastType),
-				Namespace: resource.Namespace,
-			},
-				deploy)
-			Expect(err).NotTo(HaveOccurred())
-			env = getFeatureStoreYamlEnvVar(deploy.Spec.Template.Spec.Containers[0].Env)
+			// check offline
+			env = getFeatureStoreYamlEnvVar(services.GetOfflineContainer(deploy.Spec.Template.Spec.Containers).Env)
 			Expect(env).NotTo(BeNil())
 
 			// check offline config
-			fsYamlStr, err = feast.GetServiceFeatureStoreYamlBase64(services.OfflineFeastType)
+			fsYamlStr, err = feast.GetServiceFeatureStoreYamlBase64()
 			Expect(err).NotTo(HaveOccurred())
 			Expect(fsYamlStr).To(Equal(env.Value))
 
@@ -471,37 +429,14 @@ var _ = Describe("FeatureStore Controller-Kubernetes authorization", func() {
 			repoConfig = &services.RepoConfig{}
 			err = yaml.Unmarshal(envByte, repoConfig)
 			Expect(err).NotTo(HaveOccurred())
-			regRemote := services.RegistryConfig{
-				RegistryType: services.RegistryRemoteConfigType,
-				Path:         fmt.Sprintf("feast-%s-registry.default.svc.cluster.local:80", resourceName),
-			}
-			testConfig = &services.RepoConfig{
-				Project:                       feastProject,
-				Provider:                      services.LocalProviderType,
-				EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
-				OfflineStore: services.OfflineStoreConfig{
-					Type: services.OfflineFilePersistenceDaskConfigType,
-				},
-				Registry: regRemote,
-				AuthzConfig: services.AuthzConfig{
-					Type: services.KubernetesAuthType,
-				},
-			}
-			Expect(repoConfig).To(Equal(testConfig))
+			Expect(repoConfig).To(Equal(&testConfig))
 
-			// check online deployment
-			deploy = &appsv1.Deployment{}
-			err = k8sClient.Get(ctx, types.NamespacedName{
-				Name:      feast.GetFeastServiceName(services.OnlineFeastType),
-				Namespace: resource.Namespace,
-			},
-				deploy)
-			Expect(err).NotTo(HaveOccurred())
-			env = getFeatureStoreYamlEnvVar(deploy.Spec.Template.Spec.Containers[0].Env)
+			// check online
+			env = getFeatureStoreYamlEnvVar(services.GetOnlineContainer(deploy.Spec.Template.Spec.Containers).Env)
 			Expect(env).NotTo(BeNil())
 
 			// check online config
-			fsYamlStr, err = feast.GetServiceFeatureStoreYamlBase64(services.OnlineFeastType)
+			fsYamlStr, err = feast.GetServiceFeatureStoreYamlBase64()
 			Expect(err).NotTo(HaveOccurred())
 			Expect(fsYamlStr).To(Equal(env.Value))
 
@@ -510,26 +445,7 @@ var _ = Describe("FeatureStore Controller-Kubernetes authorization", func() {
 			repoConfig = &services.RepoConfig{}
 			err = yaml.Unmarshal(envByte, repoConfig)
 			Expect(err).NotTo(HaveOccurred())
-			offlineRemote := services.OfflineStoreConfig{
-				Host: fmt.Sprintf("feast-%s-offline.default.svc.cluster.local", resourceName),
-				Type: services.OfflineRemoteConfigType,
-				Port: services.HttpPort,
-			}
-			testConfig = &services.RepoConfig{
-				Project:                       feastProject,
-				Provider:                      services.LocalProviderType,
-				EntityKeySerializationVersion: feastdevv1alpha1.SerializationVersion,
-				OfflineStore:                  offlineRemote,
-				OnlineStore: services.OnlineStoreConfig{
-					Path: services.DefaultOnlineStoreEphemeralPath,
-					Type: services.OnlineSqliteConfigType,
-				},
-				Registry: regRemote,
-				AuthzConfig: services.AuthzConfig{
-					Type: services.KubernetesAuthType,
-				},
-			}
-			Expect(repoConfig).To(Equal(testConfig))
+			Expect(repoConfig).To(Equal(&testConfig))
 
 			// check client config
 			cm := &corev1.ConfigMap{}
@@ -543,6 +459,15 @@ var _ = Describe("FeatureStore Controller-Kubernetes authorization", func() {
 			repoConfigClient := &services.RepoConfig{}
 			err = yaml.Unmarshal([]byte(cm.Data[services.FeatureStoreYamlCmKey]), repoConfigClient)
 			Expect(err).NotTo(HaveOccurred())
+			regRemote := services.RegistryConfig{
+				RegistryType: services.RegistryRemoteConfigType,
+				Path:         fmt.Sprintf("feast-%s-registry.default.svc.cluster.local:80", resourceName),
+			}
+			offlineRemote := services.OfflineStoreConfig{
+				Host: fmt.Sprintf("feast-%s-offline.default.svc.cluster.local", resourceName),
+				Type: services.OfflineRemoteConfigType,
+				Port: services.HttpPort,
+			}
 			clientConfig := &services.RepoConfig{
 				Project:                       feastProject,
 				Provider:                      services.LocalProviderType,
@@ -552,10 +477,7 @@ var _ = Describe("FeatureStore Controller-Kubernetes authorization", func() {
 					Path: fmt.Sprintf("http://feast-%s-online.default.svc.cluster.local:80", resourceName),
 					Type: services.OnlineRemoteConfigType,
 				},
-				Registry: services.RegistryConfig{
-					RegistryType: services.RegistryRemoteConfigType,
-					Path:         fmt.Sprintf("feast-%s-registry.default.svc.cluster.local:80", resourceName),
-				},
+				Registry: regRemote,
 				AuthzConfig: services.AuthzConfig{
 					Type: services.KubernetesAuthType,
 				},

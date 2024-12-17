@@ -1235,14 +1235,13 @@ spec:
                               in the same k8s cluster.
                             properties:
                               name:
-                                description: Name of the FeatureStore
+                                description: |-
+                                  Name of the referent.
+                                  More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                  TODO: Add other useful fields. apiVersion, kind, uid?
                                 type: string
-                              namespace:
-                                description: Namespace of the FeatureStore
-                                type: string
-                            required:
-                            - name
                             type: object
+                            x-kubernetes-map-type: atomic
                           hostname:
                             description: Host address of the remote registry service
                               - <domain>:<port>, e.g. `registry.<namespace>.svc.cluster.local:80`
@@ -2491,14 +2490,13 @@ spec:
                                   CR in the same k8s cluster.
                                 properties:
                                   name:
-                                    description: Name of the FeatureStore
+                                    description: |-
+                                      Name of the referent.
+                                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                      TODO: Add other useful fields. apiVersion, kind, uid?
                                     type: string
-                                  namespace:
-                                    description: Namespace of the FeatureStore
-                                    type: string
-                                required:
-                                - name
                                 type: object
+                                x-kubernetes-map-type: atomic
                               hostname:
                                 description: Host address of the remote registry service
                                   - <domain>:<port>, e.g. `registry.<namespace>.svc.cluster.local:80`
