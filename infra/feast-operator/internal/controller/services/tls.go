@@ -171,6 +171,13 @@ func (feast *FeastServices) mountRegistryClientTls(podSpec *corev1.PodSpec) {
 	}
 }
 
+func (feast *FeastServices) mountTlsConfigs(podSpec *corev1.PodSpec) {
+	// how deal w/ client deployment tls mounts when the time comes? new function?
+	feast.mountRegistryClientTls(podSpec)
+	feast.mountTlsConfig(OfflineFeastType, podSpec)
+	feast.mountTlsConfig(OnlineFeastType, podSpec)
+}
+
 func (feast *FeastServices) mountTlsConfig(feastType FeastServiceType, podSpec *corev1.PodSpec) {
 	tls := feast.getTlsConfigs(feastType)
 	if tls.IsTLS() && podSpec != nil {
@@ -183,12 +190,13 @@ func (feast *FeastServices) mountTlsConfig(feastType FeastServiceType, podSpec *
 				},
 			},
 		})
-		container := &podSpec.Containers[0]
-		container.VolumeMounts = append(container.VolumeMounts, corev1.VolumeMount{
-			Name:      volName,
-			MountPath: GetTlsPath(feastType),
-			ReadOnly:  true,
-		})
+		if i, container := getContainerByType(feastType, podSpec.Containers); container != nil {
+			podSpec.Containers[i].VolumeMounts = append(podSpec.Containers[i].VolumeMounts, corev1.VolumeMount{
+				Name:      volName,
+				MountPath: GetTlsPath(feastType),
+				ReadOnly:  true,
+			})
+		}
 	}
 }
 
@@ -203,12 +211,13 @@ func mountTlsRemoteRegistryConfig(feastType FeastServiceType, podSpec *corev1.Po
 				},
 			},
 		})
-		container := &podSpec.Containers[0]
-		container.VolumeMounts = append(container.VolumeMounts, corev1.VolumeMount{
-			Name:      volName,
-			MountPath: GetTlsPath(feastType),
-			ReadOnly:  true,
-		})
+		if i, container := getContainerByType(feastType, podSpec.Containers); container != nil {
+			podSpec.Containers[i].VolumeMounts = append(podSpec.Containers[i].VolumeMounts, corev1.VolumeMount{
+				Name:      volName,
+				MountPath: GetTlsPath(feastType),
+				ReadOnly:  true,
+			})
+		}
 	}
 }
 

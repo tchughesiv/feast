@@ -194,7 +194,7 @@ func (r *FeatureStoreReconciler) mapFeastRefsToFeastRequests(ctx context.Context
 				}}
 			if feast.IsRemoteRefRegistry() {
 				remoteRef := obj.Status.Applied.Services.Registry.Remote.FeastRef
-				remoteRefNsName := types.NamespacedName{Name: remoteRef.Name, Namespace: remoteRef.Namespace}
+				remoteRefNsName := types.NamespacedName{Name: remoteRef.Name, Namespace: feastRef.Namespace}
 				if feastRefNsName == remoteRefNsName {
 					requests = append(requests, reconcile.Request{NamespacedName: objNsName})
 				}

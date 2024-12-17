@@ -267,16 +267,8 @@ type RemoteRegistryConfig struct {
 	// Host address of the remote registry service - <domain>:<port>, e.g. `registry.<namespace>.svc.cluster.local:80`
 	Hostname *string `json:"hostname,omitempty"`
 	// Reference to an existing `FeatureStore` CR in the same k8s cluster.
-	FeastRef *FeatureStoreRef          `json:"feastRef,omitempty"`
-	TLS      *TlsRemoteRegistryConfigs `json:"tls,omitempty"`
-}
-
-// FeatureStoreRef defines which existing FeatureStore's registry should be used
-type FeatureStoreRef struct {
-	// Name of the FeatureStore
-	Name string `json:"name"`
-	// Namespace of the FeatureStore
-	Namespace string `json:"namespace,omitempty"`
+	FeastRef *corev1.LocalObjectReference `json:"feastRef,omitempty"`
+	TLS      *TlsRemoteRegistryConfigs    `json:"tls,omitempty"`
 }
 
 // ServiceConfigs k8s container settings
