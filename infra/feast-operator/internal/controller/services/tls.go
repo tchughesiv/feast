@@ -165,7 +165,7 @@ func (feast *FeastServices) mountRegistryClientTls(podSpec *corev1.PodSpec) {
 		if feast.localRegistryTls() {
 			feast.mountTlsConfig(RegistryFeastType, podSpec)
 		} else if feast.remoteRegistryTls() {
-			mountTlsRemoteRegistryConfig(RegistryFeastType, podSpec,
+			mountTlsRemoteRegistryConfig(podSpec,
 				feast.Handler.FeatureStore.Status.Applied.Services.Registry.Remote.TLS)
 		}
 	}
@@ -200,9 +200,9 @@ func (feast *FeastServices) mountTlsConfig(feastType FeastServiceType, podSpec *
 	}
 }
 
-func mountTlsRemoteRegistryConfig(feastType FeastServiceType, podSpec *corev1.PodSpec, tls *feastdevv1alpha1.TlsRemoteRegistryConfigs) {
+func mountTlsRemoteRegistryConfig(podSpec *corev1.PodSpec, tls *feastdevv1alpha1.TlsRemoteRegistryConfigs) {
 	if tls != nil {
-		volName := string(feastType) + tlsNameSuffix
+		volName := string(RegistryFeastType) + tlsNameSuffix
 		podSpec.Volumes = append(podSpec.Volumes, corev1.Volume{
 			Name: volName,
 			VolumeSource: corev1.VolumeSource{
@@ -211,10 +211,10 @@ func mountTlsRemoteRegistryConfig(feastType FeastServiceType, podSpec *corev1.Po
 				},
 			},
 		})
-		if i, container := getContainerByType(feastType, podSpec.Containers); container != nil {
+		for i := range podSpec.Containers {
 			podSpec.Containers[i].VolumeMounts = append(podSpec.Containers[i].VolumeMounts, corev1.VolumeMount{
 				Name:      volName,
-				MountPath: GetTlsPath(feastType),
+				MountPath: GetTlsPath(RegistryFeastType),
 				ReadOnly:  true,
 			})
 		}
