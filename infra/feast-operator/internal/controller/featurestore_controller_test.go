@@ -912,7 +912,7 @@ var _ = Describe("FeatureStore Controller", func() {
 						OfflineStore: &feastdevv1alpha1.OfflineStore{},
 						Registry: &feastdevv1alpha1.Registry{
 							Remote: &feastdevv1alpha1.RemoteRegistryConfig{
-								FeastRef: &corev1.LocalObjectReference{
+								FeastRef: &feastdevv1alpha1.FeatureStoreRef{
 									Name: name,
 								},
 							},
@@ -1174,7 +1174,7 @@ var _ = Describe("FeatureStore Controller", func() {
 			resource.Spec.Services.Registry = &feastdevv1alpha1.Registry{
 				Remote: &feastdevv1alpha1.RemoteRegistryConfig{
 					Hostname: &hostname,
-					FeastRef: &corev1.LocalObjectReference{
+					FeastRef: &feastdevv1alpha1.FeatureStoreRef{
 						Name: "test",
 					},
 				},
@@ -1184,7 +1184,7 @@ var _ = Describe("FeatureStore Controller", func() {
 
 			resource.Spec.Services.Registry = &feastdevv1alpha1.Registry{
 				Remote: &feastdevv1alpha1.RemoteRegistryConfig{
-					FeastRef: &corev1.LocalObjectReference{
+					FeastRef: &feastdevv1alpha1.FeatureStoreRef{
 						Name: "test",
 					},
 				},

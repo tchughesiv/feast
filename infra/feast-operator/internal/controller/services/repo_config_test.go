@@ -86,7 +86,7 @@ var _ = Describe("Repo Config", func() {
 			featureStore.Spec.Services = &feastdevv1alpha1.FeatureStoreServices{
 				Registry: &feastdevv1alpha1.Registry{
 					Remote: &feastdevv1alpha1.RemoteRegistryConfig{
-						FeastRef: &corev1.LocalObjectReference{
+						FeastRef: &feastdevv1alpha1.FeatureStoreRef{
 							Name: "registry",
 						},
 					},
