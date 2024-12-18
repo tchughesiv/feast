@@ -429,7 +429,7 @@ func (feast *FeastServices) setService(svc *corev1.Service, feastType FeastServi
 		scheme = HttpsScheme
 	}
 	svc.Spec = corev1.ServiceSpec{
-		Selector: svc.GetLabels(),
+		Selector: feast.getLabels(),
 		Type:     corev1.ServiceTypeClusterIP,
 		Ports: []corev1.ServicePort{
 			{
