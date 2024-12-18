@@ -596,7 +596,7 @@ func (feast *FeastServices) setRemoteRegistryURL() error {
 func (feast *FeastServices) getRemoteRegistryFeastHandler() (*FeastServices, error) {
 	if feast.IsRemoteRefRegistry() {
 		feastRemoteRef := feast.Handler.FeatureStore.Status.Applied.Services.Registry.Remote.FeastRef
-		nsName := types.NamespacedName{Name: feastRemoteRef.Name, Namespace: feast.Handler.FeatureStore.Namespace}
+		nsName := types.NamespacedName{Name: feastRemoteRef.Name, Namespace: feastRemoteRef.Namespace}
 		crNsName := client.ObjectKeyFromObject(feast.Handler.FeatureStore)
 		if nsName == crNsName {
 			return nil, errors.New("FeatureStore '" + crNsName.Name + "' can't reference itself in `spec.services.registry.remote.feastRef`")

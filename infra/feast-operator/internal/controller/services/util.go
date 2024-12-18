@@ -112,7 +112,10 @@ func ApplyDefaultsToStatus(cr *feastdevv1alpha1.FeatureStore) {
 		}
 
 		setServiceDefaultConfigs(&services.Registry.Local.ServiceConfigs.DefaultConfigs)
+	} else if services.Registry.Remote.FeastRef != nil && len(services.Registry.Remote.FeastRef.Namespace) == 0 {
+		services.Registry.Remote.FeastRef.Namespace = cr.Namespace
 	}
+
 	if services.OfflineStore != nil {
 		if services.OfflineStore.Persistence == nil {
 			services.OfflineStore.Persistence = &feastdevv1alpha1.OfflineStorePersistence{}
