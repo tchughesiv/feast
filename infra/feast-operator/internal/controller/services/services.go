@@ -276,7 +276,7 @@ func (feast *FeastServices) createPVC(pvcCreate *feastdevv1alpha1.PvcCreate, fea
 func (feast *FeastServices) setDeployment(deploy *appsv1.Deployment) error {
 	deploy.Labels = feast.getLabels()
 	deploy.Spec = appsv1.DeploymentSpec{
-		Replicas: feast.getServiceReplicas(feastType),
+		Replicas: &DefaultReplicas,
 		Selector: metav1.SetAsLabelSelector(deploy.GetLabels()),
 		Template: corev1.PodTemplateSpec{
 			ObjectMeta: metav1.ObjectMeta{
@@ -479,21 +479,6 @@ func (feast *FeastServices) getServiceConfigs(feastType FeastServiceType) feastd
 		}
 	}
 	return feastdevv1alpha1.ServiceConfigs{}
-}
-
-func (feast *FeastServices) getServiceReplicas(feastType FeastServiceType) *int32 {
-	appliedServices := feast.Handler.FeatureStore.Status.Applied.Services
-	switch feastType {
-	case OfflineFeastType:
-		if feast.isOfflinStore() {
-			return appliedServices.OfflineStore.Replicas
-		}
-	case OnlineFeastType:
-		if feast.isOnlinStore() {
-			return appliedServices.OnlineStore.Replicas
-		}
-	}
-	return &DefaultReplicas
 }
 
 func (feast *FeastServices) getLogLevelForType(feastType FeastServiceType) *string {

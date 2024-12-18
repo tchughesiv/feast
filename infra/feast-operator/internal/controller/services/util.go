@@ -135,7 +135,7 @@ func ApplyDefaultsToStatus(cr *feastdevv1alpha1.FeatureStore) {
 			}
 		}
 
-		setStoreServiceDefaultConfigs(&services.OfflineStore.StoreServiceConfigs)
+		setServiceDefaultConfigs(&services.OfflineStore.ServiceConfigs.DefaultConfigs)
 	}
 
 	if services.OnlineStore != nil {
@@ -160,7 +160,7 @@ func ApplyDefaultsToStatus(cr *feastdevv1alpha1.FeatureStore) {
 			}
 		}
 
-		setStoreServiceDefaultConfigs(&services.OnlineStore.StoreServiceConfigs)
+		setServiceDefaultConfigs(&services.OnlineStore.ServiceConfigs.DefaultConfigs)
 	}
 	// overwrite status.applied with every reconcile
 	applied.DeepCopyInto(&cr.Status.Applied)
@@ -170,13 +170,6 @@ func setServiceDefaultConfigs(defaultConfigs *feastdevv1alpha1.DefaultConfigs) {
 	if defaultConfigs.Image == nil {
 		defaultConfigs.Image = &DefaultImage
 	}
-}
-
-func setStoreServiceDefaultConfigs(storeServiceConfigs *feastdevv1alpha1.StoreServiceConfigs) {
-	if storeServiceConfigs.Replicas == nil {
-		storeServiceConfigs.Replicas = &DefaultReplicas
-	}
-	setServiceDefaultConfigs(&storeServiceConfigs.ServiceConfigs.DefaultConfigs)
 }
 
 func checkOfflineStoreFilePersistenceType(value string) error {
