@@ -297,9 +297,10 @@ func (feast *FeastServices) setPod(podSpec *corev1.PodSpec) error {
 	if err := feast.setContainers(podSpec); err != nil {
 		return err
 	}
-	feast.mountEmptyDirVolumes(podSpec)
+	feast.setRegistryClientInitContainer(podSpec)
 	feast.mountTlsConfigs(podSpec)
 	feast.mountPvcConfigs(podSpec)
+	feast.mountEmptyDirVolumes(podSpec)
 
 	return nil
 }
@@ -311,21 +312,19 @@ func (feast *FeastServices) setContainers(podSpec *corev1.PodSpec) error {
 	}
 	if shouldMountEmptyDir(feast.Handler.FeatureStore) {
 		feastProject := feast.Handler.FeatureStore.Status.Applied.FeastProject
-		podSpec.InitContainers = []corev1.Container{
-			{
-				Name:  "feast-init",
-				Image: DefaultImage,
-				Env: []corev1.EnvVar{
-					{
-						Name:  TmpFeatureStoreYamlEnvVar,
-						Value: fsYamlB64,
-					},
+		podSpec.InitContainers = append(podSpec.InitContainers, corev1.Container{
+			Name:  "feast-init",
+			Image: DefaultImage,
+			Env: []corev1.EnvVar{
+				{
+					Name:  TmpFeatureStoreYamlEnvVar,
+					Value: fsYamlB64,
 				},
-				Command:    []string{"/bin/sh", "-c"},
-				Args:       []string{"echo \"Starting feast initialization job...\";\nfeast init " + feastProject + ";\necho $" + TmpFeatureStoreYamlEnvVar + " | base64 -d \u003e /" + EphemeralPath + "/" + feastProject + "/feature_repo/feature_store.yaml;\necho \"Feast initialization complete\";\n"},
-				WorkingDir: EphemeralPath,
 			},
-		}
+			Command:    []string{"/bin/sh", "-c"},
+			Args:       []string{"echo \"Starting feast initialization job...\";\nfeast init " + feastProject + ";\necho $" + TmpFeatureStoreYamlEnvVar + " | base64 -d \u003e /" + EphemeralPath + "/" + feastProject + "/feature_repo/feature_store.yaml;\necho \"Feast initialization complete\";\n"},
+			WorkingDir: EphemeralPath,
+		})
 	}
 	if feast.isLocalRegistry() {
 		feast.setContainer(&podSpec.Containers, RegistryFeastType, fsYamlB64)
@@ -413,6 +412,26 @@ func (feast *FeastServices) getContainerCommand(feastType FeastServiceType) []st
 	return feastCommand
 }
 
+func (feast *FeastServices) setRegistryClientInitContainer(podSpec *corev1.PodSpec) {
+	hostname := feast.Handler.FeatureStore.Status.ServiceHostnames.Registry
+	// add grpc init container if registry is not configured via 'remote.hostname'
+	if len(hostname) > 0 && feast.IsRemoteRefRegistry() {
+		grpcurlFlag := "-plaintext"
+		hostSplit := strings.Split(hostname, ":")
+		if len(hostSplit) > 1 && hostSplit[1] == "443" {
+			grpcurlFlag = "-insecure"
+		}
+		podSpec.InitContainers = append(podSpec.InitContainers, corev1.Container{
+			Name:  "init-registry",
+			Image: "fullstorydev/grpcurl:v1.9.1-alpine",
+			Command: []string{
+				"sh", "-c",
+				"until grpcurl -H \"authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)\" " +
+					grpcurlFlag + " -d '' -format text " + hostname + " grpc.health.v1.Health/Check; do echo waiting for registry; sleep 2; done",
+			},
+		})
+	}
+}
 func (feast *FeastServices) setService(svc *corev1.Service, feastType FeastServiceType) error {
 	svc.Labels = feast.getFeastTypeLabels(feastType)
 	if feast.isOpenShiftTls(feastType) {
