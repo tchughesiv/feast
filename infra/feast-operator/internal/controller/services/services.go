@@ -322,7 +322,7 @@ func (feast *FeastServices) setContainers(podSpec *corev1.PodSpec) error {
 				},
 			},
 			Command:    []string{"/bin/sh", "-c"},
-			Args:       []string{"echo \"Starting feast initialization job...\";\nfeast init " + feastProject + ";\necho $" + TmpFeatureStoreYamlEnvVar + " | base64 -d \u003e /" + EphemeralPath + "/" + feastProject + "/feature_repo/feature_store.yaml;\necho \"Feast initialization complete\";\n"},
+			Args:       []string{"echo \"Starting feast initialization job...\";\n[ -d " + feastProject + " ] || feast init " + feastProject + ";\necho $" + TmpFeatureStoreYamlEnvVar + " | base64 -d \u003e " + EphemeralPath + "/" + feastProject + "/feature_repo/feature_store.yaml;\necho \"Feast initialization complete\";\n"},
 			WorkingDir: EphemeralPath,
 		})
 	}
