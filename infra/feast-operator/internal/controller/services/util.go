@@ -61,12 +61,8 @@ func shouldCreatePvc(featureStore *feastdevv1alpha1.FeatureStore, feastType Feas
 func shouldMountEmptyDir(featureStore *feastdevv1alpha1.FeatureStore) bool {
 	appliedServices := featureStore.Status.Applied.Services
 	if appliedServices != nil {
-		if pvcConfig, ok := hasPvcConfig(featureStore, OfflineFeastType); ok {
-			return pvcConfig.Create == nil && pvcConfig.Ref == nil
-		} else if pvcConfig == nil {
-			return true
-		}
-		return appliedServices.OfflineStore == nil || appliedServices.OfflineStore.Persistence == nil
+		_, ok := hasPvcConfig(featureStore, OfflineFeastType)
+		return !ok || appliedServices.OfflineStore == nil || appliedServices.OfflineStore.Persistence == nil
 	}
 	return true
 }
