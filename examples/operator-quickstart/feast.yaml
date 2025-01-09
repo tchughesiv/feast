@@ -44,3 +44,6 @@ spec:
               name: feast-data-stores
         image: quay.io/tchughesiv/feature-server:0.42.0
         imagePullPolicy: Always
+        env:
+        - name: MPLCONFIGDIR
+          value: /tmp
