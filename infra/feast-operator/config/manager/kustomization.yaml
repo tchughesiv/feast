@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: quay.io/tchughesiv/feast-operator
-  newTag: 0.42.0-dev
+  newTag: 0.42.0
