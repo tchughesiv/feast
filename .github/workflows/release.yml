@@ -152,6 +152,10 @@ jobs:
       - name: Setup Helm-docs
         run: |
           brew install norwoodj/tap/helm-docs
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.22.9
       - name: Release (Dry Run)
         if: github.event.inputs.dry_run == 'true'
         run: |
