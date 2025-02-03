@@ -365,13 +365,21 @@ func minimalFeatureStore() *feastdevv1alpha1.FeatureStore {
 	}
 }
 
-func minimalFeatureStoreWithAllServices() *feastdevv1alpha1.FeatureStore {
+func minimalFeatureStoreWithAllServicesExposed() *feastdevv1alpha1.FeatureStore {
 	feast := minimalFeatureStore()
 	feast.Spec.Services = &feastdevv1alpha1.FeatureStoreServices{
-		OfflineStore: &feastdevv1alpha1.OfflineStore{},
-		OnlineStore:  &feastdevv1alpha1.OnlineStore{},
-		Registry:     &feastdevv1alpha1.Registry{},
-		UI:           &feastdevv1alpha1.ServerConfigs{},
+		OfflineStore: &feastdevv1alpha1.OfflineStore{
+			ServerConfigs: feastdevv1alpha1.ServerConfigs{Expose: true},
+		},
+		OnlineStore: &feastdevv1alpha1.OnlineStore{
+			ServerConfigs: feastdevv1alpha1.ServerConfigs{Expose: true},
+		},
+		Registry: &feastdevv1alpha1.Registry{
+			Local: &feastdevv1alpha1.LocalRegistryConfig{
+				ServerConfigs: feastdevv1alpha1.ServerConfigs{Expose: true},
+			},
+		},
+		UI: &feastdevv1alpha1.ServerConfigs{Expose: true},
 	}
 	return feast
 }

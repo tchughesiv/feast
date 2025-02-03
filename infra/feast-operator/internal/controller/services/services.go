@@ -593,19 +593,19 @@ func (feast *FeastServices) getLogLevelForType(feastType FeastServiceType) *stri
 	services := feast.Handler.FeatureStore.Status.Applied.Services
 	switch feastType {
 	case OfflineFeastType:
-		if services.OfflineStore != nil && services.OfflineStore.LogLevel != "" {
+		if feast.isOfflineStore() {
 			return &services.OfflineStore.LogLevel
 		}
 	case OnlineFeastType:
-		if services.OnlineStore != nil && services.OnlineStore.LogLevel != "" {
+		if feast.isOnlineStore() {
 			return &services.OnlineStore.LogLevel
 		}
 	case RegistryFeastType:
-		if feast.isLocalRegistry() && services.Registry.Local.LogLevel != "" {
+		if feast.isLocalRegistry() {
 			return &services.Registry.Local.LogLevel
 		}
 	case UIFeastType:
-		if services.UI != nil && services.UI.LogLevel != "" {
+		if feast.isUI() {
 			return &services.UI.LogLevel
 		}
 	}
@@ -650,24 +650,24 @@ func (feast *FeastServices) getLabels() map[string]string {
 func (feast *FeastServices) setServiceHostnames() error {
 	feast.Handler.FeatureStore.Status.ServiceHostnames = feastdevv1alpha1.ServiceHostnames{}
 	domain := svcDomain + ":"
-	if feast.isOfflineStore() {
+	if feast.isExposed(OfflineFeastType) {
 		objMeta := feast.initFeastSvc(OfflineFeastType)
 		feast.Handler.FeatureStore.Status.ServiceHostnames.OfflineStore = objMeta.Name + "." + objMeta.Namespace + domain +
 			getPortStr(feast.Handler.FeatureStore.Status.Applied.Services.OfflineStore.TLS)
 	}
-	if feast.isOnlineStore() {
+	if feast.isExposed(OnlineFeastType) {
 		objMeta := feast.initFeastSvc(OnlineFeastType)
 		feast.Handler.FeatureStore.Status.ServiceHostnames.OnlineStore = objMeta.Name + "." + objMeta.Namespace + domain +
 			getPortStr(feast.Handler.FeatureStore.Status.Applied.Services.OnlineStore.TLS)
 	}
-	if feast.isLocalRegistry() {
+	if feast.isExposed(RegistryFeastType) {
 		objMeta := feast.initFeastSvc(RegistryFeastType)
 		feast.Handler.FeatureStore.Status.ServiceHostnames.Registry = objMeta.Name + "." + objMeta.Namespace + domain +
 			getPortStr(feast.Handler.FeatureStore.Status.Applied.Services.Registry.Local.TLS)
 	} else if feast.isRemoteRegistry() {
 		return feast.setRemoteRegistryURL()
 	}
-	if feast.isUI() {
+	if feast.isExposed(UIFeastType) {
 		objMeta := feast.initFeastSvc(UIFeastType)
 		feast.Handler.FeatureStore.Status.ServiceHostnames.UI = objMeta.Name + "." + objMeta.Namespace + domain +
 			getPortStr(feast.Handler.FeatureStore.Status.Applied.Services.UI.TLS)
@@ -705,6 +705,10 @@ func (feast *FeastServices) setRemoteRegistryURL() error {
 			feast.Handler.FeatureStore.Status.ServiceHostnames.Registry = remoteFeast.Handler.FeatureStore.Status.ServiceHostnames.Registry
 		} else {
 			return errors.New("Remote feast registry of referenced FeatureStore '" + remoteFeast.Handler.FeatureStore.Name + "' is not ready")
+		}
+		// referenced/remote registry must have an exposed service.
+		if !remoteFeast.isExposed(RegistryFeastType) {
+			return errors.New("Remote feast registry of referenced FeatureStore '" + remoteFeast.Handler.FeatureStore.Name + "' must have an exposed service")
 		}
 	}
 	return nil
