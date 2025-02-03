@@ -72,23 +72,27 @@ var _ = Describe("FeatureStore Controller - Feast service TLS", func() {
 						Services: &feastdevv1alpha1.FeatureStoreServices{
 							OnlineStore: &feastdevv1alpha1.OnlineStore{
 								ServerConfigs: feastdevv1alpha1.ServerConfigs{
-									TLS: tlsConfigs,
+									Expose: true,
+									TLS:    tlsConfigs,
 								},
 							},
 							OfflineStore: &feastdevv1alpha1.OfflineStore{
 								ServerConfigs: feastdevv1alpha1.ServerConfigs{
-									TLS: tlsConfigs,
+									Expose: true,
+									TLS:    tlsConfigs,
 								},
 							},
 							Registry: &feastdevv1alpha1.Registry{
 								Local: &feastdevv1alpha1.LocalRegistryConfig{
 									ServerConfigs: feastdevv1alpha1.ServerConfigs{
-										TLS: tlsConfigs,
+										Expose: true,
+										TLS:    tlsConfigs,
 									},
 								},
 							},
 							UI: &feastdevv1alpha1.ServerConfigs{
-								TLS: tlsConfigs,
+								Expose: true,
+								TLS:    tlsConfigs,
 							},
 						},
 					},

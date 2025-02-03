@@ -593,19 +593,19 @@ func (feast *FeastServices) getLogLevelForType(feastType FeastServiceType) *stri
 	services := feast.Handler.FeatureStore.Status.Applied.Services
 	switch feastType {
 	case OfflineFeastType:
-		if feast.isOfflineStore() {
+		if feast.isOfflineStore() && services.OfflineStore.LogLevel != "" {
 			return &services.OfflineStore.LogLevel
 		}
 	case OnlineFeastType:
-		if feast.isOnlineStore() {
+		if feast.isOnlineStore() && services.OnlineStore.LogLevel != "" {
 			return &services.OnlineStore.LogLevel
 		}
 	case RegistryFeastType:
-		if feast.isLocalRegistry() {
+		if feast.isLocalRegistry() && services.Registry.Local.LogLevel != "" {
 			return &services.Registry.Local.LogLevel
 		}
 	case UIFeastType:
-		if feast.isUI() {
+		if feast.isUI() && services.UI.LogLevel != "" {
 			return &services.UI.LogLevel
 		}
 	}
