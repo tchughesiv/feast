@@ -117,7 +117,7 @@ var _ = Describe("TLS Config", func() {
 			Expect(openshiftTls).To(BeTrue())
 
 			// all services w/ openshift tls
-			feast.Handler.FeatureStore = minimalFeatureStoreWithAllServers()
+			feast.Handler.FeatureStore = minimalFeatureStoreWithAllServicesExposed()
 			err = feast.ApplyDefaults()
 			Expect(err).ToNot(HaveOccurred())
 
@@ -227,7 +227,7 @@ var _ = Describe("TLS Config", func() {
 			Expect(openshiftTls).To(BeFalse())
 
 			// all services w/ tls and in an openshift cluster
-			feast.Handler.FeatureStore = minimalFeatureStoreWithAllServers()
+			feast.Handler.FeatureStore = minimalFeatureStoreWithAllServicesExposed()
 			disable := true
 			feast.Handler.FeatureStore.Spec.Services.OnlineStore.Server.TLS = &feastdevv1alpha1.TlsConfigs{
 				Disable: &disable,
@@ -238,6 +238,7 @@ var _ = Describe("TLS Config", func() {
 			feast.Handler.FeatureStore.Spec.Services.Registry = &feastdevv1alpha1.Registry{
 				Local: &feastdevv1alpha1.LocalRegistryConfig{
 					Server: &feastdevv1alpha1.ServerConfigs{
+						Expose: true,
 						TLS: &feastdevv1alpha1.TlsConfigs{
 							Disable: &disable,
 						},

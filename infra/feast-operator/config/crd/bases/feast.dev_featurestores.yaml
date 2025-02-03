@@ -275,6 +275,8 @@ spec:
                                   x-kubernetes-map-type: atomic
                               type: object
                             type: array
+                          expose:
+                            type: boolean
                           image:
                             type: string
                           imagePullPolicy:
@@ -569,6 +571,8 @@ spec:
                                   x-kubernetes-map-type: atomic
                               type: object
                             type: array
+                          expose:
+                            type: boolean
                           image:
                             type: string
                           imagePullPolicy:
@@ -864,6 +868,8 @@ spec:
                                       x-kubernetes-map-type: atomic
                                   type: object
                                 type: array
+                              expose:
+                                type: boolean
                               image:
                                 type: string
                               imagePullPolicy:
@@ -1084,6 +1090,8 @@ spec:
                               x-kubernetes-map-type: atomic
                           type: object
                         type: array
+                      expose:
+                        type: boolean
                       image:
                         type: string
                       imagePullPolicy:
@@ -2189,6 +2197,8 @@ spec:
                                       x-kubernetes-map-type: atomic
                                   type: object
                                 type: array
+                              expose:
+                                type: boolean
                               image:
                                 type: string
                               imagePullPolicy:
@@ -2485,6 +2495,8 @@ spec:
                                       x-kubernetes-map-type: atomic
                                   type: object
                                 type: array
+                              expose:
+                                type: boolean
                               image:
                                 type: string
                               imagePullPolicy:
@@ -2781,6 +2793,8 @@ spec:
                                           x-kubernetes-map-type: atomic
                                       type: object
                                     type: array
+                                  expose:
+                                    type: boolean
                                   image:
                                     type: string
                                   imagePullPolicy:
@@ -3003,6 +3017,8 @@ spec:
                                   x-kubernetes-map-type: atomic
                               type: object
                             type: array
+                          expose:
+                            type: boolean
                           image:
                             type: string
                           imagePullPolicy:

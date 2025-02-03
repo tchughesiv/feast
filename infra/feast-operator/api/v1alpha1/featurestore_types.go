@@ -299,6 +299,8 @@ type ServerConfigs struct {
 	// required by the Feast components. Ensure that each volume mount has a corresponding
 	// volume definition in the Volumes field.
 	VolumeMounts []corev1.VolumeMount `json:"volumeMounts,omitempty"`
+	// Expose will create a corresponding k8s service
+	Expose bool `json:"expose,omitempty"`
 }
 
 // ContainerConfigs k8s container settings for the server

@@ -86,3 +86,7 @@ func (feast *FeastServices) initCaConfigMap() *corev1.ConfigMap {
 	cm.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("ConfigMap"))
 	return cm
 }
+
+func (feast *FeastServices) localServiceIsExposed() bool {
+	return feast.localRegistryIsExposed() || feast.onlineIsExposed() || feast.offlineIsExposed() || feast.uiIsExposed()
+}

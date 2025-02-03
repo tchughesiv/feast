@@ -537,7 +537,7 @@ var _ = Describe("FeatureStore Controller - db storage services", func() {
 			svcList := corev1.ServiceList{}
 			err = k8sClient.List(ctx, &svcList, listOpts)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(svcList.Items).To(HaveLen(4))
+			Expect(svcList.Items).To(BeEmpty())
 
 			cmList := corev1.ConfigMapList{}
 			err = k8sClient.List(ctx, &cmList, listOpts)

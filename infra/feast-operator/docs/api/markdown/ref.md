@@ -464,6 +464,7 @@ Allowed values: "debug", "info", "warning", "error", "critical". |
 This allows attaching persistent storage, config files, secrets, or other resources
 required by the Feast components. Ensure that each volume mount has a corresponding
 volume definition in the Volumes field. |
+| `expose` _boolean_ | Expose will create a corresponding k8s service |
 
 
 #### ServiceHostnames
