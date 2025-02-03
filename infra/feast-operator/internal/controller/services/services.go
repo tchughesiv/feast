@@ -52,7 +52,7 @@ func (feast *FeastServices) ApplyDefaults() error {
 // Deploy the feast services
 func (feast *FeastServices) Deploy() error {
 	if feast.noLocalServiceConfigured() {
-		return errors.New("at least one local service must be configured. e.g. registry / online / offline")
+		return errors.New("at least one local service must be configured. e.g. registry / online / offline / ui")
 	}
 	openshiftTls, err := feast.checkOpenshiftTls()
 	if err != nil {
@@ -134,8 +134,12 @@ func (feast *FeastServices) Deploy() error {
 	if err := feast.createDeployment(); err != nil {
 		return err
 	}
-	if err := feast.deployClient(); err != nil {
-		return err
+	if feast.localServiceIsExposed() {
+		if err := feast.deployClient(); err != nil {
+			return err
+		}
+	} else {
+		apimeta.RemoveStatusCondition(&feast.Handler.FeatureStore.Status.Conditions, FeastServiceConditions[ClientFeastType][metav1.ConditionTrue].Type)
 	}
 
 	return nil
@@ -590,24 +594,9 @@ func (feast *FeastServices) isExposed(feastType FeastServiceType) bool {
 }
 
 func (feast *FeastServices) getLogLevelForType(feastType FeastServiceType) *string {
-	services := feast.Handler.FeatureStore.Status.Applied.Services
-	switch feastType {
-	case OfflineFeastType:
-		if feast.isOfflineStore() && services.OfflineStore.LogLevel != "" {
-			return &services.OfflineStore.LogLevel
-		}
-	case OnlineFeastType:
-		if feast.isOnlineStore() && services.OnlineStore.LogLevel != "" {
-			return &services.OnlineStore.LogLevel
-		}
-	case RegistryFeastType:
-		if feast.isLocalRegistry() && services.Registry.Local.LogLevel != "" {
-			return &services.Registry.Local.LogLevel
-		}
-	case UIFeastType:
-		if feast.isUI() && services.UI.LogLevel != "" {
-			return &services.UI.LogLevel
-		}
+	serviceConfigs := feast.getServerConfigs(feastType)
+	if serviceConfigs.LogLevel != "" {
+		return &serviceConfigs.LogLevel
 	}
 	return nil
 }
@@ -748,6 +737,10 @@ func (feast *FeastServices) isLocalRegistry() bool {
 	return IsLocalRegistry(feast.Handler.FeatureStore)
 }
 
+func (feast *FeastServices) localRegistryIsExposed() bool {
+	return feast.isExposed(RegistryFeastType)
+}
+
 func (feast *FeastServices) isRemoteRegistry() bool {
 	return isRemoteRegistry(feast.Handler.FeatureStore)
 }
@@ -767,18 +760,30 @@ func (feast *FeastServices) isOfflineStore() bool {
 	return appliedServices != nil && appliedServices.OfflineStore != nil
 }
 
+func (feast *FeastServices) offlineIsExposed() bool {
+	return feast.isExposed(OfflineFeastType)
+}
+
 func (feast *FeastServices) isOnlineStore() bool {
 	appliedServices := feast.Handler.FeatureStore.Status.Applied.Services
 	return appliedServices != nil && appliedServices.OnlineStore != nil
 }
 
+func (feast *FeastServices) onlineIsExposed() bool {
+	return feast.isExposed(OnlineFeastType)
+}
+
 func (feast *FeastServices) noLocalServiceConfigured() bool {
-	return !(feast.isLocalRegistry() || feast.isOnlineStore() || feast.isOfflineStore())
+	return !(feast.isLocalRegistry() || feast.isOnlineStore() || feast.isOfflineStore() || feast.isUI())
 }
 
 func (feast *FeastServices) isUI() bool {
 	appliedServices := feast.Handler.FeatureStore.Status.Applied.Services
 	return appliedServices != nil && appliedServices.UI != nil
+}
+
+func (feast *FeastServices) uiIsExposed() bool {
+	return feast.isExposed(UIFeastType)
 }
 
 func (feast *FeastServices) initFeastDeploy() *appsv1.Deployment {
