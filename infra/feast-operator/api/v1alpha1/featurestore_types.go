@@ -283,6 +283,8 @@ type ServerConfigs struct {
 	// Allowed values: "debug", "info", "warning", "error", "critical".
 	// +kubebuilder:validation:Enum=debug;info;warning;error;critical
 	LogLevel string `json:"logLevel,omitempty"`
+	// Expose will create a corresponding k8s service
+	Expose bool `json:"expose,omitempty"`
 }
 
 // ContainerConfigs k8s container settings for the server

@@ -193,6 +193,7 @@ _Appears in:_
 | `tls` _[TlsConfigs](#tlsconfigs)_ |  |
 | `logLevel` _string_ | LogLevel sets the logging level for the server
 Allowed values: "debug", "info", "warning", "error", "critical". |
+| `expose` _boolean_ | Expose will create a corresponding k8s service |
 | `persistence` _[RegistryPersistence](#registrypersistence)_ |  |
 
 
@@ -215,6 +216,7 @@ _Appears in:_
 | `tls` _[TlsConfigs](#tlsconfigs)_ |  |
 | `logLevel` _string_ | LogLevel sets the logging level for the server
 Allowed values: "debug", "info", "warning", "error", "critical". |
+| `expose` _boolean_ | Expose will create a corresponding k8s service |
 | `persistence` _[OfflineStorePersistence](#offlinestorepersistence)_ |  |
 
 
@@ -298,6 +300,7 @@ _Appears in:_
 | `tls` _[TlsConfigs](#tlsconfigs)_ |  |
 | `logLevel` _string_ | LogLevel sets the logging level for the server
 Allowed values: "debug", "info", "warning", "error", "critical". |
+| `expose` _boolean_ | Expose will create a corresponding k8s service |
 | `persistence` _[OnlineStorePersistence](#onlinestorepersistence)_ |  |
 
 
@@ -489,6 +492,7 @@ _Appears in:_
 | `tls` _[TlsConfigs](#tlsconfigs)_ |  |
 | `logLevel` _string_ | LogLevel sets the logging level for the server
 Allowed values: "debug", "info", "warning", "error", "critical". |
+| `expose` _boolean_ | Expose will create a corresponding k8s service |
 
 
 #### ServiceHostnames
