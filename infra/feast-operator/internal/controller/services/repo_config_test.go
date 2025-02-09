@@ -375,6 +375,13 @@ func minimalFeatureStoreWithAllServicesExposed() *feastdevv1alpha1.FeatureStore 
 			Server: &feastdevv1alpha1.ServerConfigs{Expose: true},
 		},
 		UI: &feastdevv1alpha1.ServerConfigs{Expose: true},
+		Registry: &feastdevv1alpha1.Registry{
+			Local: &feastdevv1alpha1.LocalRegistryConfig{
+				Server: &feastdevv1alpha1.ServerConfigs{
+					Expose: true,
+				},
+			},
+		},
 	}
 	return feast
 }
