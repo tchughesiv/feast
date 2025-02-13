@@ -17,7 +17,9 @@ limitations under the License.
 package v1alpha1
 
 import (
+	// "github.com/go-git/go-git/v5"
 	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -67,8 +69,21 @@ type FeatureStoreSpec struct {
 	// +kubebuilder:validation:Pattern="^[A-Za-z0-9][A-Za-z0-9_]*$"
 	// FeastProject is the Feast project id. This can be any alphanumeric string with underscores, but it cannot start with an underscore. Required.
 	FeastProject string                `json:"feastProject"`
+	FeastJob     *JobConfig            `json:"feastJob,omitempty"`
 	Services     *FeatureStoreServices `json:"services,omitempty"`
 	AuthzConfig  *AuthzConfig          `json:"authz,omitempty"`
+	// FeastRepo    git.CloneOptions      `json:"feastRepo,omitempty"`
+}
+
+type JobConfig struct {
+	// to delete
+	Tmp *batchv1.CronJobSpec `json:"tmp,omitempty"`
+
+	// to keep
+
+	// The schedule in Cron format, see https://en.wikipedia.org/wiki/Cron.
+	Schedule         string `json:"schedule" protobuf:"bytes,1,opt,name=schedule"`
+	ContainerConfigs `json:",inline"`
 }
 
 // FeatureStoreServices defines the desired feast services. An ephemeral onlineStore feature server is deployed by default.

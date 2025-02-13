@@ -35,6 +35,7 @@ _Appears in:_
 ContainerConfigs k8s container settings for the server
 
 _Appears in:_
+- [JobConfig](#jobconfig)
 - [ServerConfigs](#serverconfigs)
 
 | Field | Description |
@@ -54,6 +55,7 @@ DefaultCtrConfigs k8s container settings that are applied by default
 
 _Appears in:_
 - [ContainerConfigs](#containerconfigs)
+- [JobConfig](#jobconfig)
 - [ServerConfigs](#serverconfigs)
 
 | Field | Description |
@@ -126,6 +128,7 @@ _Appears in:_
 | Field | Description |
 | --- | --- |
 | `feastProject` _string_ | FeastProject is the Feast project id. This can be any alphanumeric string with underscores, but it cannot start with an underscore. Required. |
+| `feastJob` _[JobConfig](#jobconfig)_ |  |
 | `services` _[FeatureStoreServices](#featurestoreservices)_ |  |
 | `authz` _[AuthzConfig](#authzconfig)_ |  |
 
@@ -147,6 +150,26 @@ _Appears in:_
 | `feastVersion` _string_ |  |
 | `phase` _string_ |  |
 | `serviceHostnames` _[ServiceHostnames](#servicehostnames)_ |  |
+
+
+#### JobConfig
+
+
+
+
+
+_Appears in:_
+- [FeatureStoreSpec](#featurestorespec)
+
+| Field | Description |
+| --- | --- |
+| `tmp` _[CronJobSpec](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#cronjobspec-v1-batch)_ | to delete |
+| `image` _string_ |  |
+| `env` _[EnvVar](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#envvar-v1-core)_ |  |
+| `envFrom` _[EnvFromSource](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#envfromsource-v1-core)_ |  |
+| `imagePullPolicy` _[PullPolicy](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#pullpolicy-v1-core)_ |  |
+| `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#resourcerequirements-v1-core)_ |  |
+| `schedule` _string_ | The schedule in Cron format, see https://en.wikipedia.org/wiki/Cron. |
 
 
 #### KubernetesAuthz
@@ -329,6 +352,7 @@ OptionalCtrConfigs k8s container settings that are optional
 
 _Appears in:_
 - [ContainerConfigs](#containerconfigs)
+- [JobConfig](#jobconfig)
 - [ServerConfigs](#serverconfigs)
 
 | Field | Description |
