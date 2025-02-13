@@ -27,6 +27,7 @@ import (
 const (
 	TmpFeatureStoreYamlEnvVar = "TMP_FEATURE_STORE_YAML_BASE64"
 	feastServerImageVar       = "RELATED_IMAGE_FEATURE_SERVER"
+	cronJobImageVar           = "RELATED_IMAGE_CRON_JOB"
 	FeatureStoreYamlCmKey     = "feature_store.yaml"
 	EphemeralPath             = "/feast-data"
 	FeatureRepoDir            = "feature_repo"
@@ -84,6 +85,7 @@ const (
 
 var (
 	DefaultImage          = "quay.io/feastdev/feature-server:" + feastversion.FeastVersion
+	DefaultCronJobImage   = "quay.io/openshift/origin-cli:4.17"
 	DefaultReplicas       = int32(1)
 	DefaultPVCAccessModes = []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce}
 	NameLabelKey          = feastdevv1alpha1.GroupVersion.Group + "/name"
@@ -165,7 +167,6 @@ var (
 				Reason: feastdevv1alpha1.UIFailedReason,
 			},
 		},
-
 		ClientFeastType: {
 			metav1.ConditionTrue: {
 				Type:    feastdevv1alpha1.ClientReadyType,
