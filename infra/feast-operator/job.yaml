@@ -1,0 +1,84 @@
+# kubectl create job --from=cronjob/feast-sample test
+## do we want to create a separate container for these jobs to run in?
+## might allow for dedicated PV ? or should a PV situation be reserved for future feastRepo field?
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: feast-sample-cronjob
+  namespace: feast
+rules:
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  resourceNames:
+  - feast-sample
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - list
+- apiGroups:
+  - ""
+  resources:
+  - pods/exec
+  verbs:
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: feast-sample-cronjob
+  namespace: feast
+roleRef:
+  kind: Role
+  name: feast-sample-cronjob
+subjects:
+- kind: ServiceAccount
+  name: feast-sample
+  namespace: feast
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: feast-sample
+  namespace: feast
+spec:
+  suspend: true
+  schedule: "@yearly"
+  concurrencyPolicy: Replace
+  startingDeadlineSeconds: 5
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: feast-sample
+          initContainers:
+          - name: apply
+            image: quay.io/openshift/origin-cli:4.17
+            command:
+            - "kubectl"
+            - "exec"
+            - "deploy/feast-sample"
+            - "-ic"
+            - "online"
+            - "--"
+            - "feast"
+            - "apply"
+          containers:
+          - name: materialize
+            image: quay.io/openshift/origin-cli:4.17
+            command:
+            - "kubectl"
+            - "exec"
+            - "deploy/feast-sample"
+            - "-ic"
+            - "online"
+            - "--"
+            - "bash"
+            - "-c"
+            - 'feast materialize-incremental $(date -u +"%Y-%m-%dT%H:%M:%S")'
+          restartPolicy: Never

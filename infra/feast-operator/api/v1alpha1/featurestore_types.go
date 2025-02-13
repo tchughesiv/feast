@@ -18,6 +18,7 @@ package v1alpha1
 
 import (
 	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -68,6 +69,7 @@ type FeatureStoreSpec struct {
 	// FeastProject is the Feast project id. This can be any alphanumeric string with underscores, but it cannot start with an underscore. Required.
 	FeastProject    string                `json:"feastProject"`
 	FeastProjectDir *FeastProjectDir      `json:"feastProjectDir,omitempty"`
+	FeastJob        *JobConfig            `json:"feastJob,omitempty"`
 	Services        *FeatureStoreServices `json:"services,omitempty"`
 	AuthzConfig     *AuthzConfig          `json:"authz,omitempty"`
 }
@@ -102,6 +104,17 @@ type FeastInitOptions struct {
 	// Template for the created project
 	// +kubebuilder:validation:Enum=local;gcp;aws;snowflake;spark;postgres;hbase;cassandra;hazelcast;ikv;couchbase
 	Template string `json:"template,omitempty"`
+}
+
+type JobConfig struct {
+	// to delete
+	Tmp *batchv1.CronJobSpec `json:"tmp,omitempty"`
+
+	// to keep
+
+	// The schedule in Cron format, see https://en.wikipedia.org/wiki/Cron.
+	Schedule         string `json:"schedule" protobuf:"bytes,1,opt,name=schedule"`
+	ContainerConfigs `json:",inline"`
 }
 
 // FeatureStoreServices defines the desired feast services. An ephemeral onlineStore feature server is deployed by default.
