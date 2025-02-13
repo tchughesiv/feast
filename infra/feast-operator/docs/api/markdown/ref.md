@@ -126,6 +126,7 @@ _Appears in:_
 | Field | Description |
 | --- | --- |
 | `feastProject` _string_ | FeastProject is the Feast project id. This can be any alphanumeric string with underscores, but it cannot start with an underscore. Required. |
+| `feastJob` _[CronJobSpec](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#cronjobspec-v1-batch)_ |  |
 | `services` _[FeatureStoreServices](#featurestoreservices)_ |  |
 | `authz` _[AuthzConfig](#authzconfig)_ |  |
 
