@@ -512,9 +512,10 @@ func (feast *FeastServices) setInitContainer(podSpec *corev1.PodSpec, fsYamlB64 
 		workingDir := getOfflineMountPath(feast.Handler.FeatureStore)
 		feastProjectDir := workingDir + "/" + feastProject
 		feastRepoDir := feastProjectDir + FeatureRepoDir
-		//createCommand := "feast init " + feastProject
-=		createCommand := "git clone https://github.com/feast-dev/feast-credit-score-local-tutorial " + feastProjectDir
+		// createCommand := "feast init " + feastProject
+		createCommand := "git clone https://github.com/feast-dev/feast-credit-score-local-tutorial " + feastProjectDir
 		terminalMsg := "echo \"Starting feast repository creation...\""
+
 		podSpec.InitContainers = append(podSpec.InitContainers, corev1.Container{
 			Name:  "feast-init",
 			Image: getFeatureServerImage(),
