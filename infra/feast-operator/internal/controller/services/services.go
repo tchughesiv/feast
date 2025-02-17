@@ -511,6 +511,7 @@ func (feast *FeastServices) setInitContainer(podSpec *corev1.PodSpec, fsYamlB64 
 		feastProject := feast.Handler.FeatureStore.Status.Applied.FeastProject
 		feastRepoDir := feastProject + FeatureRepoDir
 		workingDir := getOfflineMountPath(feast.Handler.FeatureStore)
+		createCommand := "feast init " + feastProject
 		podSpec.InitContainers = append(podSpec.InitContainers, corev1.Container{
 			Name:  "feast-init",
 			Image: getFeatureServerImage(),
@@ -522,7 +523,7 @@ func (feast *FeastServices) setInitContainer(podSpec *corev1.PodSpec, fsYamlB64 
 			},
 			Command: []string{"/bin/sh", "-c"},
 			Args: []string{"echo \"Starting feast initialization job...\";\n[ -d " +
-				feastRepoDir + " ] || feast init " + feastProject + ";\necho $" +
+				feastRepoDir + " ] || " + createCommand + ";\necho $" +
 				TmpFeatureStoreYamlEnvVar + " | base64 -d \u003e " + workingDir + "/" + feastRepoDir +
 				"/feature_store.yaml;\necho \"Feast initialization complete\";\n"},
 			WorkingDir: workingDir,
