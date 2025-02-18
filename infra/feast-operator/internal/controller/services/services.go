@@ -564,6 +564,9 @@ func (feast *FeastServices) setInitContainer(podSpec *corev1.PodSpec, fsYamlB64 
 }
 
 func (feast *FeastServices) getOperatorImage() string {
+	// ???
+	// add FS_IMG check first for local dev runs???
+	// ???
 	if podName, nameExists := os.LookupEnv("POD_NAME"); nameExists {
 		if podNs, nsExists := os.LookupEnv("POD_NAMESPACE"); nsExists {
 			pod := corev1.Pod{}
