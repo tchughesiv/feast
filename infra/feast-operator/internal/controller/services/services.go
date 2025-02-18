@@ -515,24 +515,36 @@ func (feast *FeastServices) setInitContainer(podSpec *corev1.PodSpec, fsYamlB64 
 		feastRepoDir := feastProjectDir + FeatureRepoDir
 
 		image := getFeatureServerImage()
-		cmdSlice := []string{"feast", "init"}
+		cmdSlice := []string{"bash", "-c"}
+		argSlice := []string{}
 		if applied.FeastDir != nil {
 			feastDir := applied.FeastDir
 			if feastDir.Init != nil {
+				initSlice := []string{"feast", "init"}
 				if feastDir.Init.Minimal {
-					cmdSlice = append(cmdSlice, "-m")
+					initSlice = append(initSlice, "-m")
 				}
 				if len(feastDir.Init.Template) > 0 {
-					cmdSlice = append(cmdSlice, "-t", feastDir.Init.Template)
+					initSlice = append(initSlice, "-t", feastDir.Init.Template)
 				}
-				cmdSlice = append(cmdSlice, feastProject)
+				initSlice = append(initSlice, feastProject)
+				initCommand := strings.Join(initSlice, " ")
+
+				argSlice = []string{
+					"echo \"Creating feast repository...\"" +
+						// how indent if statement properly?
+						// how create go string without needing \n, etc?
+						";\nif [[ ! -d " + feastRepoDir + " ]]; then " + initCommand + "; fi;\necho $" + TmpFeatureStoreYamlEnvVar +
+						" | base64 -d \u003e " + feastRepoDir + "/feature_store.yaml;\necho \"Feast repo creation complete\";\n",
+				}
 			} else if feastDir.Git != nil {
 				image = feast.getOperatorImage()
+				cmdSlice = []string{"/go-git"}
+
 				// CheckArgs("<url>", "<directory>", "<reference> ( branch / tag / commit )")
-				cmdSlice = []string{feastDir.Git.URL, feastProjectDir, feastDir.Git.Reference}
+				argSlice = []string{feastDir.Git.URL, feastProjectDir, feastDir.Git.Reference}
 			}
 		}
-		createCommand := strings.Join(cmdSlice, " ")
 
 		podSpec.InitContainers = append(podSpec.InitContainers, corev1.Container{
 			Name:  "feast-init",
@@ -544,13 +556,8 @@ func (feast *FeastServices) setInitContainer(podSpec *corev1.PodSpec, fsYamlB64 
 				},
 			},
 			WorkingDir: workingDir,
-			Command:    []string{"bash", "-c"},
-			Args: []string{
-				"echo \"Creating feast repository...\"" +
-					// how indent if statement properly?
-					// how create go string without needing \n, etc?
-					";\nif [[ ! -d " + feastRepoDir + " ]]; then " + createCommand + "; fi;\necho $" + TmpFeatureStoreYamlEnvVar +
-					" | base64 -d \u003e " + feastRepoDir + "/feature_store.yaml;\necho \"Feast repo creation complete\";\n"},
+			Command:    cmdSlice,
+			Args:       argSlice,
 		})
 	}
 }
