@@ -28,6 +28,21 @@ _Appears in:_
 | `oidc` _[OidcAuthz](#oidcauthz)_ |  |
 
 
+#### CloneOptions
+
+
+
+CloneOptions describes how a clone should be performed.
+
+_Appears in:_
+- [FeastDir](#feastdir)
+
+| Field | Description |
+| --- | --- |
+| `url` _string_ | The repository URL to clone from. |
+| `referenceName` _[ReferenceName](#referencename)_ | Remote branch to clone. |
+
+
 #### ContainerConfigs
 
 
@@ -59,6 +74,20 @@ _Appears in:_
 | Field | Description |
 | --- | --- |
 | `image` _string_ |  |
+
+
+#### FeastDir
+
+
+
+
+
+_Appears in:_
+- [FeatureStoreSpec](#featurestorespec)
+
+| Field | Description |
+| --- | --- |
+| `clone` _[CloneOptions](#cloneoptions)_ |  |
 
 
 #### FeatureStore
@@ -126,6 +155,7 @@ _Appears in:_
 | Field | Description |
 | --- | --- |
 | `feastProject` _string_ | FeastProject is the Feast project id. This can be any alphanumeric string with underscores, but it cannot start with an underscore. Required. |
+| `feastDir` _[FeastDir](#feastdir)_ |  |
 | `services` _[FeatureStoreServices](#featurestoreservices)_ |  |
 | `authz` _[AuthzConfig](#authzconfig)_ |  |
 

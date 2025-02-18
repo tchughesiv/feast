@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"github.com/go-git/go-git/v5/plumbing"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -67,8 +68,21 @@ type FeatureStoreSpec struct {
 	// +kubebuilder:validation:Pattern="^[A-Za-z0-9][A-Za-z0-9_]*$"
 	// FeastProject is the Feast project id. This can be any alphanumeric string with underscores, but it cannot start with an underscore. Required.
 	FeastProject string                `json:"feastProject"`
+	FeastDir     *FeastDir             `json:"feastDir,omitempty"`
 	Services     *FeatureStoreServices `json:"services,omitempty"`
 	AuthzConfig  *AuthzConfig          `json:"authz,omitempty"`
+}
+
+type FeastDir struct {
+	Clone *CloneOptions `json:"clone,omitempty"`
+}
+
+// CloneOptions describes how a clone should be performed.
+type CloneOptions struct {
+	// The repository URL to clone from.
+	URL string `json:"url"`
+	// Remote branch to clone.
+	ReferenceName plumbing.ReferenceName `json:"referenceName,omitempty"`
 }
 
 // FeatureStoreServices defines the desired feast services. An ephemeral onlineStore feature server is deployed by default.

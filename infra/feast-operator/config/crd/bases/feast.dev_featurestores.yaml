@@ -83,6 +83,21 @@ spec:
                 x-kubernetes-validations:
                 - message: One selection required between kubernetes or oidc.
                   rule: '[has(self.kubernetes), has(self.oidc)].exists_one(c, c)'
+              feastDir:
+                properties:
+                  clone:
+                    description: CloneOptions describes how a clone should be performed.
+                    properties:
+                      referenceName:
+                        description: Remote branch to clone.
+                        type: string
+                      url:
+                        description: The repository URL to clone from.
+                        type: string
+                    required:
+                    - url
+                    type: object
+                type: object
               feastProject:
                 description: FeastProject is the Feast project id.
                 pattern: ^[A-Za-z0-9][A-Za-z0-9_]*$
@@ -3307,6 +3322,22 @@ spec:
                     - message: One selection required between kubernetes or oidc.
                       rule: '[has(self.kubernetes), has(self.oidc)].exists_one(c,
                         c)'
+                  feastDir:
+                    properties:
+                      clone:
+                        description: CloneOptions describes how a clone should be
+                          performed.
+                        properties:
+                          referenceName:
+                            description: Remote branch to clone.
+                            type: string
+                          url:
+                            description: The repository URL to clone from.
+                            type: string
+                        required:
+                        - url
+                        type: object
+                    type: object
                   feastProject:
                     description: FeastProject is the Feast project id.
                     pattern: ^[A-Za-z0-9][A-Za-z0-9_]*$

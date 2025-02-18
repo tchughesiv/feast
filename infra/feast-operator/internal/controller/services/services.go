@@ -511,9 +511,7 @@ func (feast *FeastServices) setInitContainer(podSpec *corev1.PodSpec, fsYamlB64 
 		feastProject := feast.Handler.FeatureStore.Status.Applied.FeastProject
 		feastProjectDir := workingDir + "/" + feastProject
 		feastRepoDir := feastProjectDir + FeatureRepoDir
-		// createCommand := "feast init " + feastProject
-		// git update-index --skip-worktree feature_store.yaml
-		createCommand := "git clone https://github.com/feast-dev/feast-credit-score-local-tutorial " + feastProjectDir + " && cd " + feastProjectDir + " && git checkout f43b44b"
+		createCommand := "feast init " + feastProject
 
 		podSpec.InitContainers = append(podSpec.InitContainers, corev1.Container{
 			Name:  "feast-init",
