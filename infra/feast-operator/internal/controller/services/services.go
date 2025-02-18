@@ -556,10 +556,10 @@ func (feast *FeastServices) setInitContainer(podSpec *corev1.PodSpec, fsYamlB64 
 }
 
 func (feast *FeastServices) getOperatorImage() string {
-	if podName, podNameExists := os.LookupEnv("MY_POD_NAME"); podNameExists {
-		if podNs, podNsExists := os.LookupEnv("MY_POD_NAMESPACE"); podNsExists {
-			nsName := client.ObjectKey{Namespace: podNs, Name: podName}
+	if podName, nameExists := os.LookupEnv("POD_NAME"); nameExists {
+		if podNs, nsExists := os.LookupEnv("POD_NAMESPACE"); nsExists {
 			pod := corev1.Pod{}
+			nsName := client.ObjectKey{Name: podName, Namespace: podNs}
 			if err := feast.Handler.Get(feast.Handler.Context, nsName, &pod); err != nil {
 				logger := log.FromContext(feast.Handler.Context)
 				logger.Error(err, "Error getting the Operator's Pod "+nsName.String())
@@ -571,6 +571,7 @@ func (feast *FeastServices) getOperatorImage() string {
 			}
 		}
 	}
+
 	return DefaultOperatorImage
 }
 
