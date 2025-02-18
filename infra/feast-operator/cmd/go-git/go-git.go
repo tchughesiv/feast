@@ -23,12 +23,13 @@ import (
 	git "github.com/go-git/go-git/v5"
 	. "github.com/go-git/go-git/v5/_examples"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/storer"
 )
 
 // Basic example of how to checkout a specific commit.
 func main() {
-	CheckArgs("<url>", "<directory>", "<commit>")
-	url, directory, commit := os.Args[1], os.Args[2], os.Args[3]
+	CheckArgs("<url>", "<directory>", "<reference (branch/tag/commit)>")
+	url, directory, reference := os.Args[1], os.Args[2], os.Args[3]
 
 	// Clone the given repository to the given directory
 	Info("git clone %s %s", url, directory)
@@ -44,15 +45,35 @@ func main() {
 	CheckIfError(err)
 	fmt.Println(ref.Hash())
 
+	bs, err := remoteBranches(r.Storer)
+	CheckIfError(err)
+
+	var branchRef *plumbing.Reference
+	err = bs.ForEach(func(b *plumbing.Reference) error {
+		if b.Name().Short() == "origin/"+reference {
+			branchRef = b
+		}
+		return nil
+	})
+	CheckIfError(err)
+
+	checkoutOpts := &git.CheckoutOptions{
+		Create: false,
+	}
+	if branchRef != nil {
+		checkoutOpts.Branch = branchRef.Name()
+	} else {
+		hash, err := r.ResolveRevision(plumbing.Revision(reference))
+		CheckIfError(err)
+		checkoutOpts.Hash = *hash
+	}
+
 	w, err := r.Worktree()
 	CheckIfError(err)
 
 	// ... checking out to commit
-	Info("git checkout %s", commit)
-	err = w.Checkout(&git.CheckoutOptions{
-		Hash:   plumbing.NewHash(commit),
-		Create: false,
-	})
+	Info("git checkout %s", reference)
+	err = w.Checkout(checkoutOpts)
 	CheckIfError(err)
 
 	// ... retrieving the commit being pointed by HEAD, it shows that the
@@ -61,4 +82,15 @@ func main() {
 	ref, err = r.Head()
 	CheckIfError(err)
 	fmt.Println(ref.Hash())
+}
+
+func remoteBranches(s storer.ReferenceStorer) (storer.ReferenceIter, error) {
+	refs, err := s.IterReferences()
+	if err != nil {
+		return nil, err
+	}
+
+	return storer.NewReferenceFilteredIter(func(ref *plumbing.Reference) bool {
+		return ref.Name().IsRemote()
+	}, refs), nil
 }
