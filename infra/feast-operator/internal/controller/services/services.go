@@ -22,9 +22,8 @@ import (
 	"strings"
 
 	feastdevv1alpha1 "github.com/feast-dev/feast/infra/feast-operator/api/v1alpha1"
-	routev1 "github.com/openshift/api/route/v1"
-
 	"github.com/feast-dev/feast/infra/feast-operator/internal/controller/handler"
+	routev1 "github.com/openshift/api/route/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -514,8 +513,7 @@ func (feast *FeastServices) setInitContainer(podSpec *corev1.PodSpec, fsYamlB64 
 		feastRepoDir := feastProjectDir + FeatureRepoDir
 		// createCommand := "feast init " + feastProject
 		// git update-index --skip-worktree feature_store.yaml
-		createCommand := "git clone https://github.com/feast-dev/feast-credit-score-local-tutorial " + feastProjectDir
-		terminalMsg := "echo \"Starting feast repository creation...\""
+		createCommand := "git clone https://github.com/feast-dev/feast-credit-score-local-tutorial " + feastProjectDir + " && cd " + feastProjectDir + " && git checkout f43b44b"
 
 		podSpec.InitContainers = append(podSpec.InitContainers, corev1.Container{
 			Name:  "feast-init",
@@ -529,8 +527,9 @@ func (feast *FeastServices) setInitContainer(podSpec *corev1.PodSpec, fsYamlB64 
 			WorkingDir: workingDir,
 			Command:    []string{"bash", "-c"},
 			Args: []string{
-				terminalMsg +
-					";\n[ -d " + feastRepoDir + " ] || " + createCommand + ";\necho $" + TmpFeatureStoreYamlEnvVar +
+				"echo \"Creating feast repository...\"" +
+					// how indent if statement properly?
+					";\nif [[ ! -d " + feastRepoDir + " ]]; then " + createCommand + "; fi;\necho $" + TmpFeatureStoreYamlEnvVar +
 					" | base64 -d \u003e " + feastRepoDir + "/feature_store.yaml;\necho \"Feast repo creation complete\";\n"},
 		})
 	}
