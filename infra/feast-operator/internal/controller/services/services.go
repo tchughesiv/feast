@@ -508,11 +508,12 @@ func (feast *FeastServices) getDeploymentStrategy() appsv1.DeploymentStrategy {
 
 func (feast *FeastServices) setInitContainer(podSpec *corev1.PodSpec, fsYamlB64 string) {
 	if !feast.Handler.FeatureStore.Status.Applied.Services.DisableInitContainers {
-		feastProject := feast.Handler.FeatureStore.Status.Applied.FeastProject
 		workingDir := getOfflineMountPath(feast.Handler.FeatureStore)
+		feastProject := feast.Handler.FeatureStore.Status.Applied.FeastProject
 		feastProjectDir := workingDir + "/" + feastProject
 		feastRepoDir := feastProjectDir + FeatureRepoDir
 		// createCommand := "feast init " + feastProject
+		// git update-index --skip-worktree feature_store.yaml
 		createCommand := "git clone https://github.com/feast-dev/feast-credit-score-local-tutorial " + feastProjectDir
 		terminalMsg := "echo \"Starting feast repository creation...\""
 
@@ -527,10 +528,10 @@ func (feast *FeastServices) setInitContainer(podSpec *corev1.PodSpec, fsYamlB64 
 			},
 			WorkingDir: workingDir,
 			Command:    []string{"bash", "-c"},
-			Args: []string{terminalMsg + ";\n[ -d " +
-				feastRepoDir + " ] || " + createCommand + ";\necho $" +
-				TmpFeatureStoreYamlEnvVar + " | base64 -d \u003e " + feastRepoDir +
-				"/feature_store.yaml;\necho \"Feast repo creation complete\";\n"},
+			Args: []string{
+				terminalMsg +
+					";\n[ -d " + feastRepoDir + " ] || " + createCommand + ";\necho $" + TmpFeatureStoreYamlEnvVar +
+					" | base64 -d \u003e " + feastRepoDir + "/feature_store.yaml;\necho \"Feast repo creation complete\";\n"},
 		})
 	}
 }
