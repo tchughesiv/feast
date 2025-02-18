@@ -531,7 +531,7 @@ func (feast *FeastServices) setInitContainer(podSpec *corev1.PodSpec, fsYamlB64 
 				initCommand := strings.Join(initSlice, " ")
 
 				argSlice = []string{
-					"echo \"Creating feast repository...\"" +
+					"echo \"Creating feast repository...\"\n" + initCommand + "\n" +
 						// how indent if statement properly?
 						// how create go string without needing \n, etc?
 						";\nif [[ ! -d " + feastRepoDir + " ]]; then " + initCommand + "; fi;\necho $" + TmpFeatureStoreYamlEnvVar +
