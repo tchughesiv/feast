@@ -542,6 +542,7 @@ func (feast *FeastServices) setInitContainer(podSpec *corev1.PodSpec, fsYamlB64 
 				cmdSlice = []string{"/go-git"}
 
 				// CheckArgs("<url>", "<directory>", "<reference> ( branch / tag / commit )")
+				// error: Get "https://github.com/...": tls: failed to verify certificate: x509: certificate signed by unknown authority
 				argSlice = []string{feastDir.Git.URL, feastProjectDir, feastDir.Git.Reference}
 			}
 		}
