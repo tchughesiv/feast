@@ -59,7 +59,7 @@ type FeatureStoreReconciler struct {
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;create;update;watch;delete
 // +kubebuilder:rbac:groups=core,resources=services;configmaps;persistentvolumeclaims;serviceaccounts,verbs=get;list;create;update;watch;delete
 // +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=roles;rolebindings,verbs=get;list;create;update;watch;delete
-// +kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list
+// +kubebuilder:rbac:groups=core,resources=pods;secrets,verbs=get;list
 // +kubebuilder:rbac:groups=route.openshift.io,resources=routes,verbs=get;list;create;update;watch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to

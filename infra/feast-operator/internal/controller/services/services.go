@@ -18,6 +18,7 @@ package services
 
 import (
 	"errors"
+	"os"
 	"strconv"
 	"strings"
 
@@ -506,16 +507,36 @@ func (feast *FeastServices) getDeploymentStrategy() appsv1.DeploymentStrategy {
 }
 
 func (feast *FeastServices) setInitContainer(podSpec *corev1.PodSpec, fsYamlB64 string) {
-	if !feast.Handler.FeatureStore.Status.Applied.Services.DisableInitContainers {
+	applied := feast.Handler.FeatureStore.Status.Applied
+	if !applied.Services.DisableInitContainers {
 		workingDir := getOfflineMountPath(feast.Handler.FeatureStore)
-		feastProject := feast.Handler.FeatureStore.Status.Applied.FeastProject
+		feastProject := applied.FeastProject
 		feastProjectDir := workingDir + "/" + feastProject
 		feastRepoDir := feastProjectDir + FeatureRepoDir
-		createCommand := "feast init " + feastProject
+
+		image := getFeatureServerImage()
+		cmdSlice := []string{"feast", "init"}
+		if applied.FeastDir != nil {
+			feastDir := applied.FeastDir
+			if feastDir.Init != nil {
+				if feastDir.Init.Minimal {
+					cmdSlice = append(cmdSlice, "-m")
+				}
+				if len(feastDir.Init.Template) > 0 {
+					cmdSlice = append(cmdSlice, "-t", feastDir.Init.Template)
+				}
+				cmdSlice = append(cmdSlice, feastProject)
+			} else if feastDir.Git != nil {
+				image = feast.getOperatorImage()
+				// CheckArgs("<url>", "<directory>", "<reference> ( branch / tag / commit )")
+				cmdSlice = []string{feastDir.Git.URL, feastProjectDir, feastDir.Git.Reference}
+			}
+		}
+		createCommand := strings.Join(cmdSlice, " ")
 
 		podSpec.InitContainers = append(podSpec.InitContainers, corev1.Container{
 			Name:  "feast-init",
-			Image: getFeatureServerImage(),
+			Image: image,
 			Env: []corev1.EnvVar{
 				{
 					Name:  TmpFeatureStoreYamlEnvVar,
@@ -532,6 +553,25 @@ func (feast *FeastServices) setInitContainer(podSpec *corev1.PodSpec, fsYamlB64 
 					" | base64 -d \u003e " + feastRepoDir + "/feature_store.yaml;\necho \"Feast repo creation complete\";\n"},
 		})
 	}
+}
+
+func (feast *FeastServices) getOperatorImage() string {
+	if podName, podNameExists := os.LookupEnv("MY_POD_NAME"); podNameExists {
+		if podNs, podNsExists := os.LookupEnv("MY_POD_NAMESPACE"); podNsExists {
+			nsName := client.ObjectKey{Namespace: podNs, Name: podName}
+			pod := corev1.Pod{}
+			if err := feast.Handler.Get(feast.Handler.Context, nsName, &pod); err != nil {
+				logger := log.FromContext(feast.Handler.Context)
+				logger.Error(err, "Error getting the Operator's Pod "+nsName.String())
+			}
+			for _, c := range pod.Spec.Containers {
+				if c.Name == "manager" {
+					return c.Image
+				}
+			}
+		}
+	}
+	return DefaultOperatorImage
 }
 
 func (feast *FeastServices) setService(svc *corev1.Service, feastType FeastServiceType) error {

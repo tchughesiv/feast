@@ -72,6 +72,7 @@ type FeatureStoreSpec struct {
 	AuthzConfig  *AuthzConfig          `json:"authz,omitempty"`
 }
 
+// +kubebuilder:validation:XValidation:rule="[has(self.git), has(self.init)].exists_one(c, c)",message="One selection required between init or git."
 type FeastDir struct {
 	Git  *GitCloneOptions  `json:"git,omitempty"`
 	Init *FeastInitOptions `json:"init,omitempty"`

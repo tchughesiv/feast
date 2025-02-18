@@ -106,6 +106,9 @@ spec:
                         type: string
                     type: object
                 type: object
+                x-kubernetes-validations:
+                - message: One selection required between init or git.
+                  rule: '[has(self.git), has(self.init)].exists_one(c, c)'
               feastProject:
                 description: FeastProject is the Feast project id.
                 pattern: ^[A-Za-z0-9][A-Za-z0-9_]*$
@@ -3354,6 +3357,9 @@ spec:
                             type: string
                         type: object
                     type: object
+                    x-kubernetes-validations:
+                    - message: One selection required between init or git.
+                      rule: '[has(self.git), has(self.init)].exists_one(c, c)'
                   feastProject:
                     description: FeastProject is the Feast project id.
                     pattern: ^[A-Za-z0-9][A-Za-z0-9_]*$

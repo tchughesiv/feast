@@ -84,6 +84,7 @@ const (
 
 var (
 	DefaultImage          = "feastdev/feature-server:" + feastversion.FeastVersion
+	DefaultOperatorImage  = "feastdev/feast-operator:" + feastversion.FeastVersion
 	DefaultReplicas       = int32(1)
 	DefaultPVCAccessModes = []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce}
 	NameLabelKey          = feastdevv1alpha1.GroupVersion.Group + "/name"
