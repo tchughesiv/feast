@@ -526,7 +526,7 @@ func (feast *FeastServices) setInitContainer(podSpec *corev1.PodSpec, fsYamlB64 
 				},
 			},
 			WorkingDir: workingDir,
-			Command:    []string{"/bin/sh", "-c"},
+			Command:    []string{"bash", "-c"},
 			Args: []string{terminalMsg + ";\n[ -d " +
 				feastRepoDir + " ] || " + createCommand + ";\necho $" +
 				TmpFeatureStoreYamlEnvVar + " | base64 -d \u003e " + feastRepoDir +
