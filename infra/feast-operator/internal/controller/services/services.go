@@ -531,10 +531,10 @@ func (feast *FeastServices) setInitContainer(podSpec *corev1.PodSpec, fsYamlB64 
 				initCommand := strings.Join(initSlice, " ")
 
 				argSlice = []string{
-					"echo \"Creating feast repository...\"\n" + initCommand + "\n" +
+					"echo \"Creating feast repository...\"\necho \"" + initCommand + "\"\n" +
 						// how indent if statement properly?
 						// how create go string without needing \n, etc?
-						";\nif [[ ! -d " + feastRepoDir + " ]]; then " + initCommand + "; fi;\necho $" + TmpFeatureStoreYamlEnvVar +
+						"if [[ ! -d " + feastRepoDir + " ]]; then " + initCommand + "; fi;\necho $" + TmpFeatureStoreYamlEnvVar +
 						" | base64 -d \u003e " + feastRepoDir + "/feature_store.yaml;\necho \"Feast repo creation complete\";\n",
 				}
 			} else if feastDir.Git != nil {
@@ -544,6 +544,11 @@ func (feast *FeastServices) setInitContainer(podSpec *corev1.PodSpec, fsYamlB64 
 				// CheckArgs("<url>", "<directory>", "<reference> ( branch / tag / commit )")
 				// error: Get "https://github.com/...": tls: failed to verify certificate: x509: certificate signed by unknown authority
 				argSlice = []string{feastDir.Git.URL, feastProjectDir, feastDir.Git.Reference}
+
+				// !!!!!
+				// still have to place feature_store.yaml ... :/
+				// use same python init container but only execute the following
+				// echo $TMP_FEATURE_STORE_YAML_BASE64 | base64 -d > /feast-data/my_project/feature_repo/feature_store.yaml;
 			}
 		}
 
@@ -565,7 +570,7 @@ func (feast *FeastServices) setInitContainer(podSpec *corev1.PodSpec, fsYamlB64 
 
 func (feast *FeastServices) getOperatorImage() string {
 	// ???
-	// add FS_IMG check first for local dev runs???
+	// add IMG env var check first for local dev runs???
 	// ???
 	if podName, nameExists := os.LookupEnv("POD_NAME"); nameExists {
 		if podNs, nsExists := os.LookupEnv("POD_NAMESPACE"); nsExists {
