@@ -17,7 +17,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/go-git/go-git/v5/plumbing"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -81,8 +80,8 @@ type FeastDir struct {
 type CloneOptions struct {
 	// The repository URL to clone from.
 	URL string `json:"url"`
-	// Remote branch to clone.
-	ReferenceName plumbing.ReferenceName `json:"referenceName,omitempty"`
+	// branch / tag / commit
+	Reference string `json:"reference,omitempty"`
 }
 
 // FeatureStoreServices defines the desired feast services. An ephemeral onlineStore feature server is deployed by default.

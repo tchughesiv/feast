@@ -88,8 +88,8 @@ spec:
                   clone:
                     description: CloneOptions describes how a clone should be performed.
                     properties:
-                      referenceName:
-                        description: Remote branch to clone.
+                      reference:
+                        description: branch / tag / commit
                         type: string
                       url:
                         description: The repository URL to clone from.
@@ -3328,8 +3328,8 @@ spec:
                         description: CloneOptions describes how a clone should be
                           performed.
                         properties:
-                          referenceName:
-                            description: Remote branch to clone.
+                          reference:
+                            description: branch / tag / commit
                             type: string
                           url:
                             description: The repository URL to clone from.

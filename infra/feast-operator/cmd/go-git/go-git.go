@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"fmt"
 	"os"
 
 	git "github.com/go-git/go-git/v5"
@@ -43,7 +42,7 @@ func main() {
 	Info("git show-ref --head HEAD")
 	ref, err := r.Head()
 	CheckIfError(err)
-	fmt.Println(ref.Hash())
+	println(ref.Hash().String())
 
 	bs, err := remoteBranches(r.Storer)
 	CheckIfError(err)
@@ -81,7 +80,7 @@ func main() {
 	Info("git show-ref --head HEAD")
 	ref, err = r.Head()
 	CheckIfError(err)
-	fmt.Println(ref.Hash())
+	println(ref.Hash().String())
 }
 
 func remoteBranches(s storer.ReferenceStorer) (storer.ReferenceIter, error) {

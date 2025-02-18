@@ -40,7 +40,7 @@ _Appears in:_
 | Field | Description |
 | --- | --- |
 | `url` _string_ | The repository URL to clone from. |
-| `referenceName` _[ReferenceName](#referencename)_ | Remote branch to clone. |
+| `reference` _string_ | branch / tag / commit |
 
 
 #### ContainerConfigs
