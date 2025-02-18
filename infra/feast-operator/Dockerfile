@@ -26,6 +26,7 @@ RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -a -o go
 FROM registry.access.redhat.com/ubi8/ubi-micro:8.10
 WORKDIR /
 COPY --from=builder /opt/app-root/src/manager .
+COPY --from=builder /opt/app-root/src/go-git .
 USER 65532:65532
 
 ENTRYPOINT ["/manager"]
