@@ -73,15 +73,22 @@ type FeatureStoreSpec struct {
 }
 
 type FeastDir struct {
-	Clone *CloneOptions `json:"clone,omitempty"`
+	Git  *GitCloneOptions  `json:"git,omitempty"`
+	Init *FeastInitOptions `json:"init,omitempty"`
 }
 
-// CloneOptions describes how a clone should be performed.
-type CloneOptions struct {
+// GitCloneOptions describes how a clone should be performed.
+type GitCloneOptions struct {
 	// The repository URL to clone from.
 	URL string `json:"url"`
 	// branch / tag / commit
 	Reference string `json:"reference,omitempty"`
+}
+
+// FeastInitOptions ...
+type FeastInitOptions struct {
+	Minimal  bool   `json:"minimal,omitempty"`
+	Template string `json:"template,omitempty"`
 }
 
 // FeatureStoreServices defines the desired feast services. An ephemeral onlineStore feature server is deployed by default.

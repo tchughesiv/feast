@@ -27,7 +27,7 @@ import (
 
 // Basic example of how to checkout a specific commit.
 func main() {
-	CheckArgs("<url>", "<directory>", "<reference (branch/tag/commit)>")
+	CheckArgs("<url>", "<directory>", "<reference> ( branch / tag / commit )")
 	url, directory, reference := os.Args[1], os.Args[2], os.Args[3]
 
 	// Clone the given repository to the given directory

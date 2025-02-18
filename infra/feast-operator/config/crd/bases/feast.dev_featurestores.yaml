@@ -85,8 +85,8 @@ spec:
                   rule: '[has(self.kubernetes), has(self.oidc)].exists_one(c, c)'
               feastDir:
                 properties:
-                  clone:
-                    description: CloneOptions describes how a clone should be performed.
+                  git:
+                    description: GitCloneOptions describes how a clone should be performed.
                     properties:
                       reference:
                         description: branch / tag / commit
@@ -96,6 +96,14 @@ spec:
                         type: string
                     required:
                     - url
+                    type: object
+                  init:
+                    description: FeastInitOptions ...
+                    properties:
+                      minimal:
+                        type: boolean
+                      template:
+                        type: string
                     type: object
                 type: object
               feastProject:
@@ -3324,9 +3332,9 @@ spec:
                         c)'
                   feastDir:
                     properties:
-                      clone:
-                        description: CloneOptions describes how a clone should be
-                          performed.
+                      git:
+                        description: GitCloneOptions describes how a clone should
+                          be performed.
                         properties:
                           reference:
                             description: branch / tag / commit
@@ -3336,6 +3344,14 @@ spec:
                             type: string
                         required:
                         - url
+                        type: object
+                      init:
+                        description: FeastInitOptions ...
+                        properties:
+                          minimal:
+                            type: boolean
+                          template:
+                            type: string
                         type: object
                     type: object
                   feastProject:

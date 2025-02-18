@@ -28,21 +28,6 @@ _Appears in:_
 | `oidc` _[OidcAuthz](#oidcauthz)_ |  |
 
 
-#### CloneOptions
-
-
-
-CloneOptions describes how a clone should be performed.
-
-_Appears in:_
-- [FeastDir](#feastdir)
-
-| Field | Description |
-| --- | --- |
-| `url` _string_ | The repository URL to clone from. |
-| `reference` _string_ | branch / tag / commit |
-
-
 #### ContainerConfigs
 
 
@@ -87,7 +72,23 @@ _Appears in:_
 
 | Field | Description |
 | --- | --- |
-| `clone` _[CloneOptions](#cloneoptions)_ |  |
+| `git` _[GitCloneOptions](#gitcloneoptions)_ |  |
+| `init` _[FeastInitOptions](#feastinitoptions)_ |  |
+
+
+#### FeastInitOptions
+
+
+
+FeastInitOptions ...
+
+_Appears in:_
+- [FeastDir](#feastdir)
+
+| Field | Description |
+| --- | --- |
+| `minimal` _boolean_ |  |
+| `template` _string_ |  |
 
 
 #### FeatureStore
@@ -177,6 +178,21 @@ _Appears in:_
 | `feastVersion` _string_ |  |
 | `phase` _string_ |  |
 | `serviceHostnames` _[ServiceHostnames](#servicehostnames)_ |  |
+
+
+#### GitCloneOptions
+
+
+
+GitCloneOptions describes how a clone should be performed.
+
+_Appears in:_
+- [FeastDir](#feastdir)
+
+| Field | Description |
+| --- | --- |
+| `url` _string_ | The repository URL to clone from. |
+| `reference` _string_ | branch / tag / commit |
 
 
 #### KubernetesAuthz
