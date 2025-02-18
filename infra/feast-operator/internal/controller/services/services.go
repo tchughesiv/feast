@@ -529,6 +529,7 @@ func (feast *FeastServices) setInitContainer(podSpec *corev1.PodSpec, fsYamlB64 
 			Args: []string{
 				"echo \"Creating feast repository...\"" +
 					// how indent if statement properly?
+					// how create go string without needing \n, etc?
 					";\nif [[ ! -d " + feastRepoDir + " ]]; then " + createCommand + "; fi;\necho $" + TmpFeatureStoreYamlEnvVar +
 					" | base64 -d \u003e " + feastRepoDir + "/feature_store.yaml;\necho \"Feast repo creation complete\";\n"},
 		})
