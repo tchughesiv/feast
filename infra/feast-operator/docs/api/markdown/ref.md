@@ -286,15 +286,6 @@ with restartPolicy=OnFailure.
 
 This field is beta-level. It can be used when the `JobPodFailurePolicy`
 feature gate is enabled (enabled by default). |
-| `successPolicy` _[SuccessPolicy](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#successpolicy-v1-batch)_ | successPolicy specifies the policy when the Job can be declared as succeeded.
-If empty, the default behavior applies - the Job is declared as succeeded
-only when the number of succeeded pods equals to the completions.
-When the field is specified, it must be immutable and works only for the Indexed Jobs.
-Once the Job meets the SuccessPolicy, the lingering pods are terminated.
-
-
-This field  is alpha-level. To use this field, you must enable the
-`JobSuccessPolicy` feature gate (disabled by default). |
 | `backoffLimit` _integer_ | Specifies the number of retries before marking this job failed.
 Defaults to 6 |
 | `backoffLimitPerIndex` _integer_ | Specifies the limit for the number of retries within an
@@ -379,18 +370,6 @@ When using podFailurePolicy, Failed is the the only allowed value.
 TerminatingOrFailed and Failed are allowed values when podFailurePolicy is not in use.
 This is an beta field. To use this, enable the JobPodReplacementPolicy feature toggle.
 This is on by default. |
-| `managedBy` _string_ | ManagedBy field indicates the controller that manages a Job. The k8s Job
-controller reconciles jobs which don't have this field at all or the field
-value is the reserved string `kubernetes.io/job-controller`, but skips
-reconciling Jobs with a custom value for this field.
-The value must be a valid domain-prefixed path (e.g. acme.io/foo) -
-all characters before the first "/" must be a valid subdomain as defined
-by RFC 1123. All characters trailing the first "/" must be valid HTTP Path
-characters as defined by RFC 3986. The value cannot exceed 64 characters.
-
-
-This field is alpha-level. The job controller accepts setting the field
-when the feature gate JobManagedBy is enabled (disabled by default). |
 
 
 #### KubernetesAuthz

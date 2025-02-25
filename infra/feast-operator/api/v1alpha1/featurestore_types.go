@@ -197,17 +197,6 @@ type JobSpec struct {
 	// +optional
 	PodFailurePolicy *batchv1.PodFailurePolicy `json:"podFailurePolicy,omitempty" protobuf:"bytes,11,opt,name=podFailurePolicy"`
 
-	// successPolicy specifies the policy when the Job can be declared as succeeded.
-	// If empty, the default behavior applies - the Job is declared as succeeded
-	// only when the number of succeeded pods equals to the completions.
-	// When the field is specified, it must be immutable and works only for the Indexed Jobs.
-	// Once the Job meets the SuccessPolicy, the lingering pods are terminated.
-	//
-	// This field  is alpha-level. To use this field, you must enable the
-	// `JobSuccessPolicy` feature gate (disabled by default).
-	// +optional
-	SuccessPolicy *batchv1.SuccessPolicy `json:"successPolicy,omitempty" protobuf:"bytes,16,opt,name=successPolicy"`
-
 	// Specifies the number of retries before marking this job failed.
 	// Defaults to 6
 	// +optional
@@ -320,20 +309,6 @@ type JobSpec struct {
 	// This is on by default.
 	// +optional
 	PodReplacementPolicy *batchv1.PodReplacementPolicy `json:"podReplacementPolicy,omitempty" protobuf:"bytes,14,opt,name=podReplacementPolicy,casttype=podReplacementPolicy"`
-
-	// ManagedBy field indicates the controller that manages a Job. The k8s Job
-	// controller reconciles jobs which don't have this field at all or the field
-	// value is the reserved string `kubernetes.io/job-controller`, but skips
-	// reconciling Jobs with a custom value for this field.
-	// The value must be a valid domain-prefixed path (e.g. acme.io/foo) -
-	// all characters before the first "/" must be a valid subdomain as defined
-	// by RFC 1123. All characters trailing the first "/" must be valid HTTP Path
-	// characters as defined by RFC 3986. The value cannot exceed 64 characters.
-	//
-	// This field is alpha-level. The job controller accepts setting the field
-	// when the feature gate JobManagedBy is enabled (disabled by default).
-	// +optional
-	ManagedBy *string `json:"managedBy,omitempty" protobuf:"bytes,15,opt,name=managedBy"`
 }
 
 // FeatureStoreServices defines the desired feast services. An ephemeral onlineStore feature server is deployed by default.

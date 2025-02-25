@@ -423,11 +423,6 @@ func (in *JobSpec) DeepCopyInto(out *JobSpec) {
 		*out = new(batchv1.PodFailurePolicy)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.SuccessPolicy != nil {
-		in, out := &in.SuccessPolicy, &out.SuccessPolicy
-		*out = new(batchv1.SuccessPolicy)
-		(*in).DeepCopyInto(*out)
-	}
 	if in.BackoffLimit != nil {
 		in, out := &in.BackoffLimit, &out.BackoffLimit
 		*out = new(int32)
@@ -471,11 +466,6 @@ func (in *JobSpec) DeepCopyInto(out *JobSpec) {
 	if in.PodReplacementPolicy != nil {
 		in, out := &in.PodReplacementPolicy, &out.PodReplacementPolicy
 		*out = new(batchv1.PodReplacementPolicy)
-		**out = **in
-	}
-	if in.ManagedBy != nil {
-		in, out := &in.ManagedBy, &out.ManagedBy
-		*out = new(string)
 		**out = **in
 	}
 }

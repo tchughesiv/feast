@@ -293,10 +293,6 @@ spec:
                           job should be run with.
                         format: int32
                         type: integer
-                      managedBy:
-                        description: ManagedBy field indicates the controller that
-                          manages a Job.
-                        type: string
                       manualSelector:
                         description: manualSelector controls generation of pod labels
                           and pod selectors.
@@ -430,35 +426,6 @@ spec:
                             type: object
                         type: object
                         x-kubernetes-map-type: atomic
-                      successPolicy:
-                        description: successPolicy specifies the policy when the Job
-                          can be declared as succeeded.
-                        properties:
-                          rules:
-                            description: |-
-                              rules represents the list of alternative rules for the declaring the Jobs
-                              as successful before `.status.succeeded >= .
-                            items:
-                              description: SuccessPolicyRule describes rule for declaring
-                                a Job as succeeded.
-                              properties:
-                                succeededCount:
-                                  description: |-
-                                    succeededCount specifies the minimal required size of the actual set of the succeeded indexes
-                                    for the Job.
-                                  format: int32
-                                  type: integer
-                                succeededIndexes:
-                                  description: "succeededIndexes specifies the set
-                                    of indexes\nwhich need to be contained in the
-                                    actual set of the succeeded indexes for "
-                                  type: string
-                              type: object
-                            type: array
-                            x-kubernetes-list-type: atomic
-                        required:
-                        - rules
-                        type: object
                       suspend:
                         description: suspend specifies whether the Job controller
                           should create Pods or not.
@@ -4178,10 +4145,6 @@ spec:
                               job should be run with.
                             format: int32
                             type: integer
-                          managedBy:
-                            description: ManagedBy field indicates the controller
-                              that manages a Job.
-                            type: string
                           manualSelector:
                             description: manualSelector controls generation of pod
                               labels and pod selectors.
@@ -4316,36 +4279,6 @@ spec:
                                 type: object
                             type: object
                             x-kubernetes-map-type: atomic
-                          successPolicy:
-                            description: successPolicy specifies the policy when the
-                              Job can be declared as succeeded.
-                            properties:
-                              rules:
-                                description: |-
-                                  rules represents the list of alternative rules for the declaring the Jobs
-                                  as successful before `.status.succeeded >= .
-                                items:
-                                  description: SuccessPolicyRule describes rule for
-                                    declaring a Job as succeeded.
-                                  properties:
-                                    succeededCount:
-                                      description: |-
-                                        succeededCount specifies the minimal required size of the actual set of the succeeded indexes
-                                        for the Job.
-                                      format: int32
-                                      type: integer
-                                    succeededIndexes:
-                                      description: "succeededIndexes specifies the
-                                        set of indexes\nwhich need to be contained
-                                        in the actual set of the succeeded indexes
-                                        for "
-                                      type: string
-                                  type: object
-                                type: array
-                                x-kubernetes-list-type: atomic
-                            required:
-                            - rules
-                            type: object
                           suspend:
                             description: suspend specifies whether the Job controller
                               should create Pods or not.
