@@ -114,6 +114,11 @@ func (in *FeastJob) DeepCopyInto(out *FeastJob) {
 		*out = new(JobSpec)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.Args != nil {
+		in, out := &in.Args, &out.Args
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.TimeZone != nil {
 		in, out := &in.TimeZone, &out.TimeZone
 		*out = new(string)

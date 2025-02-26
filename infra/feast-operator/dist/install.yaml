@@ -94,6 +94,14 @@ spec:
               feastJob:
                 description: FeastJob ...
                 properties:
+                  args:
+                    description: |-
+                      Arguments to the entrypoint.
+                      The container image's CMD is used if this is not provided.
+                    items:
+                      type: string
+                    type: array
+                    x-kubernetes-list-type: atomic
                   concurrencyPolicy:
                     description: Specifies how to treat concurrent executions of a
                       Job.
@@ -3944,6 +3952,14 @@ spec:
                   feastJob:
                     description: FeastJob ...
                     properties:
+                      args:
+                        description: |-
+                          Arguments to the entrypoint.
+                          The container image's CMD is used if this is not provided.
+                        items:
+                          type: string
+                        type: array
+                        x-kubernetes-list-type: atomic
                       concurrencyPolicy:
                         description: Specifies how to treat concurrent executions
                           of a Job.

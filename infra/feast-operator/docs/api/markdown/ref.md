@@ -95,6 +95,14 @@ _Appears in:_
 | `imagePullPolicy` _[PullPolicy](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#pullpolicy-v1-core)_ |  |
 | `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#resourcerequirements-v1-core)_ |  |
 | `jobSpec` _[JobSpec](#jobspec)_ |  |
+| `args` _string array_ | Arguments to the entrypoint.
+The container image's CMD is used if this is not provided.
+Variable references $(VAR_NAME) are expanded using the container's environment. If a variable
+cannot be resolved, the reference in the input string will be unchanged. Double $$ are reduced
+to a single $, which allows for escaping the $(VAR_NAME) syntax: i.e. "$$(VAR_NAME)" will
+produce the string literal "$(VAR_NAME)". Escaped references will never be expanded, regardless
+of whether the variable exists or not. Cannot be updated.
+More info: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell |
 | `schedule` _string_ | The schedule in Cron format, see https://en.wikipedia.org/wiki/Cron. |
 | `timeZone` _string_ | The time zone name for the given schedule, see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones.
 If not specified, this will default to the time zone of the kube-controller-manager process.
