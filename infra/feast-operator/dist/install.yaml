@@ -96,6 +96,8 @@ spec:
                 properties:
                   args:
                     description: |-
+                      ?????????
+                      ?????????
                       Arguments to the entrypoint.
                       The container image's CMD is used if this is not provided.
                     items:
@@ -3954,6 +3956,8 @@ spec:
                     properties:
                       args:
                         description: |-
+                          ?????????
+                          ?????????
                           Arguments to the entrypoint.
                           The container image's CMD is used if this is not provided.
                         items:

@@ -95,7 +95,9 @@ _Appears in:_
 | `imagePullPolicy` _[PullPolicy](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#pullpolicy-v1-core)_ |  |
 | `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#resourcerequirements-v1-core)_ |  |
 | `jobSpec` _[JobSpec](#jobspec)_ |  |
-| `args` _string array_ | Arguments to the entrypoint.
+| `args` _string array_ | ?????????
+?????????
+Arguments to the entrypoint.
 The container image's CMD is used if this is not provided.
 Variable references $(VAR_NAME) are expanded using the container's environment. If a variable
 cannot be resolved, the reference in the input string will be unchanged. Double $$ are reduced

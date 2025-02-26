@@ -111,6 +111,8 @@ type FeastJob struct {
 	ContainerConfigs `json:",inline"`
 	JobSpec          *JobSpec `json:"jobSpec,omitempty"`
 
+	// ?????????
+	// ?????????
 	// Arguments to the entrypoint.
 	// The container image's CMD is used if this is not provided.
 	// Variable references $(VAR_NAME) are expanded using the container's environment. If a variable
@@ -122,6 +124,8 @@ type FeastJob struct {
 	// +optional
 	// +listType=atomic
 	Args []string `json:"args,omitempty" protobuf:"bytes,4,rep,name=args"`
+	// ?????????
+	// ?????????
 
 	// The schedule in Cron format, see https://en.wikipedia.org/wiki/Cron.
 	Schedule string `json:"schedule" protobuf:"bytes,1,opt,name=schedule"`
