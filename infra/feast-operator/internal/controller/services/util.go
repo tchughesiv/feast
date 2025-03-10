@@ -10,7 +10,6 @@ import (
 	"github.com/feast-dev/feast/infra/feast-operator/api/feastversion"
 	feastdevv1alpha1 "github.com/feast-dev/feast/infra/feast-operator/api/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
-	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -193,95 +192,11 @@ func setDefaultCtrConfigs(defaultConfigs *feastdevv1alpha1.DefaultCtrConfigs) {
 	}
 }
 
-func setDefaultCronJobConfigs(feastCronJob *feastdevv1alpha1.FeastCronJob) {
-	if feastCronJob == nil {
-		feastCronJob = &feastdevv1alpha1.FeastCronJob{}
-	}
-	if len(feastCronJob.Schedule) == 0 {
-		feastCronJob.Schedule = "@yearly"
-		if feastCronJob.Suspend == nil {
-			feastCronJob.Suspend = boolPtr(true)
-		}
-		if len(feastCronJob.ConcurrencyPolicy) == 0 {
-			feastCronJob.ConcurrencyPolicy = batchv1.ReplaceConcurrent
-		}
-		if feastCronJob.StartingDeadlineSeconds == nil {
-			feastCronJob.StartingDeadlineSeconds = int64Ptr(5)
-		}
-	}
-
-	ctrCfgs := feastCronJob.ContainerConfigs
-	if ctrCfgs == nil {
-		ctrCfgs = &feastdevv1alpha1.JobContainerConfigs{}
-	}
-	if ctrCfgs.Image == nil {
-		img := getCronJobImage()
-		ctrCfgs.Image = &img
-	}
-	if len(ctrCfgs.Commands) == 0 {
-		ctrCfgs.Commands = []string{
-			"feast apply",
-			"feast materialize-incremental $(date -u +'%Y-%m-%dT%H:%M:%S')",
-		}
-	}
-}
-
-/*
-	jobTemplate:
-	  spec:
-	    template:
-	      spec:
-	        serviceAccountName: feast-sample
-	        initContainers:
-	        - name: apply
-	          image: quay.io/openshift/origin-cli:4.17
-	          command:
-	          - "kubectl"
-	          - "exec"
-	          - "deploy/feast-sample"
-	          - "-ic"
-	          - "feast"
-	          - "--"
-	          - "bash"
-	          - "-c"
-	          - "feast apply"
-	        containers:
-	        - name: materialize
-	          image: quay.io/openshift/origin-cli:4.17
-	          command:
-	          - "kubectl"
-	          - "exec"
-	          - "deploy/feast-sample"
-	          - "-ic"
-	          - "feast"
-	          - "--"
-	          - "bash"
-	          - "-c"
-	          - 'feast materialize-incremental $(date -u +"%Y-%m-%dT%H:%M:%S")'
-
-####          restartPolicy: Never
-*/
-
-func boolPtr(value bool) *bool {
-	return &value
-}
-
-func int64Ptr(value int64) *int64 {
-	return &value
-}
-
 func getFeatureServerImage() string {
 	if img, exists := os.LookupEnv(feastServerImageVar); exists {
 		return img
 	}
 	return DefaultImage
-}
-
-func getCronJobImage() string {
-	if img, exists := os.LookupEnv(cronJobImageVar); exists {
-		return img
-	}
-	return DefaultCronJobImage
 }
 
 func checkOfflineStoreFilePersistenceType(value string) error {
