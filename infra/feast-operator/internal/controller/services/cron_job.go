@@ -129,14 +129,6 @@ func setDefaultCronJobConfigs(feastCronJob *feastdevv1alpha1.FeastCronJob) {
 ####          restartPolicy: Never
 */
 
-func boolPtr(value bool) *bool {
-	return &value
-}
-
-func int64Ptr(value int64) *int64 {
-	return &value
-}
-
 func getCronJobImage() string {
 	if img, exists := os.LookupEnv(cronJobImageVar); exists {
 		return img

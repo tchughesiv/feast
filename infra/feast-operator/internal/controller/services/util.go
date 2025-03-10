@@ -470,3 +470,11 @@ func getVolumeMountByType(feastType FeastServiceType, featureStore *feastdevv1al
 	}
 	return nil
 }
+
+func boolPtr(value bool) *bool {
+	return &value
+}
+
+func int64Ptr(value int64) *int64 {
+	return &value
+}
