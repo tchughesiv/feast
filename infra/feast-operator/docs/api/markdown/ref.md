@@ -218,6 +218,7 @@ _Appears in:_
 | --- | --- |
 | `applied` _[FeatureStoreSpec](#featurestorespec)_ | Shows the currently applied feast configuration, including any pertinent defaults |
 | `clientConfigMap` _string_ | ConfigMap in this namespace containing a client `feature_store.yaml` for this feast deployment |
+| `feastCronJob` _string_ | CronJob created in this namespace for this feast deployment |
 | `conditions` _[Condition](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#condition-v1-meta) array_ |  |
 | `feastVersion` _string_ |  |
 | `phase` _string_ |  |

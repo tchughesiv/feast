@@ -626,7 +626,9 @@ type FeatureStoreStatus struct {
 	// Shows the currently applied feast configuration, including any pertinent defaults
 	Applied FeatureStoreSpec `json:"applied,omitempty"`
 	// ConfigMap in this namespace containing a client `feature_store.yaml` for this feast deployment
-	ClientConfigMap  string             `json:"clientConfigMap,omitempty"`
+	ClientConfigMap string `json:"clientConfigMap,omitempty"`
+	// CronJob created in this namespace for this feast deployment
+	FeastCronJob     string             `json:"feastCronJob,omitempty"`
 	Conditions       []metav1.Condition `json:"conditions,omitempty"`
 	FeastVersion     string             `json:"feastVersion,omitempty"`
 	Phase            string             `json:"phase,omitempty"`

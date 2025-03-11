@@ -7799,6 +7799,9 @@ spec:
                   - type
                   type: object
                 type: array
+              feastCronJob:
+                description: CronJob created in this namespace for this feast deployment
+                type: string
               feastVersion:
                 type: string
               phase:
