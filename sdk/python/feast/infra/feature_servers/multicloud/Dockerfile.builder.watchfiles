@@ -1,0 +1,9 @@
+FROM arrow-builder:latest
+
+USER 1001
+COPY --chown=default . ${APP_ROOT}/src/watchfiles
+WORKDIR ${APP_ROOT}/src/watchfiles
+
+#ENV PATH=/opt/app-root/src/.cargo/bin:${PATH}
+#RUN cargo install --locked --path .
+RUN cargo build --release

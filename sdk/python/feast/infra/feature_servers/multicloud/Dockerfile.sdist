@@ -1,0 +1,44 @@
+FROM pip-builder:latest
+
+USER 1001
+WORKDIR ${APP_ROOT}/src
+
+RUN source /tmp/cachi2.env && \
+    pip install --no-binary :all: conan wheel
+
+RUN source /tmp/cachi2.env && \
+    pip install --no-binary :all: build
+
+COPY --chown=default milvus-lite ${APP_ROOT}/src/milvus-lite
+#RUN conan remote disable default-conan-local
+
+RUN cd milvus-lite/python && \
+    source /tmp/cachi2.env && \
+#    python setup.py bdist_wheel && \
+#    cd ${APP_ROOT}/src && \
+#    rm -rf ./milvus-lite
+    conan install /opt/app-root/src/milvus-lite --build=missing -s build_type=Release -s compiler.libcxx=libstdc++11 && \
+    python3 -m build --wheel && \
+    ls -la dist/
+
+# ibis-framework must build from its own git repo... versioning requirement
+RUN cd ibis && \
+    source /tmp/cachi2.env && \
+    pip install --no-binary :all: .[duckdb] && \
+    cd ${APP_ROOT}/src && \
+    rm -rf ./ibis
+
+COPY --chown=default .git ${APP_ROOT}/src/.git
+COPY --chown=default setup.py setup.cfg pyproject.toml README.md LICENSE ${APP_ROOT}/src/
+COPY --chown=default sdk/python ${APP_ROOT}/src/sdk/python
+
+RUN source /tmp/cachi2.env && \
+    pip install --no-binary :all: pymilvus && \
+    pip install --no-binary :all: pydantic && \
+    pip install --no-binary :all: .[limited]
+
+RUN ls -la ${APP_ROOT}/bin
+RUN pip list
+
+# modify permissions to support running with a random uid
+RUN chmod g+w $(python -c "import feast.ui as ui; print(ui.__path__)" | tr -d "[']")/build/projects-list.json

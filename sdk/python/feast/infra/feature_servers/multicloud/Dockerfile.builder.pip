@@ -1,0 +1,20 @@
+FROM arrow-builder:latest
+#FROM quay.io/tchughesiv/arrow-builder:17.0.0
+
+RUN ls -la
+
+USER 0
+RUN yum install -y rust cargo
+
+USER 1001
+WORKDIR ${APP_ROOT}/src
+RUN pip install pydantic_core==2.27.2 watchfiles==1.0.4 conan
+RUN pip list
+
+# move this to build dockerfile and then cleanup the dir afterwards
+RUN git clone -b 9.5.0 https://github.com/ibis-project/ibis
+
+RUN git clone --branch v2.4.12-fixes --recurse-submodules https://github.com/tchughesiv/milvus-lite
+RUN conan config init
+RUN conan profile update settings.compiler.libcxx=libstdc++11 default
+RUN conan source milvus-lite
