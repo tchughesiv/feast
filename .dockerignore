@@ -3,3 +3,5 @@ docs
 charts
 env
 **/.terraform
+cachi2-output/
+cachi2-binaries/

@@ -54,8 +54,15 @@ build: protos build-java build-docker
 # formerly install-python-ci-dependencies-uv-venv
 # editable install
 install-python-dependencies-dev:
-	uv pip sync sdk/python/requirements/py$(PYTHON_VERSION)-ci-requirements.txt
+	uv pip sync sdk/python/requirements/py$(PYTHON_VERSION)-dev-requirements.txt
 	uv pip install --no-deps -e .
+
+install-python-dependencies-build:
+	uv pip sync sdk/python/requirements/py$(PYTHON_VERSION)-build-requirements.txt
+
+install-python-dependencies-sdist: install-python-dependencies-build
+	uv pip sync sdk/python/requirements/py$(PYTHON_VERSION)-sdist-requirements.txt
+	uv pip install --no-deps --no-binary :all: -e .
 
 # Python SDK - system
 # the --system flag installs dependencies in the global python context
@@ -84,11 +91,25 @@ lock-python-dependencies-all:
 
 	$(foreach ver,$(PYTHON_VERSIONS),\
 		pixi run --environment $(call get_env_name,$(ver)) --manifest-path infra/scripts/pixi/pixi.toml \
-			"uv pip compile -p $(ver) --system --no-strip-extras setup.py \
-			--output-file sdk/python/requirements/py$(ver)-requirements.txt" && \
+			"uv pip compile -p $(ver) --system --no-strip-extras setup.py --extra dev \
+			--output-file sdk/python/requirements/py$(ver)-dev-requirements.txt" && \
+		pixi run --environment $(call get_env_name,$(ver)) --manifest-path infra/scripts/pixi/pixi.toml \
+			"uv pip compile -p $(ver) --system --no-strip-extras setup.py --extra source \
+			 --extra build \
+			--no-emit-package sqlite-vec \
+			--no-emit-package torch \
+			--no-emit-package torchvision \
+			--no-emit-package milvus-lite \
+			--output-file sdk/python/requirements/py$(ver)-sdist-requirements.txt" && \
+		pixi run --environment $(call get_env_name,$(ver)) --manifest-path infra/scripts/pixi/pixi.toml \
+			"uv pip compile -p $(ver) --system --no-strip-extras setup.py --extra build \
+			--output-file sdk/python/requirements/py$(ver)-build-requirements.txt" && \
 		pixi run --environment $(call get_env_name,$(ver)) --manifest-path infra/scripts/pixi/pixi.toml \
 			"uv pip compile -p $(ver) --system --no-strip-extras setup.py --extra ci \
 			--output-file sdk/python/requirements/py$(ver)-ci-requirements.txt" && \
+		pixi run --environment $(call get_env_name,$(ver)) --manifest-path infra/scripts/pixi/pixi.toml \
+			"uv pip compile -p $(ver) --system --no-strip-extras setup.py \
+			--output-file sdk/python/requirements/py$(ver)-requirements.txt" && \
 	) true
 
 
