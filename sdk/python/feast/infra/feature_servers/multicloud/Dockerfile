@@ -1,6 +1,8 @@
 FROM registry.access.redhat.com/ubi8/python-311:1
 
 COPY requirements.txt requirements.txt
+
+ENV NINJA_PYTHON_DIST_ALLOW_NINJA_DEP=0
 RUN source /tmp/cachi2.env && \
     pip install -r requirements.txt
 
