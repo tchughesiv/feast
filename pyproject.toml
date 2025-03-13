@@ -97,10 +97,7 @@ k8s = ["kubernetes<=20.13.0"]
 milvus = ["pymilvus"]
 mssql = ["ibis-framework[mssql]>=9.0.0,<10"]
 mysql = ["pymysql", "types-PyMySQL"]
-ninja-source = [
-    "ninja @ git+https://github.com/scikit-build/ninja-python-distributions@1.11.1.3",
-    "ninja-populate @ git+https://github.com/scikit-build/ninja-python-distributions@1.11.1.3",
-]
+ninja-source = ["ninja @ git+https://github.com/scikit-build/ninja-python-distributions@1.11.1.3"]
 opentelemetry = ["prometheus_client", "psutil"]
 spark = ["pyspark>=3.0.0,<4"]
 trino = ["trino>=0.305.0,<0.400.0", "regex"]
