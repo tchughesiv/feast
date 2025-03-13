@@ -164,11 +164,9 @@ GO_REQUIRED = ["cffi>=1.15.0"]
 MILVUS_REQUIRED = ["pymilvus"]
 
 TORCH_REQUIRED = [
-    "torch==2.2.2",
+    "torch>=2.2.2",
     "torchvision>=0.17.2",
 ]
-
-CLICKHOUSE_REQUIRED = ["clickhouse-connect>=0.7.19"]
 
 CI_REQUIRED = (
     [
@@ -243,7 +241,6 @@ CI_REQUIRED = (
     + MILVUS_REQUIRED
     + DOCLING_REQUIRED
     + TORCH_REQUIRED
-    + CLICKHOUSE_REQUIRED
 )
 NLP_REQUIRED = (
     DOCLING_REQUIRED
@@ -326,7 +323,6 @@ setup(
         "docling": DOCLING_REQUIRED,
         "pytorch": TORCH_REQUIRED,
         "nlp": NLP_REQUIRED,
-        "clickhouse": CLICKHOUSE_REQUIRED,
     },
     include_package_data=True,
     license="Apache",
