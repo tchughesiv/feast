@@ -2,7 +2,7 @@ FROM registry.access.redhat.com/ubi8/python-311:1
 
 COPY requirements.txt requirements.txt
 RUN source /tmp/cachi2.env && \
-    pip install --no-binary :all: ninja && \
+    # pip install --no-binary :all: ninja && \
     pip install --no-binary :all: numpy && \
     pip install --no-binary :all: -r requirements.txt
 
