@@ -165,7 +165,7 @@ dev = [
 ]
 docs = ["feast[ci]"]
 
-# extras for building from source (pandas, postgres-source, build)
+# extras for a disconnected build from source (pandas, postgres-source, build)
 pandas = [
     "Cython<3,>=0.29.33",
     "meson-python==0.13.1",
