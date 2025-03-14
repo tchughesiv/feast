@@ -80,7 +80,7 @@ packaging==24.2
     # via
     #   dask
     #   gunicorn
-pandas==2.2.2
+pandas==2.1.1
     # via
     #   feast (setup.py)
     #   dask

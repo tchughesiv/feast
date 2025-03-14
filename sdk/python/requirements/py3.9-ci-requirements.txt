@@ -671,7 +671,7 @@ packaging==24.2
     #   snowflake-connector-python
     #   sphinx
     #   transformers
-pandas==2.2.2
+pandas==2.1.4
     # via
     #   feast (setup.py)
     #   altair

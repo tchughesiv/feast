@@ -302,7 +302,7 @@ packaging==24.2
     #   setuptools-scm
     #   snowflake-connector-python
     #   sphinx
-pandas==2.2.2
+pandas==2.1.4
     # via
     #   feast (setup.py)
     #   dask

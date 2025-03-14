@@ -306,7 +306,7 @@ googleapis-common-protos[grpc]==1.69.1
     #   google-api-core
     #   grpc-google-iam-v1
     #   grpcio-status
-great-expectations==0.18.8
+great-expectations==0.18.22
     # via feast (setup.py)
 grpc-google-iam-v1==0.14.1
     # via google-cloud-bigtable
@@ -598,7 +598,7 @@ notebook-shim==0.2.4
     # via
     #   jupyterlab
     #   notebook
-numpy==2.2.3
+numpy==1.26.4
     # via
     #   feast (setup.py)
     #   altair
@@ -659,7 +659,7 @@ packaging==24.2
     #   snowflake-connector-python
     #   sphinx
     #   transformers
-pandas==2.2.2
+pandas==2.1.4
     # via
     #   feast (setup.py)
     #   altair
@@ -1004,8 +1004,10 @@ rsa==4.9
     # via google-auth
 rtree==1.4.0
     # via docling
-ruamel-yaml==0.17.17
+ruamel-yaml==0.17.40
     # via great-expectations
+ruamel-yaml-clib==0.2.12
+    # via ruamel-yaml
 ruff==0.11.0
     # via feast (setup.py)
 s3transfer==0.11.3
