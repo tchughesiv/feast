@@ -88,6 +88,7 @@ packaging==24.2
     #   dask
     #   gunicorn
     #   pyproject-metadata
+    #   setuptools-scm
 pandas==2.1.4
     # via
     #   feast (setup.py)
@@ -139,6 +140,10 @@ rpds-py==0.23.1
     #   jsonschema
     #   referencing
 setuptools==59.2.0
+    # via
+    #   feast (setup.py)
+    #   setuptools-scm
+setuptools-scm==7.1.0
     # via feast (setup.py)
 six==1.17.0
     # via python-dateutil
@@ -170,6 +175,7 @@ typing-extensions==4.12.2
     #   pydantic
     #   pydantic-core
     #   referencing
+    #   setuptools-scm
     #   sqlalchemy
     #   typeguard
 tzdata==2025.1
