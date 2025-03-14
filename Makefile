@@ -57,9 +57,7 @@ install-python-dependencies-dev:
 	uv pip sync sdk/python/requirements/py$(PYTHON_VERSION)-dev-requirements.txt
 	uv pip install --no-deps -e .
 
-install-python-dependencies-build:
-	uv pip sync sdk/python/requirements/py$(PYTHON_VERSION)-build-requirements.txt
-
+# requires ninja or ninja-build to be installed
 install-python-dependencies-sdist: install-python-dependencies-build
 	uv pip sync sdk/python/requirements/py$(PYTHON_VERSION)-sdist-requirements.txt
 	uv pip install --no-deps --no-binary :all: -e .
@@ -78,11 +76,6 @@ install-python-dependencies-ci:
 install-python-ci-dependencies:
 	python -m piptools sync sdk/python/requirements/py$(PYTHON_VERSION)-ci-requirements.txt
 	pip install --no-deps -e .
-
-# requires ninja or ninja-build to be installed
-install-python-sdist-dependencies:
-	python -m piptools sync sdk/python/requirements/py$(PYTHON_VERSION)-sdist-requirements.txt
-	pip install --no-binary :all: .[aws,gcp,snowflake,redis,go,mysql,postgres,opentelemetry,grpcio,k8s,duckdb,milvus]
 
 # Currently used in test-end-to-end.sh
 install-python:
