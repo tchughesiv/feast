@@ -1,6 +1,6 @@
 FROM registry.access.redhat.com/ubi8/python-311:1
 
-#COPY sdk/python/feast/infra/feature_servers/multicloud/requirements-sdist.txt requirements.txt
+COPY . .
 RUN source /tmp/cachi2.env && \
     pip install --no-binary :all: .[aws,gcp,snowflake,redis,go,mysql,postgres,opentelemetry,grpcio,k8s,duckdb,milvus]
 
