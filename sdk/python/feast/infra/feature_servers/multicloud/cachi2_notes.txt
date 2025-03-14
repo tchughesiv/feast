@@ -22,20 +22,20 @@ cachi2 fetch-deps \
   "allow_binary": "false"
 }'
 
-rm -f cachi2.env
-cachi2 generate-env ./cachi2-output -o ./cachi2.env --for-output-dir /tmp/cachi2-output
-
-podman build \
-  --tag sdist-builder:latest \
-  -f sdk/python/feast/infra/feature_servers/multicloud/Dockerfile.sdist.builder \
-  sdk/python/feast/infra/feature_servers/multicloud
-
 podman build \
   --volume "$(realpath ./cachi2-output)":/tmp/cachi2-output:Z \
   --volume "$(realpath ./cachi2.env)":/tmp/cachi2.env:Z \
   --network none \
   --tag foo \
   -f sdk/python/feast/infra/feature_servers/multicloud/Dockerfile.sdist \
+  sdk/python/feast/infra/feature_servers/multicloud
+
+rm -f cachi2.env
+cachi2 generate-env ./cachi2-output -o ./cachi2.env --for-output-dir /tmp/cachi2-output
+
+podman build \
+  --tag sdist-builder:latest \
+  -f sdk/python/feast/infra/feature_servers/multicloud/Dockerfile.sdist.builder \
   sdk/python/feast/infra/feature_servers/multicloud
 
 # test that it worked
