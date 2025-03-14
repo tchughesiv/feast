@@ -106,8 +106,6 @@ mypy-extensions==1.0.0
     # via
     #   feast (setup.py)
     #   mypy
-ninja==1.11.1.3
-    # via feast (setup.py)
 numpy==1.26.4
     # via
     #   feast (setup.py)
@@ -145,7 +143,7 @@ pluggy==1.5.0
     #   hatchling
 prometheus-client==0.21.1
     # via feast (setup.py)
-protobuf==6.30.0
+protobuf==6.30.1
     # via feast (setup.py)
 psutil==7.0.0
     # via feast (setup.py)

@@ -97,7 +97,6 @@ k8s = ["kubernetes<=20.13.0"]
 milvus = ["pymilvus"]
 mssql = ["ibis-framework[mssql]>=9.0.0,<10"]
 mysql = ["pymysql", "types-PyMySQL"]
-ninja-source = ["ninja @ git+https://github.com/scikit-build/ninja-python-distributions@1.11.1.3"]
 opentelemetry = ["prometheus_client", "psutil"]
 spark = ["pyspark>=3.0.0,<4"]
 trino = ["trino>=0.305.0,<0.400.0", "regex"]
@@ -177,15 +176,14 @@ dev = [
 ]
 docs = ["feast[ci]"]
 source = [
-    "feast[ninja-source]",
     "feast[postgres-source]",
     "feast[docling-source]",
     "feast[ci]",
 ]
 build = [
     "pybindgen==0.22.0",
-    "setuptools>=60",
-    "setuptools_scm>=6.2",
+    #"setuptools>=60",
+    #"setuptools_scm>=6.2",
     "sphinx!=4.0.0",
     "wheel",
     
@@ -203,7 +201,7 @@ build = [
     "meson>=1.2.3",
     "mypy<=1.14.0,>=1.4.1",
     "mypy_extensions>=1.0.0",
-    "ninja==1.11.1.3",
+    #"ninja==1.11.1.3",
     "numpy<2,>=1.22",
     "packaging>=24.2",
     "pathspec>=0.10.1",

@@ -89,7 +89,7 @@ partd==1.4.2
     # via dask
 prometheus-client==0.21.1
     # via feast (setup.py)
-protobuf==6.30.0
+protobuf==6.30.1
     # via feast (setup.py)
 psutil==7.0.0
     # via feast (setup.py)
