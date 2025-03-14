@@ -174,10 +174,10 @@ build = [
     "setuptools>=60",
     "setuptools_scm>=6.2",
     "sphinx!=4.0.0",
-    "wheel",
+    "wheel==0.45.1",
 
     # Avoid conflicting ranges
-    "Cython==3.0.5",
+    "Cython<3,>=0.29.33",
     "cmake>=3.15",
     "flit_core>=3.4,<4",
     "hatch-fancy-pypi-readme>=23.2.0",

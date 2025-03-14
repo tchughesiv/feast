@@ -73,7 +73,7 @@ cryptography==44.0.2
     # via
     #   pyopenssl
     #   snowflake-connector-python
-cython==3.0.5
+cython==0.29.37
     # via feast (setup.py)
 dask[dataframe]==2025.2.0
     # via feast (setup.py)
