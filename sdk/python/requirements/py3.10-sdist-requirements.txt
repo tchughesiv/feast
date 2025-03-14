@@ -266,7 +266,7 @@ mypy-extensions==1.0.0
     # via
     #   feast (setup.py)
     #   mypy
-ninja==1.8.2
+ninja==1.10.2.4
     # via feast (setup.py)
 numpy==1.26.4
     # via

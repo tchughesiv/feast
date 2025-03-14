@@ -184,7 +184,7 @@ build = [
     "hatch-vcs==0.4.0",
     "hatchling>=1.6.0,<2",
     "maturin>=1,<2",
-    "ninja==1.8.2",
+    "ninja==1.10.2.4",
 
     # Removed strict pinning to 0.13.1
     "meson-python>=0.15.0,<0.16.0",
