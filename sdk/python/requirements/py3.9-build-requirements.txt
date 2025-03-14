@@ -33,8 +33,6 @@ cmake==3.31.6
     # via feast (setup.py)
 colorama==0.4.6
     # via feast (setup.py)
-cython==0.29.37
-    # via feast (setup.py)
 dask[dataframe]==2024.8.0
     # via
     #   feast (setup.py)
@@ -102,12 +100,6 @@ markupsafe==3.0.2
     # via jinja2
 maturin==1.8.3
     # via feast (setup.py)
-meson==1.2.1
-    # via
-    #   feast (setup.py)
-    #   meson-python
-meson-python==0.13.1
-    # via feast (setup.py)
 mmh3==5.1.0
     # via feast (setup.py)
 mypy==1.14.0
@@ -118,14 +110,11 @@ mypy-extensions==1.0.0
     # via
     #   feast (setup.py)
     #   mypy
-numpy==1.21.0
+numpy==2.0.2
     # via
     #   feast (setup.py)
     #   dask
-    #   oldest-supported-numpy
     #   pandas
-oldest-supported-numpy==2023.12.21
-    # via feast (setup.py)
 packaging==24.2
     # via
     #   feast (setup.py)
@@ -137,7 +126,7 @@ packaging==24.2
     #   scikit-build-core
     #   setuptools-scm
     #   sphinx
-pandas==2.0.3
+pandas==2.1.1
     # via
     #   feast (setup.py)
     #   dask
@@ -182,9 +171,7 @@ pygments==2.19.1
 pyjwt==2.10.1
     # via feast (setup.py)
 pyproject-metadata==0.9.1
-    # via
-    #   feast (setup.py)
-    #   meson-python
+    # via feast (setup.py)
 python-dateutil==2.9.0.post0
     # via pandas
 python-dotenv==1.0.1
@@ -264,7 +251,6 @@ tomli==2.2.1
     #   hatch-fancy-pypi-readme
     #   hatchling
     #   maturin
-    #   meson-python
     #   mypy
     #   scikit-build
     #   scikit-build-core

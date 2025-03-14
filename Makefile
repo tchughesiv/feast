@@ -95,6 +95,9 @@ lock-python-dependencies-all:
 			"uv pip compile -p $(ver) --system --no-strip-extras setup.py --extra build \
 			--output-file sdk/python/requirements/py$(ver)-build-requirements.txt" && \
 		pixi run --environment $(call get_env_name,$(ver)) --manifest-path infra/scripts/pixi/pixi.toml \
+			"uv pip compile -p $(ver) --system --no-strip-extras setup.py --extra pandas \
+			--output-file sdk/python/requirements/py$(ver)-pandas-requirements.txt" && \
+		pixi run --environment $(call get_env_name,$(ver)) --manifest-path infra/scripts/pixi/pixi.toml \
 			"uv pip compile -p $(ver) --system --no-strip-extras setup.py \
 			--extra aws \
 			--extra gcp \
