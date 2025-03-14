@@ -190,6 +190,15 @@ name = "Feast"
 [project.scripts]
 feast = "feast.cli:cli"
 
+[build-system]
+requires = [
+  "pybindgen==0.22.0",
+  "setuptools>=60",
+  "setuptools_scm>=6.2",
+  "sphinx!=4.0.0",
+  "wheel",
+]
+
 [tool.setuptools]
 packages = {find = {where = ["sdk/python"], exclude = ["java", "infra", "sdk/python/tests", "ui"]}}
 
