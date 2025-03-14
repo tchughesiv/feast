@@ -33,6 +33,8 @@ cmake==3.31.6
     # via feast (setup.py)
 colorama==0.4.6
     # via feast (setup.py)
+cython==3.0.12
+    # via feast (setup.py)
 dask[dataframe]==2024.8.0
     # via
     #   feast (setup.py)

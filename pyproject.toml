@@ -94,24 +94,11 @@ mysql = ["pymysql", "types-PyMySQL"]
 opentelemetry = ["prometheus_client", "psutil"]
 spark = ["pyspark>=3.0.0,<4"]
 trino = ["trino>=0.305.0,<0.400.0", "regex"]
-pandas = [
-    "Cython<3,>=0.29.33",
-    "meson-python==0.13.1",
-    "meson==1.2.1",
-    "oldest-supported-numpy>=2022.8.16",
-    "setuptools==59.2.0",
-    "wheel==0.37.0",
-]
 postgres = [
     "psycopg[pool]==3.2.5",
 ]
 postgres-dev = [
     "psycopg[binary]==3.2.5",
-    "feast[postgres]",
-]
-postgres-source = [
-    "psycopg-pool @ git+https://github.com/psycopg/psycopg@3.2.5#subdirectory=psycopg_pool",
-    "psycopg @ git+https://github.com/psycopg/psycopg@3.2.5#subdirectory=psycopg",
     "feast[postgres]",
 ]
 pytorch = ["torch>=2.2.2", "torchvision>=0.17.2"]
@@ -177,6 +164,21 @@ dev = [
     "feast[ci]",
 ]
 docs = ["feast[ci]"]
+
+# extras for building from source (pandas, postgres-source, build)
+pandas = [
+    "Cython<3,>=0.29.33",
+    "meson-python==0.13.1",
+    "meson==1.2.1",
+    "oldest-supported-numpy>=2022.8.16",
+    "setuptools==59.2.0",
+    "wheel==0.37.0",
+]
+postgres-source = [
+    "psycopg-pool @ git+https://github.com/psycopg/psycopg@3.2.5#subdirectory=psycopg_pool",
+    "psycopg @ git+https://github.com/psycopg/psycopg@3.2.5#subdirectory=psycopg",
+    "feast[postgres]",
+]
 build = [
     "pybindgen==0.22.0",
     "setuptools>=60",
@@ -187,7 +189,7 @@ build = [
     #"pandas>=1.4.3,<3",
     #"numpy>=1.22,<2",
 
-    # Avoid conflicting ranges
+    "Cython>=3.0.6",
     "cmake>=3.15",
     "flit_core>=3.4,<4",
     "hatch-fancy-pypi-readme>=23.2.0",
@@ -235,7 +237,7 @@ feast = "feast.cli:cli"
 
 [build-system]
 requires = [
-  "pybindgen",
+  "pybindgen==0.22.0",
   "setuptools>=60",
   "setuptools_scm>=6.2",
   "sphinx!=4.0.0",
