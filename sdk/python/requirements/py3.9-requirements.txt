@@ -71,7 +71,7 @@ mypy==1.15.0
     # via sqlalchemy
 mypy-extensions==1.0.0
     # via mypy
-numpy==1.26.4
+numpy==2.0.2
     # via
     #   feast (setup.py)
     #   dask
@@ -80,7 +80,7 @@ packaging==24.2
     # via
     #   dask
     #   gunicorn
-pandas==2.2.3
+pandas==2.2.2
     # via
     #   feast (setup.py)
     #   dask

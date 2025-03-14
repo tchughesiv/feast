@@ -255,11 +255,11 @@ maturin==1.8.3
     # via feast (setup.py)
 mdurl==0.1.2
     # via markdown-it-py
-meson==1.2.1
+meson==1.7.0
     # via
     #   feast (setup.py)
     #   meson-python
-meson-python==0.13.1
+meson-python==0.17.1
     # via feast (setup.py)
 mmh3==5.1.0
     # via feast (setup.py)
@@ -295,6 +295,7 @@ packaging==24.2
     #   google-cloud-bigquery
     #   gunicorn
     #   hatchling
+    #   meson-python
     #   pandas-gbq
     #   pyproject-metadata
     #   scikit-build
@@ -302,7 +303,7 @@ packaging==24.2
     #   setuptools-scm
     #   snowflake-connector-python
     #   sphinx
-pandas==2.2.3
+pandas==2.2.2
     # via
     #   feast (setup.py)
     #   dask
