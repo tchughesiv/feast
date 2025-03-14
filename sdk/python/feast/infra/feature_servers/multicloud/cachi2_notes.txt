@@ -18,18 +18,12 @@ cachi2 fetch-deps \
   "type": "pip",
   "path": ".",
   "requirements_files": ["sdk/python/feast/infra/feature_servers/multicloud/requirements.txt"],
-  "requirements_files": ["sdk/python/requirements/py3.11-sdist-requirements.txt"],
+  "requirements_build_files": ["sdk/python/requirements/py3.11-build-requirements.txt", "sdk/python/requirements/py3.11-sdist-requirements.txt"],
   "allow_binary": "false"
 }'
 
 rm -f cachi2.env
 cachi2 generate-env ./cachi2-output -o ./cachi2.env --for-output-dir /tmp/cachi2-output
-
-echo yes | podman system prune
-podman build \
-  --tag sdist-builder:latest \
-  -f sdk/python/feast/infra/feature_servers/multicloud/Dockerfile.sdist.builder \
-  sdk/python/feast/infra/feature_servers/multicloud
 
 podman build \
   --volume "$(realpath ./cachi2-output)":/tmp/cachi2-output:Z \

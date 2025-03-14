@@ -94,8 +94,10 @@ lock-python-dependencies-all:
 			"uv pip compile -p $(ver) --system --no-strip-extras setup.py --extra dev \
 			--output-file sdk/python/requirements/py$(ver)-dev-requirements.txt" && \
 		pixi run --environment $(call get_env_name,$(ver)) --manifest-path infra/scripts/pixi/pixi.toml \
+			"uv pip compile -p $(ver) --system --no-strip-extras setup.py --extra build \
+			--output-file sdk/python/requirements/py$(ver)-build-requirements.txt" && \
+		pixi run --environment $(call get_env_name,$(ver)) --manifest-path infra/scripts/pixi/pixi.toml \
 			"uv pip compile -p $(ver) --system --no-strip-extras setup.py \
-			--extra build \
 			--extra aws \
 			--extra gcp \
 			--extra snowflake \
@@ -109,7 +111,6 @@ lock-python-dependencies-all:
 			--extra duckdb \
 			--extra milvus \
 			--no-emit-package milvus-lite \
-			--no-emit-package setuptools \
 			--output-file sdk/python/requirements/py$(ver)-sdist-requirements.txt" && \
 		pixi run --environment $(call get_env_name,$(ver)) --manifest-path infra/scripts/pixi/pixi.toml \
 			"uv pip compile -p $(ver) --system --no-strip-extras setup.py --extra ci \
