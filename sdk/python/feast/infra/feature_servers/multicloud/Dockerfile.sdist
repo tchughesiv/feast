@@ -2,8 +2,6 @@ FROM sdist-builder:latest
 
 COPY requirements.txt requirements.txt
 RUN source /tmp/cachi2.env && \
-    # pip install --no-binary :all: ninja && \
-    pip install --no-binary :all: numpy && \
     pip install --no-binary :all: -r requirements.txt
 
 # modify permissions to support running with a random uid

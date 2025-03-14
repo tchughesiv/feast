@@ -79,6 +79,11 @@ install-python-ci-dependencies:
 	python -m piptools sync sdk/python/requirements/py$(PYTHON_VERSION)-ci-requirements.txt
 	pip install --no-deps -e .
 
+# requires ninja or ninja-build to be installed
+install-python-sdist-dependencies:
+	python -m piptools sync sdk/python/requirements/py$(PYTHON_VERSION)-sdist-requirements.txt
+	pip install --no-binary :all: .[aws,gcp,snowflake,redis,go,mysql,postgres,opentelemetry,grpcio,k8s,duckdb,milvus]
+
 # Currently used in test-end-to-end.sh
 install-python:
 	python -m piptools sync sdk/python/requirements/py$(PYTHON_VERSION)-requirements.txt
@@ -109,7 +114,6 @@ lock-python-dependencies-all:
 			--extra duckdb \
 			--extra milvus \
 			--no-emit-package milvus-lite \
-			--no-emit-package ninja \
 			--output-file sdk/python/requirements/py$(ver)-sdist-requirements.txt" && \
 		pixi run --environment $(call get_env_name,$(ver)) --manifest-path infra/scripts/pixi/pixi.toml \
 			"uv pip compile -p $(ver) --system --no-strip-extras setup.py --extra ci \
