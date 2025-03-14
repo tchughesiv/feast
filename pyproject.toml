@@ -185,8 +185,7 @@ build = [
     "hatchling>=1.6.0,<2",
     "maturin>=1,<2",
 
-    # Removed strict pinning to 0.13.1
-    "meson-python>=0.15.0,<0.16.0",
+    "meson-python==0.13.1",
     "meson>=1.2.3",
     "mypy<=1.14.0,>=1.4.1",
     "mypy_extensions>=1.0.0",

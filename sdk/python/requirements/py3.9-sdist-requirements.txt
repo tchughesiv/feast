@@ -259,7 +259,7 @@ meson==1.7.0
     # via
     #   feast (setup.py)
     #   meson-python
-meson-python==0.15.0
+meson-python==0.13.1
     # via feast (setup.py)
 mmh3==5.1.0
     # via feast (setup.py)
