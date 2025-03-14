@@ -31,8 +31,8 @@ podman build \
   --volume "$(realpath ./cachi2.env)":/tmp/cachi2.env:Z \
   --network none \
   --tag foo \
-  -f sdk/python/feast/infra/feature_servers/multicloud/Dockerfile \
-  sdk/python/feast/infra/feature_servers/multicloud
+  -f sdk/python/feast/infra/feature_servers/multicloud/Dockerfile.sdist \
+  .
 
 # test that it worked
 podman run --rm -ti foo feast version
