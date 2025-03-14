@@ -17,6 +17,7 @@ cachi2 fetch-deps \
   '{
   "type": "pip",
   "path": ".",
+  "requirements_files": ["sdk/python/feast/infra/feature_servers/multicloud/requirements.txt"],
   "requirements_files": ["sdk/python/requirements/py3.11-sdist-requirements.txt"],
   "allow_binary": "false"
 }'
@@ -36,7 +37,7 @@ podman build \
   --network none \
   --tag foo \
   -f sdk/python/feast/infra/feature_servers/multicloud/Dockerfile.sdist \
-  .
+  sdk/python/feast/infra/feature_servers/multicloud
 
 # test that it worked
 podman run --rm -ti foo feast version
