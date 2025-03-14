@@ -249,7 +249,7 @@ meson==1.7.0
     # via
     #   feast (setup.py)
     #   meson-python
-meson-python==0.17.1
+meson-python==0.13.1
     # via feast (setup.py)
 mmh3==5.1.0
     # via feast (setup.py)
@@ -286,7 +286,6 @@ packaging==24.2
     #   gunicorn
     #   hatchling
     #   ibis-framework
-    #   meson-python
     #   pandas-gbq
     #   pyproject-metadata
     #   scikit-build

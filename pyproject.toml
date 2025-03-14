@@ -185,7 +185,7 @@ build = [
     "hatchling>=1.6.0,<2",
     "maturin>=1,<2",
 
-    "meson-python>=0.13.1",
+    "meson-python==0.13.1",
     "meson>=1.2.1",
     "mypy<=1.14.0,>=1.4.1",
     "mypy_extensions>=1.0.0",
