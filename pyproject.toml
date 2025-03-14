@@ -173,6 +173,7 @@ build = [
   "pybindgen==0.22.0",
   "setuptools_scm>=6.2",
   "sphinx!=4.0.0",
+  "wheel",
 ]
 
 [project.urls]

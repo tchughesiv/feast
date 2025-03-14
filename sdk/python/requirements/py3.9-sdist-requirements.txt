@@ -523,6 +523,8 @@ websocket-client==1.8.0
     # via kubernetes
 websockets==15.0.1
     # via uvicorn
+wheel==0.45.1
+    # via feast (setup.py)
 wrapt==1.17.2
     # via aiobotocore
 yarl==1.18.3
