@@ -94,6 +94,14 @@ mysql = ["pymysql", "types-PyMySQL"]
 opentelemetry = ["prometheus_client", "psutil"]
 spark = ["pyspark>=3.0.0,<4"]
 trino = ["trino>=0.305.0,<0.400.0", "regex"]
+pandas = [
+    "Cython<3,>=0.29.33",
+    "meson-python==0.13.1",
+    "meson==1.2.1",
+    "oldest-supported-numpy>=2022.8.16",
+    "setuptools==59.2.0",
+    "wheel==0.37.0",
+]
 postgres = [
     "psycopg[pool]==3.2.5",
 ]
@@ -169,14 +177,6 @@ dev = [
     "feast[ci]",
 ]
 docs = ["feast[ci]"]
-pandas = [
-    "Cython<3,>=0.29.33",
-    "meson-python==0.13.1",
-    "meson==1.2.1",
-    "oldest-supported-numpy>=2022.8.16",
-    "setuptools==59.2.0",
-    "wheel==0.37.0",
-]
 build = [
     "pybindgen==0.22.0",
     "setuptools>=60",

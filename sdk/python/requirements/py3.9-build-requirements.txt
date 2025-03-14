@@ -210,7 +210,7 @@ setuptools==76.0.0
     #   setuptools-rust
     #   setuptools-scm
     #   types-setuptools
-setuptools-rust==1.10.2
+setuptools-rust==1.11.0
     # via feast (setup.py)
 setuptools-scm==7.1.0
     # via
