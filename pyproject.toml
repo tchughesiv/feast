@@ -184,6 +184,7 @@ build = [
     "hatch-vcs==0.4.0",
     "hatchling>=1.6.0,<2",
     "maturin>=1,<2",
+    "oldest-supported-numpy>=2022.8.16",
 
     "meson-python==0.13.1",
     "meson==1.2.1",
