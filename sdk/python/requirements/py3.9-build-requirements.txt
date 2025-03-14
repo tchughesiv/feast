@@ -110,7 +110,7 @@ mypy-extensions==1.0.0
     # via
     #   feast (setup.py)
     #   mypy
-numpy==2.0.2
+numpy==1.26.4
     # via
     #   feast (setup.py)
     #   dask
@@ -126,7 +126,7 @@ packaging==24.2
     #   scikit-build-core
     #   setuptools-scm
     #   sphinx
-pandas==2.1.1
+pandas==2.1.4
     # via
     #   feast (setup.py)
     #   dask

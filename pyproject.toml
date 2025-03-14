@@ -192,6 +192,7 @@ build = [
     "hatchling>=1.6.0,<2",
     "maturin>=1,<2",
 
+    "numpy>=1.22,<2",
     "mypy<=1.14.0,>=1.4.1",
     "mypy_extensions>=1.0.0",
     "packaging>=24.2",
@@ -231,7 +232,7 @@ feast = "feast.cli:cli"
 
 [build-system]
 requires = [
-  "pybindgen==0.22.0",
+  "pybindgen",
   "setuptools>=60",
   "setuptools_scm>=6.2",
   "sphinx!=4.0.0",
