@@ -58,9 +58,9 @@ install-python-dependencies-dev:
 	uv pip install --no-deps -e .
 
 # requires ninja or ninja-build to be installed
-install-python-dependencies-sdist:
-	uv pip sync sdk/python/requirements/py$(PYTHON_VERSION)-sdist-requirements.txt
-	uv pip install --no-deps --no-binary :all: -e .
+#install-python-dependencies-sdist:
+#	uv pip sync sdk/python/requirements/py$(PYTHON_VERSION)-sdist-requirements.txt
+#	uv pip install --no-deps --no-binary :all: -e .
 
 # Python SDK - system
 # the --system flag installs dependencies in the global python context

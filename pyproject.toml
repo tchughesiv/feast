@@ -195,6 +195,7 @@ build = [
     "hatchling>=1.6.0,<2",
     "maturin>=1,<2",
 
+    "meson-python>=0.15.0",
     "mypy<=1.14.0,>=1.4.1",
     "mypy_extensions>=1.0.0",
     "packaging>=24.2",

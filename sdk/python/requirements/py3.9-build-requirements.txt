@@ -100,6 +100,10 @@ markupsafe==3.0.2
     # via jinja2
 maturin==1.8.3
     # via feast (setup.py)
+meson==1.7.0
+    # via meson-python
+meson-python==0.17.1
+    # via feast (setup.py)
 mmh3==5.1.0
     # via feast (setup.py)
 mypy==1.14.0
@@ -121,6 +125,7 @@ packaging==24.2
     #   dask
     #   gunicorn
     #   hatchling
+    #   meson-python
     #   pyproject-metadata
     #   scikit-build
     #   scikit-build-core
@@ -171,7 +176,9 @@ pygments==2.19.1
 pyjwt==2.10.1
     # via feast (setup.py)
 pyproject-metadata==0.9.1
-    # via feast (setup.py)
+    # via
+    #   feast (setup.py)
+    #   meson-python
 python-dateutil==2.9.0.post0
     # via pandas
 python-dotenv==1.0.1
@@ -251,6 +258,7 @@ tomli==2.2.1
     #   hatch-fancy-pypi-readme
     #   hatchling
     #   maturin
+    #   meson-python
     #   mypy
     #   scikit-build
     #   scikit-build-core
