@@ -4,4 +4,4 @@ USER 0
 RUN yum install -y python3.11-setuptools-wheel python3-setuptools_scm python3.11-numpy
 USER 1001
 
-RUN pip install wheels
+RUN pip install setuptools_scm
