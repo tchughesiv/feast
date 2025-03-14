@@ -95,6 +95,7 @@ lock-python-dependencies-all:
 			--output-file sdk/python/requirements/py$(ver)-dev-requirements.txt" && \
 		pixi run --environment $(call get_env_name,$(ver)) --manifest-path infra/scripts/pixi/pixi.toml \
 			"uv pip compile -p $(ver) --system --no-strip-extras setup.py \
+			--extra build \
 			--extra aws \
 			--extra gcp \
 			--extra snowflake \
