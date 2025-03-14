@@ -1,4 +1,4 @@
-FROM sdist-builder:latest
+FROM registry.access.redhat.com/ubi8/python-311:1
 
 COPY requirements.txt requirements.txt
 RUN source /tmp/cachi2.env && \
