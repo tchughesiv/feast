@@ -180,9 +180,12 @@ pandas = [
 build = [
     "pybindgen==0.22.0",
     "setuptools>=60",
-    "setuptools_scm>=6.2",
+    "setuptools_scm>=6.2,<8.0",
     "sphinx!=4.0.0",
     "wheel==0.45.1",
+
+    #"pandas>=1.4.3,<3",
+    #"numpy>=1.22,<2",
 
     # Avoid conflicting ranges
     "cmake>=3.15",
@@ -192,7 +195,6 @@ build = [
     "hatchling>=1.6.0,<2",
     "maturin>=1,<2",
 
-    "numpy>=1.22,<2",
     "mypy<=1.14.0,>=1.4.1",
     "mypy_extensions>=1.0.0",
     "packaging>=24.2",

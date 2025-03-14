@@ -98,7 +98,7 @@ mypy-extensions==1.0.0
     # via
     #   feast (setup.py)
     #   mypy
-numpy==1.26.4
+numpy==2.2.2
     # via
     #   feast (setup.py)
     #   dask
@@ -114,7 +114,7 @@ packaging==24.2
     #   scikit-build-core
     #   setuptools-scm
     #   sphinx
-pandas==2.1.4
+pandas==2.1.1
     # via
     #   feast (setup.py)
     #   dask
@@ -199,9 +199,9 @@ setuptools==76.0.0
     #   setuptools-rust
     #   setuptools-scm
     #   types-setuptools
-setuptools-rust==1.10.2
+setuptools-rust==1.11.0
     # via feast (setup.py)
-setuptools-scm==8.2.0
+setuptools-scm==7.1.0
     # via
     #   feast (setup.py)
     #   hatch-vcs
@@ -260,6 +260,7 @@ typing-extensions==4.12.2
     #   pydantic
     #   pydantic-core
     #   referencing
+    #   setuptools-scm
     #   sqlalchemy
     #   typeguard
 tzdata==2025.1
