@@ -95,10 +95,14 @@ lock-python-dependencies-all:
 			--output-file sdk/python/requirements/py$(ver)-dev-requirements.txt" && \
 		pixi run --environment $(call get_env_name,$(ver)) --manifest-path infra/scripts/pixi/pixi.toml \
 			"uv pip compile -p $(ver) --system --no-strip-extras setup.py --extra ci \
+			--extra source \
 			--no-emit-package sqlite-vec \
 			--no-emit-package torch \
 			--no-emit-package torchvision \
 			--no-emit-package milvus-lite \
+			--no-emit-package setuptools \
+			--no-emit-package setuptools_scm \
+			--no-emit-package ninja \
 			--output-file sdk/python/requirements/py$(ver)-sdist-requirements.txt" && \
 		pixi run --environment $(call get_env_name,$(ver)) --manifest-path infra/scripts/pixi/pixi.toml \
 			"uv pip compile -p $(ver) --system --no-strip-extras setup.py --extra ci \
