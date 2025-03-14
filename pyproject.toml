@@ -175,14 +175,14 @@ pandas = [
     "meson==1.2.1",
     "oldest-supported-numpy>=2022.8.16",
     "setuptools==59.2.0",
-    "wheel==0.45.1",
+    "wheel==0.37.0",
 ]
 build = [
     "pybindgen==0.22.0",
     "setuptools>=60",
     "setuptools_scm>=6.2",
     "sphinx!=4.0.0",
-    "wheel",
+    "wheel==0.45.1",
 
     # Avoid conflicting ranges
     "cmake>=3.15",
