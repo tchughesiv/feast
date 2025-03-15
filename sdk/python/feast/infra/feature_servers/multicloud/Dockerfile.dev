@@ -26,7 +26,7 @@ RUN yalc add @feast-dev/feast-ui && \
     yarn cache clean --all
 
 WORKDIR ${APP_ROOT}/src
-RUN pip install uv && \
+RUN pip install piptools && \
     make install-python-limited-dependencies
 
 # modify permissions to support running with a random uid
