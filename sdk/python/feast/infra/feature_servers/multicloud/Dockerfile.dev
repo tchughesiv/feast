@@ -4,6 +4,7 @@ USER 0
 RUN npm install -g yarn yalc && rm -rf .npm
 USER default
 
+COPY --chown=default protos ${APP_ROOT}/src/protos
 COPY --chown=default ui ${APP_ROOT}/src/ui
 WORKDIR ${APP_ROOT}/src/ui
 RUN npm install && \
@@ -12,8 +13,6 @@ RUN npm install && \
     npm cache clean --force
 
 COPY --chown=default .git ${APP_ROOT}/src/.git
-COPY --chown=default protos ${APP_ROOT}/src/protos
-COPY --chown=default setup.py pyproject.toml README.md Makefile ${APP_ROOT}/src/
 COPY --chown=default sdk/python ${APP_ROOT}/src/sdk/python
 WORKDIR ${APP_ROOT}/src/sdk/python/feast/ui
 RUN yalc add @feast-dev/feast-ui && \
@@ -24,6 +23,7 @@ RUN yalc add @feast-dev/feast-ui && \
     npm cache clean --force && \
     yarn cache clean --all
 
+COPY --chown=default setup.py pyproject.toml README.md Makefile ${APP_ROOT}/src/
 WORKDIR ${APP_ROOT}/src
 RUN pip install -r sdk/python/requirements/py3.11-ci-requirements.txt && \
     pip install --no-deps .[aws,gcp,snowflake,redis,go,mysql,postgres,opentelemetry,grpcio,k8s,duckdb,milvus]
