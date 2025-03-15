@@ -80,7 +80,9 @@ lock-python-dependencies-all:
 	# Remove all existing requirements because we noticed the lock file is not always updated correctly.
 	# Removing and running the command again ensures that the lock file is always up to date.
 	rm -rf sdk/python/requirements/* 2>/dev/null || true
-
+	pixi run --environment $(call get_env_name,3.11) --manifest-path infra/scripts/pixi/pixi.toml \
+		"uv pip compile -p 3.11 --system --no-strip-extras setup.py --extra pandas \
+		--generate-hashes --output-file sdk/python/requirements/py3.11-pandas-requirements.txt" && \
 	$(foreach ver,$(PYTHON_VERSIONS),\
 		pixi run --environment $(call get_env_name,$(ver)) --manifest-path infra/scripts/pixi/pixi.toml \
 			"uv pip compile -p $(ver) --system --no-strip-extras setup.py --extra dev \
@@ -88,9 +90,6 @@ lock-python-dependencies-all:
 		pixi run --environment $(call get_env_name,$(ver)) --manifest-path infra/scripts/pixi/pixi.toml \
 			"uv pip compile -p $(ver) --system --no-strip-extras setup.py --extra build \
 			--generate-hashes --output-file sdk/python/requirements/py$(ver)-build-requirements.txt" && \
-		pixi run --environment $(call get_env_name,$(ver)) --manifest-path infra/scripts/pixi/pixi.toml \
-			"uv pip compile -p $(ver) --system --no-strip-extras setup.py --extra pandas \
-			--generate-hashes --output-file sdk/python/requirements/py$(ver)-pandas-requirements.txt" && \
 		pixi run --environment $(call get_env_name,$(ver)) --manifest-path infra/scripts/pixi/pixi.toml \
 			"uv pip compile -p $(ver) --system --no-strip-extras setup.py \
 			--extra aws \
