@@ -12,7 +12,7 @@ COPY --chown=default sdk/python ${APP_ROOT}/src/sdk/python
 
 WORKDIR ${APP_ROOT}/src
 RUN pip install --require-hashes --no-deps -r sdk/python/requirements/py3.11-limited-requirements.txt
-RUN pip install --no-deps -e .[ui,aws]
+RUN pip install --no-deps -e .[aws,gcp,snowflake,redis,go,mysql,postgres,opentelemetry,grpcio,k8s,duckdb,milvus]
 
 WORKDIR ${APP_ROOT}/src/ui
 RUN npm install && \
@@ -29,9 +29,11 @@ RUN yalc add @feast-dev/feast-ui && \
     npm cache clean --force && \
     yarn cache clean --all
 
-WORKDIR ${APP_ROOT}/src
-RUN pip install --require-hashes --no-deps -r sdk/python/requirements/py3.11-limited-requirements.txt
-RUN pip install --no-deps -e .[aws,gcp,snowflake,redis,go,mysql,postgres,opentelemetry,grpcio,k8s,duckdb,milvus]
+RUN ls -la $(python -c "import feast.ui as ui; print(ui.__path__)" | tr -d "[']")
+    
+#WORKDIR ${APP_ROOT}/src
+#RUN pip install --require-hashes --no-deps -r sdk/python/requirements/py3.11-limited-requirements.txt
+#RUN pip install --no-deps -e .[aws,gcp,snowflake,redis,go,mysql,postgres,opentelemetry,grpcio,k8s,duckdb,milvus]
 
 # modify permissions to support running with a random uid
 RUN chmod g+w $(python -c "import feast.ui as ui; print(ui.__path__)" | tr -d "[']")/build/projects-list.json
