@@ -59,7 +59,7 @@ install-python-dependencies-dev:
 
 install-python-dependencies-limited:
 	uv pip sync --require-hashes sdk/python/requirements/py$(PYTHON_VERSION)-limited-requirements.txt
-	uv pip install --no-deps .[aws,gcp,snowflake,redis,go,mysql,postgres,opentelemetry,grpcio,k8s,duckdb,milvus]
+	uv pip install --no-deps -e .[aws,gcp,snowflake,redis,go,mysql,postgres,opentelemetry,grpcio,k8s,duckdb,milvus]
 
 # Python SDK - system
 # the --system flag installs dependencies in the global python context
@@ -68,7 +68,7 @@ install-python-dependencies-limited:
 # Used in github actions/ci
 # formerly install-python-ci-dependencies-uv
 install-python-dependencies-ci:
-	uv pip sync --require-hashes --system sdk/python/requirements/py$(PYTHON_VERSION)-ci-requirements.txt
+	uv pip sync --system sdk/python/requirements/py$(PYTHON_VERSION)-ci-requirements.txt
 	uv pip install --system --no-deps -e .
 
 # Currently used in test-end-to-end.sh
