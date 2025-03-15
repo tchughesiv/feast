@@ -10,6 +10,10 @@ COPY --chown=default protos ${APP_ROOT}/src/protos
 COPY --chown=default ui ${APP_ROOT}/src/ui
 COPY --chown=default sdk/python ${APP_ROOT}/src/sdk/python
 
+WORKDIR ${APP_ROOT}/src
+RUN pip install --no-deps --require-hashes -r sdk/python/requirements/py3.11-limited-requirements.txt
+RUN pip install --no-deps .[aws,gcp,snowflake,redis,go,mysql,postgres,opentelemetry,grpcio,k8s,duckdb,milvus]
+
 WORKDIR ${APP_ROOT}/src/ui
 RUN npm install && \
     npm run build:lib-dev && \
