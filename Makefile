@@ -57,6 +57,10 @@ install-python-dependencies-dev:
 	uv pip sync --require-hashes sdk/python/requirements/py$(PYTHON_VERSION)-dev-requirements.txt
 	uv pip install --no-deps -e .
 
+install-python-dependencies-limited:
+	uv pip sync --require-hashes sdk/python/requirements/py$(PYTHON_VERSION)-limited-requirements.txt
+	uv pip install --no-deps .[aws,gcp,snowflake,redis,go,mysql,postgres,opentelemetry,grpcio,k8s,duckdb,milvus]
+
 # Python SDK - system
 # the --system flag installs dependencies in the global python context
 # instead of a venv which is useful when working in a docker container or ci.
@@ -66,11 +70,6 @@ install-python-dependencies-dev:
 install-python-dependencies-ci:
 	uv pip sync --require-hashes --system sdk/python/requirements/py$(PYTHON_VERSION)-ci-requirements.txt
 	uv pip install --system --no-deps -e .
-
-# Used by multicloud/Dockerfile.dev
-install-python-limited-dependencies:
-	python -m piptools sync sdk/python/requirements/py$(PYTHON_VERSION)-limited-requirements.txt
-	pip install --no-deps .[aws,gcp,snowflake,redis,go,mysql,postgres,opentelemetry,grpcio,k8s,duckdb,milvus]
 
 # Currently used in test-end-to-end.sh
 install-python:
