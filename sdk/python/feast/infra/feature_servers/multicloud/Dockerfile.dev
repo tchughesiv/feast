@@ -26,7 +26,8 @@ RUN yalc add @feast-dev/feast-ui && \
     yarn cache clean --all
 
 WORKDIR ${APP_ROOT}/src
-RUN pip install .[aws,gcp,snowflake,redis,go,mysql,postgres,opentelemetry,grpcio,k8s,duckdb,milvus]
+RUN pip install -r sdk/python/requirements/py3.11-ci-requirements.txt && \
+    pip install --no-deps .[aws,gcp,snowflake,redis,go,mysql,postgres,opentelemetry,grpcio,k8s,duckdb,milvus]
     # pip install --no-cache-dir pip-tools && \
     # make install-python-ci-dependencies && \
     # pip uninstall -y pip-tools
