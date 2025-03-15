@@ -121,7 +121,7 @@ lock-python-dependencies-all:
 			--extra duckdb \
 			--extra milvus \
 			--no-emit-package milvus-lite \
-			--generate-hashes --output-file sdk/python/requirements/py$(ver)-sdist-requirements.txt" && \
+			--output-file sdk/python/requirements/py$(ver)-sdist-requirements.txt" && \
 		pixi run --environment $(call get_env_name,$(ver)) --manifest-path infra/scripts/pixi/pixi.toml \
 			"uv pip compile -p $(ver) --system --no-strip-extras setup.py --extra ci \
 			--generate-hashes --output-file sdk/python/requirements/py$(ver)-ci-requirements.txt" && \

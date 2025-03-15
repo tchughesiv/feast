@@ -1,5 +1,3 @@
-alias cachi2='podman run --rm -ti -v "$PWD:$PWD:z" -w "$PWD" quay.io/konflux-ci/cachi2:latest'
-
 python -m ensurepip --upgrade
 python -m pip install pip-tools uv ninja
 conan profile detect
@@ -11,6 +9,7 @@ uv pip install git+https://github.com/JaidedAI/EasyOCR@v1.7.2
 make lock-python-dependencies-all
 
 # WORKS!!!
+alias cachi2='podman run --rm -ti -v "$PWD:$PWD:z" -w "$PWD" quay.io/konflux-ci/cachi2:latest'
 rm -rf ./cachi2-output
 cachi2 fetch-deps \
   --output ./cachi2-output \
@@ -23,19 +22,19 @@ cachi2 fetch-deps \
 }'
 
 podman build \
-  --volume "$(realpath ./cachi2-output)":/tmp/cachi2-output:Z \
-  --volume "$(realpath ./cachi2.env)":/tmp/cachi2.env:Z \
-  --network none \
-  --tag foo \
-  -f sdk/python/feast/infra/feature_servers/multicloud/Dockerfile.sdist \
+  --tag sdist-builder:latest \
+  -f sdk/python/feast/infra/feature_servers/multicloud/Dockerfile.sdist.builder \
   sdk/python/feast/infra/feature_servers/multicloud
 
 rm -f cachi2.env
 cachi2 generate-env ./cachi2-output -o ./cachi2.env --for-output-dir /tmp/cachi2-output
 
 podman build \
-  --tag sdist-builder:latest \
-  -f sdk/python/feast/infra/feature_servers/multicloud/Dockerfile.sdist.builder \
+  --volume "$(realpath ./cachi2-output)":/tmp/cachi2-output:Z \
+  --volume "$(realpath ./cachi2.env)":/tmp/cachi2.env:Z \
+  --network none \
+  --tag foo \
+  -f sdk/python/feast/infra/feature_servers/multicloud/Dockerfile.sdist \
   sdk/python/feast/infra/feature_servers/multicloud
 
 # test that it worked
