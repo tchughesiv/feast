@@ -54,13 +54,8 @@ build: protos build-java build-docker
 # formerly install-python-ci-dependencies-uv-venv
 # editable install
 install-python-dependencies-dev:
-	uv pip sync sdk/python/requirements/py$(PYTHON_VERSION)-dev-requirements.txt
-	uv pip install --require-hashes --no-deps -e .
-
-# requires ninja or ninja-build to be installed
-#install-python-dependencies-sdist:
-#	uv pip sync sdk/python/requirements/py$(PYTHON_VERSION)-sdist-requirements.txt
-#	uv pip install --no-deps --no-binary :all: -e .
+	uv pip sync --require-hashes sdk/python/requirements/py$(PYTHON_VERSION)-dev-requirements.txt
+	uv pip install --no-deps -e .
 
 # Python SDK - system
 # the --system flag installs dependencies in the global python context
@@ -69,13 +64,13 @@ install-python-dependencies-dev:
 # Used in github actions/ci
 # formerly install-python-ci-dependencies-uv
 install-python-dependencies-ci:
-	uv pip sync --system sdk/python/requirements/py$(PYTHON_VERSION)-ci-requirements.txt
-	uv pip install --require-hashes --system --no-deps -e .
+	uv pip sync --require-hashes --system sdk/python/requirements/py$(PYTHON_VERSION)-ci-requirements.txt
+	uv pip install --system --no-deps -e .
 
 # Used by multicloud/Dockerfile.dev
-install-python-ci-dependencies:
-	python -m piptools sync sdk/python/requirements/py$(PYTHON_VERSION)-ci-requirements.txt
-	pip install --require-hashes --no-deps -e .
+install-python-limited-dependencies:
+	python -m piptools sync sdk/python/requirements/py$(PYTHON_VERSION)-limited-requirements.txt
+	pip install --no-deps .[aws,gcp,snowflake,redis,go,mysql,postgres,opentelemetry,grpcio,k8s,duckdb,milvus]
 
 # Currently used in test-end-to-end.sh
 install-python:
@@ -701,7 +696,7 @@ build-go: compile-protos-go
 
 .PHONY: install-feast-ci-locally
 install-feast-ci-locally:
-	uv pip install --require-hashes -e ".[ci]"
+	uv pip install -e ".[ci]"
 
 .PHONY: test-go
 test-go: compile-protos-go install-feast-ci-locally compile-protos-python  
