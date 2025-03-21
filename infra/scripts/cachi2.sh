@@ -1,5 +1,5 @@
 # to run -> source ./infra/scripts/cachi2.sh
-# requires uv, docker, git
+# requires uv, docker/podman, git
 
 # Get Feast project repository root directory
 export PROJECT_ROOT_DIR=$(git rev-parse --show-toplevel)
@@ -90,7 +90,8 @@ cachi2 generate-env ./cachi2-output -o ./cachi2.env --for-output-dir /tmp/cachi2
 #  -f sdk/python/feast/infra/feature_servers/multicloud/Dockerfile.builder.pydantic-core \
 #  --load pydantic-core
 
-git clone --branch v2.4.12 --recurse-submodules https://github.com/milvus-io/milvus-lite
+# git clone --branch v2.4.12 --recurse-submodules https://github.com/milvus-io/milvus-lite
+
 # feast builder
 docker build \
   --volume "$(realpath ./cachi2-output)":/tmp/cachi2-output:Z \
