@@ -1,16 +1,16 @@
 FROM pip-builder:latest
 
-USER 1001
-WORKDIR ${APP_ROOT}/src
+#RUN source /tmp/cachi2.env && \
+#    pip install --no-binary :all: conan wheel
 
-RUN source /tmp/cachi2.env && \
-    pip install --no-binary :all: conan wheel
+#RUN source /tmp/cachi2.env && \
+#    pip install --no-binary :all: build
 
-RUN source /tmp/cachi2.env && \
-    pip install --no-binary :all: build
-
-COPY --chown=default milvus-lite ${APP_ROOT}/src/milvus-lite
+#COPY --chown=default milvus-lite ${APP_ROOT}/src/milvus-lite
 #RUN conan remote disable default-conan-local
+
+RUN conan config init && \
+    conan profile update settings.compiler.libcxx=libstdc++11 default
 
 RUN cd milvus-lite/python && \
     source /tmp/cachi2.env && \

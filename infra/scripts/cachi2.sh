@@ -1,5 +1,5 @@
 # to run -> source ./infra/scripts/cachi2.sh
-# requires uv
+# requires uv, docker, git
 
 # Get Feast project repository root directory
 export PROJECT_ROOT_DIR=$(git rev-parse --show-toplevel)
@@ -14,7 +14,7 @@ docker build \
 
 git clone --branch apache-arrow-17.0.0 https://github.com/apache/arrow
 ./arrow/cpp/thirdparty/download_dependencies.sh ${PROJECT_ROOT_DIR}/arrow/cpp/arrow-thirdparty
-# arrow builder
+# arrow builder - version 17.0.0
 docker build \
   --volume "$(realpath ./arrow)":/tmp/arrow:Z \
   --network none \

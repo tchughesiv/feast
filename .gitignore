@@ -238,4 +238,3 @@ infra/website/.astro/
 
 # cachi2 source build related
 cachi2*
-pydantic-core
