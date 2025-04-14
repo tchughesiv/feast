@@ -1,5 +1,14 @@
 FROM registry.access.redhat.com/ubi8/python-311:1
 
 USER 0
-RUN yum install -y ninja-build llvm-devel llvm-libs llvm-toolset ncurses-devel
+RUN yum install -y ninja-build llvm-devel llvm-libs llvm-toolset ncurses-devel rust cargo
 USER 1001
+
+RUN pip install \
+    # psycopg dep
+    psycopg-binary==3.2.5 \
+    # milvus dep
+    milvus-lite==2.4.12
+
+# ibis-framework must build from its own git repo... versioning requirement
+RUN git clone -b 9.5.0 https://github.com/ibis-project/ibis ${APP_ROOT}/src/ibis

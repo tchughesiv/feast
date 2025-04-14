@@ -1,0 +1,38 @@
+FROM arrow-builder:latest
+
+RUN source /tmp/cachi2.env && \
+    pip install setuptools-rust patchelf
+
+COPY --chown=default maturin ${APP_ROOT}/src/maturin
+WORKDIR ${APP_ROOT}/src/maturin
+RUN source /tmp/cachi2.env && \
+    python setup.py bdist_wheel && \
+    pip install dist/maturin-*.whl && \
+    rm -rf ${APP_ROOT}/src/maturin/build
+
+COPY --chown=default pydantic-core ${APP_ROOT}/src/pydantic-core
+WORKDIR ${APP_ROOT}/src/pydantic-core
+RUN source /tmp/cachi2.env && \
+    maturin build --release && \
+    pip install target/wheels/pydantic_core-*.whl
+
+COPY --chown=default watchfiles ${APP_ROOT}/src/watchfiles
+WORKDIR ${APP_ROOT}/src/watchfiles
+RUN source /tmp/cachi2.env && \
+    maturin build --release && \
+    pip install target/wheels/watchfiles-*.whl
+
+COPY --chown=default rpds ${APP_ROOT}/src/rpds
+WORKDIR ${APP_ROOT}/src/rpds
+RUN source /tmp/cachi2.env && \
+    maturin build --release && \
+    pip install target/wheels/rpds_py*.whl
+
+COPY --chown=default cryptography ${APP_ROOT}/src/cryptography
+WORKDIR ${APP_ROOT}/src/cryptography
+RUN source /tmp/cachi2.env && \
+    maturin build --release && \
+    pip install target/wheels/cryptography*.whl
+
+WORKDIR ${APP_ROOT}/src
+RUN pip list

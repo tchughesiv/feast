@@ -45,50 +45,63 @@ cachi2 generate-env ${OFFLINE_BUILD_DIR}/cachi2-output -o ${OFFLINE_BUILD_DIR}/c
 # arrow OFFLINE builder - version 17.0.0
 rm -f ${OFFLINE_BUILD_DIR}/arrow/.dockerignore
 docker build \
+  --network none \
   --volume ${OFFLINE_BUILD_DIR}/arrow:/tmp/arrow:Z \
   --volume ${OFFLINE_BUILD_DIR}/cachi2-output:/tmp/cachi2-output:Z \
   --volume ${OFFLINE_BUILD_DIR}/cachi2.env:/tmp/cachi2.env:Z \
   --volume ${PROJECT_ROOT_DIR}/sdk/python/feast/infra/feature_servers/multicloud/offline:/tmp/offline:ro \
-  --network none \
   --tag arrow-builder \
   -f sdk/python/feast/infra/feature_servers/multicloud/offline/Dockerfile.builder.arrow \
   --load offline_build/arrow
 
-# pip builder
+# maturin OFFLINE builder
+git clone --branch v1.8.3 https://github.com/PyO3/maturin ${OFFLINE_BUILD_DIR}/maturin
+cachi2 fetch-deps cargo --source ${OFFLINE_BUILD_DIR}/maturin --output ${OFFLINE_BUILD_DIR}/cachi2-maturin
+cachi2 inject-files --for-output-dir /tmp/cachi2-maturin ${OFFLINE_BUILD_DIR}/cachi2-maturin
+
+git clone --branch v2.27.2 https://github.com/pydantic/pydantic-core ${OFFLINE_BUILD_DIR}/pydantic-core
+cachi2 fetch-deps cargo --source ${OFFLINE_BUILD_DIR}/pydantic-core --output ${OFFLINE_BUILD_DIR}/cachi2-pydantic-core
+cachi2 inject-files --for-output-dir /tmp/cachi2-pydantic-core ${OFFLINE_BUILD_DIR}/cachi2-pydantic-core
+
+git clone --branch v1.0.5 https://github.com/samuelcolvin/watchfiles ${OFFLINE_BUILD_DIR}/watchfiles
+cachi2 fetch-deps cargo --source ${OFFLINE_BUILD_DIR}/watchfiles --output ${OFFLINE_BUILD_DIR}/cachi2-watchfiles
+cachi2 inject-files --for-output-dir /tmp/cachi2-watchfiles ${OFFLINE_BUILD_DIR}/cachi2-watchfiles
+
+git clone --branch v0.24.0 https://github.com/crate-py/rpds ${OFFLINE_BUILD_DIR}/rpds
+cachi2 fetch-deps cargo --source ${OFFLINE_BUILD_DIR}/rpds --output ${OFFLINE_BUILD_DIR}/cachi2-rpds
+cachi2 inject-files --for-output-dir /tmp/cachi2-rpds ${OFFLINE_BUILD_DIR}/cachi2-rpds
+
+git clone --branch 44.0.2 https://github.com/pyca/cryptography ${OFFLINE_BUILD_DIR}/cryptography
+cachi2 fetch-deps cargo --source ${OFFLINE_BUILD_DIR}/cryptography --output ${OFFLINE_BUILD_DIR}/cachi2-cryptography
+cachi2 inject-files --for-output-dir /tmp/cachi2-cryptography ${OFFLINE_BUILD_DIR}/cachi2-cryptography
+
 docker build \
-  --tag pip-builder \
-  -f sdk/python/feast/infra/feature_servers/multicloud/offline/Dockerfile.builder.pip \
-  --load sdk/python/feast/infra/feature_servers/multicloud/offline
+  --network none \
+  --volume ${OFFLINE_BUILD_DIR}/cachi2-maturin:/tmp/cachi2-maturin:Z \
+  --volume ${OFFLINE_BUILD_DIR}/cachi2-pydantic-core:/tmp/cachi2-pydantic-core:Z \
+  --volume ${OFFLINE_BUILD_DIR}/cachi2-watchfiles:/tmp/cachi2-watchfiles:Z \
+  --volume ${OFFLINE_BUILD_DIR}/cachi2-rpds:/tmp/cachi2-rpds:Z \
+  --volume ${OFFLINE_BUILD_DIR}/cachi2-cryptography:/tmp/cachi2-cryptography:Z \
+  --volume ${OFFLINE_BUILD_DIR}/cachi2-output:/tmp/cachi2-output:Z \
+  --volume ${OFFLINE_BUILD_DIR}/cachi2.env:/tmp/cachi2.env:Z \
+  --tag maturin-builder \
+  -f sdk/python/feast/infra/feature_servers/multicloud/offline/Dockerfile.builder.maturin \
+  --load ${OFFLINE_BUILD_DIR}
 
 # ibis OFFLINE builder
 docker build \
+  --network none \
   --volume ${OFFLINE_BUILD_DIR}/cachi2-output:/tmp/cachi2-output:Z \
   --volume ${OFFLINE_BUILD_DIR}/cachi2.env:/tmp/cachi2.env:Z \
-  --network none \
   --tag ibis-builder \
   -f sdk/python/feast/infra/feature_servers/multicloud/offline/Dockerfile.builder.ibis \
   --load sdk/python/feast/infra/feature_servers/multicloud/offline
 
-# is this needed? check for reqs logs as feast builds
-# maturin OFFLINE builder
-#mkdir -p ${OFFLINE_BUILD_DIR}/cachi2-maturin
-#git clone --branch v1.8.3 https://github.com/PyO3/maturin ${OFFLINE_BUILD_DIR}/maturin
-#cachi2 fetch-deps cargo --source ${OFFLINE_BUILD_DIR}/maturin --output ${OFFLINE_BUILD_DIR}/cachi2-maturin
-#cachi2 inject-files --for-output-dir /tmp/cachi2-maturin ${OFFLINE_BUILD_DIR}/cachi2-maturin
-#docker build \
-#  --volume ${OFFLINE_BUILD_DIR}/cachi2-maturin:/tmp/cachi2-maturin:Z \
-#  --volume ${OFFLINE_BUILD_DIR}/cachi2-output:/tmp/cachi2-output:Z \
-#  --volume ${OFFLINE_BUILD_DIR}/cachi2.env:/tmp/cachi2.env:Z \
-#  --network none \
-#  --tag maturin-builder \
-#  -f sdk/python/feast/infra/feature_servers/multicloud/offline/Dockerfile.builder.maturin \
-#  --load ${OFFLINE_BUILD_DIR}/maturin
-
 # feast OFFLINE builder
 docker build \
+  --network none \
   --volume ${OFFLINE_BUILD_DIR}/cachi2-output:/tmp/cachi2-output:Z \
   --volume ${OFFLINE_BUILD_DIR}/cachi2.env:/tmp/cachi2.env:Z \
-  --network none \
   --tag feature-server:sdist-build \
   -f sdk/python/feast/infra/feature_servers/multicloud/offline/Dockerfile.sdist \
   --load sdk/python/feast/infra/feature_servers/multicloud
