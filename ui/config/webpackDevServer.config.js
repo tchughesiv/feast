@@ -83,12 +83,6 @@ module.exports = function (proxy, allowedHost) {
         warnings: false,
       },
     },
-    resolve: {
-      alias: {
-        "react/jsx-dev-runtime": "react/jsx-dev-runtime.js",
-        "react/jsx-runtime": "react/jsx-runtime.js",
-      }
-    },
     devMiddleware: {
       // It is important to tell WebpackDevServer to use the same "publicPath" path as
       // we specified in the webpack config. When homepage is '.', default to serving
