@@ -319,7 +319,7 @@ module.exports = function (webpackEnv) {
           "react-dom$": "react-dom/profiling",
           "scheduler/tracing": "scheduler/tracing-profiling",
           //"react/jsx-dev-runtime": "react/jsx-dev-runtime.js",
-          "react/jsx-runtime": "react/jsx-runtime.js",
+          "react/jsx-runtime": "jsx-runtime.js",
         }),
         ...(modules.webpackAliases || {}),
       },
