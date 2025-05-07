@@ -70,6 +70,9 @@ func (feast *FeastServices) createCaConfigMap() error {
 }
 
 func (feast *FeastServices) setCaConfigMap(cm *corev1.ConfigMap) error {
+	if len(cm.Annotations) == 0 {
+		cm.Annotations = map[string]string{}
+	}
 	cm.Annotations["service.beta.openshift.io/inject-cabundle"] = "true"
 	cm.Labels = feast.getLabels()
 	return controllerutil.SetControllerReference(feast.Handler.FeatureStore, cm, feast.Handler.Scheme)
