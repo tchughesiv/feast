@@ -178,10 +178,13 @@ func (authz *FeastAuthorization) setAuthRole(role *rbacv1.Role) error {
 }
 
 func (authz *FeastAuthorization) getLabels() map[string]string {
-	return map[string]string{
-		services.NameLabelKey:        authz.Handler.FeatureStore.Name,
-		services.ServiceTypeLabelKey: string(services.AuthzFeastType),
+	labels := map[string]string{}
+	if authz.Handler.FeatureStore.Spec.Metadata != nil {
+		labels = authz.Handler.FeatureStore.Spec.Metadata.Labels
 	}
+	labels[services.NameLabelKey] = authz.Handler.FeatureStore.Name
+	labels[services.ServiceTypeLabelKey] = string(services.AuthzFeastType)
+	return labels
 }
 
 func (authz *FeastAuthorization) setFeastKubernetesAuthCondition(err error) error {

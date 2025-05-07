@@ -682,6 +682,18 @@ spec:
                 x-kubernetes-validations:
                 - message: One selection required between init or git.
                   rule: '[has(self.git), has(self.init)].exists_one(c, c)'
+              metadata:
+                description: ObjectMeta is metadata that all persisted resources must
+                  have, which includes all objects
+                properties:
+                  labels:
+                    additionalProperties:
+                      type: string
+                    description: |-
+                      Map of string keys and values that can be used to organize and categorize
+                      (scope and select) objects.
+                    type: object
+                type: object
               services:
                 description: FeatureStoreServices defines the desired feast services.
                   An ephemeral onlineStore feature server is deployed by default.
@@ -4632,6 +4644,18 @@ spec:
                     x-kubernetes-validations:
                     - message: One selection required between init or git.
                       rule: '[has(self.git), has(self.init)].exists_one(c, c)'
+                  metadata:
+                    description: ObjectMeta is metadata that all persisted resources
+                      must have, which includes all objects
+                    properties:
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: |-
+                          Map of string keys and values that can be used to organize and categorize
+                          (scope and select) objects.
+                        type: object
+                    type: object
                   services:
                     description: FeatureStoreServices defines the desired feast services.
                       An ephemeral onlineStore feature server is deployed by default.

@@ -464,7 +464,6 @@ func (feast *FeastServices) getVolumeMounts(feastType FeastServiceType) (volumeM
 }
 
 func (feast *FeastServices) setRoute(route *routev1.Route, feastType FeastServiceType) error {
-
 	svcName := feast.GetFeastServiceName(feastType)
 	route.Labels = feast.getFeastTypeLabels(feastType)
 
@@ -584,12 +583,10 @@ func (feast *FeastServices) setInitContainer(podSpec *corev1.PodSpec, fsYamlB64 
 }
 
 func (feast *FeastServices) setService(svc *corev1.Service, feastType FeastServiceType) error {
-	svc.Labels = feast.getFeastTypeLabels(feastType)
 	if feast.isOpenShiftTls(feastType) {
-		svc.Annotations = map[string]string{
-			"service.beta.openshift.io/serving-cert-secret-name": svc.Name + tlsNameSuffix,
-		}
+		svc.Annotations["service.beta.openshift.io/serving-cert-secret-name"] = svc.Name + tlsNameSuffix
 	}
+	svc.Labels = feast.getFeastTypeLabels(feastType)
 
 	var port int32 = HttpPort
 	scheme := HttpScheme
@@ -697,9 +694,12 @@ func (feast *FeastServices) getFeastTypeLabels(feastType FeastServiceType) map[s
 }
 
 func (feast *FeastServices) getLabels() map[string]string {
-	return map[string]string{
-		NameLabelKey: feast.Handler.FeatureStore.Name,
+	labels := map[string]string{}
+	if feast.Handler.FeatureStore.Spec.Metadata != nil {
+		labels = feast.Handler.FeatureStore.Spec.Metadata.Labels
 	}
+	labels[NameLabelKey] = feast.Handler.FeatureStore.Name
+	return labels
 }
 
 func (feast *FeastServices) setServiceHostnames() error {

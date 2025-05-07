@@ -221,6 +221,7 @@ _Appears in:_
 | `services` _[FeatureStoreServices](#featurestoreservices)_ |  |
 | `authz` _[AuthzConfig](#authzconfig)_ |  |
 | `cronJob` _[FeastCronJob](#feastcronjob)_ |  |
+| `metadata` _[Metadata](#metadata)_ | Refer to Kubernetes API documentation for fields of `metadata`. |
 
 
 #### FeatureStoreStatus
@@ -407,6 +408,22 @@ _Appears in:_
 | --- | --- |
 | `server` _[ServerConfigs](#serverconfigs)_ | Creates a registry server container |
 | `persistence` _[RegistryPersistence](#registrypersistence)_ |  |
+
+
+#### Metadata
+
+
+
+ObjectMeta is metadata that all persisted resources must have, which includes all objects
+
+_Appears in:_
+- [FeatureStoreSpec](#featurestorespec)
+
+| Field | Description |
+| --- | --- |
+| `labels` _object (keys:string, values:string)_ | Map of string keys and values that can be used to organize and categorize
+(scope and select) objects. May match selectors of replication controllers
+and services. |
 
 
 #### OfflineStore

@@ -75,6 +75,7 @@ type FeatureStoreSpec struct {
 	Services        *FeatureStoreServices `json:"services,omitempty"`
 	AuthzConfig     *AuthzConfig          `json:"authz,omitempty"`
 	CronJob         *FeastCronJob         `json:"cronJob,omitempty"`
+	Metadata        *Metadata             `json:"metadata,omitempty"`
 }
 
 // FeastProjectDir defines how to create the feast project directory.
@@ -613,6 +614,14 @@ type ServiceHostnames struct {
 	OnlineStore  string `json:"onlineStore,omitempty"`
 	Registry     string `json:"registry,omitempty"`
 	UI           string `json:"ui,omitempty"`
+}
+
+// ObjectMeta is metadata that all persisted resources must have, which includes all objects
+type Metadata struct {
+	// Map of string keys and values that can be used to organize and categorize
+	// (scope and select) objects. May match selectors of replication controllers
+	// and services.
+	Labels map[string]string `json:"labels,omitempty"`
 }
 
 // +kubebuilder:object:root=true
