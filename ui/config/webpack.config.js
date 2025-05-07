@@ -318,7 +318,7 @@ module.exports = function (webpackEnv) {
         ...(isEnvProductionProfile && {
           "react-dom$": "react-dom/profiling",
           "scheduler/tracing": "scheduler/tracing-profiling",
-          'react/jsx-runtime': require.resolve('react/jsx-runtime'),
+          "react/jsx-runtime": require.resolve("react/jsx-runtime"),
         }),
         ...(modules.webpackAliases || {}),
       },

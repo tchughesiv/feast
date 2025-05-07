@@ -85,7 +85,7 @@ module.exports = function (proxy, allowedHost) {
     },
     resolve: {
       alias: {
-        'react/jsx-runtime': require.resolve('react/jsx-runtime'),
+        "react/jsx-runtime": require.resolve("react/jsx-runtime"),
       }
     },
     devMiddleware: {
